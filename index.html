@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<title>esp8266gameConsole</title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#7CCD7C">
+</head>
+<body>
+<link rel="stylesheet" type="text/css" href="style.css" />
+	<div id="menu">
+		<button onclick="onlyAsm();">asm</button>
+		<button onclick="main();">compile</button>
+		<button onclick="cpu.step();document.getElementById('debug').value = cpu.debug();clearTimeout(timerId);">step</button>
+		<button onclick="run()">run</button>
+		<button onclick="clearTimeout(timerId);document.getElementById('debug').value = cpu.debug();">stop</button>
+		<button onclick="spriteEditor.edit()">sprite</button>
+		<button onclick="listing();">listing</button>
+		<button onclick="debugVars();">debug</button>
+	</div>
+	<div id="container">
+		<div id="wrap-left">
+			<div class="header">memory</div>
+			<textarea id="ram"></textarea>
+			<div class="header">monitor</div>
+			<div id="monitor">
+				<div id="memoryPreviev">
+					<button onclick="setMemoryPage('m')">-</button>
+					<input id="memoryPage" value="00" onkeydown="if(event.keyCode==13)setMemoryPage(this.value)">
+					<button onclick="setMemoryPage('p')">+</button>
+					<textarea id="areaMemoryPrewiew" disabled="disabled"></textarea>
+				</div>
+				<canvas id="screen" width="256" height="320"></canvas>
+				cpu speed,Hz
+				<select id="cpuSpeed" name="cpuSpeed" onchange="cpuSpeed=this.value">
+					<option value="3200">200 000</option>
+					<option selected value="1600">100 000</option>
+					<option value="800">50 000</option>
+					<option value="400">25 000</option>
+					<option value="160">10 000</option>
+					<option value="80">5 000</option>
+					<option value="16">1 000</option>
+					<option value="8">500</option>
+					<option value="2">100</option>
+				</select>
+				<textarea id="debug" disabled="disabled"></textarea>
+			</div>
+		</div>
+		<div id="wrap-right">
+			<div class="header">source</div>
+			<div id="editBlock">
+			<table id="edit-table">
+			<tr>
+				<td style="width:2em;position:relative;">
+					<div spellcheck="false" disabled id="line-count"></div>
+				</td><td style="width:100%;position:relative;">
+					<textArea spellcheck="false" id="input" wrap="off">
+char s1[] = {0x00,0x00,0x90,0x00,0x00,0x09,0x89,0x90,0x00,0x98,0x88,0x89,0x09,0x88,0x89,0x89,0x09,0x89,0x98,0x89,0x98,0x98,0x88,0x90,0x98,0x98,0x99,0x00,0x09,0x09,0x09,0x09,0x00};
+char s2[] = {0x00,0x90,0x90,0x90,0x09,0x89,0x89,0x89,0x98,0x88,0x88,0x89,0x09,0x88,0x88,0x89,0x99,0x89,0x88,0x89,0x00,0x98,0x88,0x90,0x00,0x09,0x98,0x90,0x00,0x00,0x09,0x09,0x00};
+int cadrs[2];
+cadrs[0] = s1;
+cadrs[1] = s2;
+char shatle[] = {0x00,0x01,0x10,0x00,0x00,0x01,0x10,0x00,0x00,0x1e,0xe1,0x00,0x00,0x11,0x11,0x00,0x00,0x01,0x10,0x00,0x00,0x01,0x10,0x00,0xc0,0x11,0x11,0x0c,0x11,0x21,0x12,0x11,0x00};
+char stars[64];
+char sprites[32];
+char game[] = {0x11,0x10,0x11,0x10,0x11,0x01,0x10,0x11,0x10,0x00,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x00,0x11,0x10,0x10,0x10,0x10,0x11,0x10,0x10,0x10,0x10,0x10,0x00,0x10,0x10,0x11,0x10,0x10,0x10,0x10,0x00,0x10,0x11,0x00};
+char over[] = {0x11,0x10,0x10,0x10,0x11,0x01,0x01,0x10,0x10,0x10,0x10,0x10,0x01,0x10,0x10,0x10,0x10,0x10,0x11,0x01,0x00,0x10,0x10,0x01,0x00,0x10,0x01,0x00,0x11,0x10,0x01,0x00,0x11,0x01,0x00,0x00};
+char x,y,key,play;
+int i,j;
+void main()
+{
+while(1){
+clearscreen();
+x = 60;
+y = 150;
+play = 1;
+getsprite(16,shatle);
+for (j = 0; j < 16; j++)
+	getsprite(j,cadrs[random(1)]);
+for (i = 0; i < 32; i++){
+		stars[i + 32] = random(120);
+		stars[i] = random(254);
+}
+for (i = 0; i < 16; i++){
+		sprites[i + 16] = random(120);
+		sprites[i] = random(32);
+}
+while(play){
+	for (j = 0; j < 32; j++){
+		setcolor(0);
+		putpixel(stars[j + 32],stars[j]);
+		stars[j] = stars[j] + random(8);
+		setcolor(1 + random(3));
+		putpixel(stars[j + 32],stars[j]);
+	}
+	for (j = 0; j < 16; j++){
+		getsprite(j,cadrs[random(1)]);
+		sprites[j] = sprites[j] + random(2);
+		if(sprites[j] > 144){
+			if(((sprites[j + 16] + 8) > x) & (sprites[j + 16] < (x + 8)))
+				play = 0;
+		if(sprites[j] > 152){
+				sprites[j + 16] = random(120);
+				sprites[j] = 0;
+				}
+		}
+		putsprite(j,sprites[j + 16],sprites[j]);
+	}
+	key = getkey();
+	if((key == 4) & (x > 1)){
+		x--;x--;}
+	if((key == 8) & (x < 119)){
+		x++;x++;}
+	putsprite(16, x, y);
+}
+putimage(game, 50, 70, 16, 5);
+putimage(over, 70, 70, 14, 5);
+while(getkey() == 0){};
+}
+}	
+					</textArea>	
+			</td></tr>
+			</table>
+			</div>
+		</div>
+	</div>
+	<div class="header">information</div>
+	<div id="alert"></div>
+	<br>
+	<div class="header">console input</div>
+	<div id="consoleInput" onkeypress="if(event.keyCode == 13)sendToConsole();">
+		<input id="textForConsole">
+		<button onclick="sendToConsole();">send</button>
+	</div>
+	<div id="div_wind1" class="div_wind">
+        <div id="drag_wind1" class="div_drag_wind" onmouseover="setup_mouse('div_wind1', 'drag_wind1');">
+            <div>
+               listing<div class="close" onclick="closewindow1()">X</div>
+            </div>
+        </div>
+        <div class="content_wind">
+           <div id="disasm"></div>
+        </div>
+    </div>
+	<div id="div_wind2" class="div_wind">
+        <div id="drag_wind2" class="div_drag_wind" onmouseover="setup_mouse('div_wind2', 'drag_wind2');">
+            <div>
+               sprite editor<div class="close" onclick="closewindow2()">X</div>
+            </div>
+        </div>
+        <div class="content_wind">
+           <div id="spriteEditior">
+			<canvas id="pixelearea" width="16" height="17" ondrop="pAreaOnDrop(event)" ondragover="pAreaAllowDrop(event)"></canvas>	
+			<button onclick="spriteEditor.clear();">clear</button>
+			<button onclick="spriteEditor.selectAll();">select</button>
+			<button onclick="spriteEditor.loadSprite();">load</button>
+			<b id="selectColor">[]</b>
+			<b id="spriteInfo"></b>
+			<textarea id="spriteArea">{0,0,0}</textarea>
+		</div>
+        </div>
+    </div>
+	<div id="div_wind3" class="div_wind">
+        <div id="drag_wind3" class="div_drag_wind" onmouseover="setup_mouse('div_wind3', 'drag_wind3');">
+            <div>
+               debug<div class="close" onclick="closewindow3()">X</div>
+            </div>
+        </div>
+        <div class="content_wind">
+           <textarea id="debugVariable" disabled="disabled"></textarea>
+        </div>
+    </div>
+	
+	<script type="text/javascript" src="asm.js"></script>
+	<script type="text/javascript" src="cpu.js"></script>
+	<script type="text/javascript" src="spriteEditor.js"></script>
+	<script type="text/javascript" src="compiler.js"></script>
+	<script type="text/javascript" src="ui.js"></script>
+</body>
+</html>

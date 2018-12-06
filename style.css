@@ -1,0 +1,294 @@
+html,body,textarea {
+	font-family: monospace;
+	font-size: 13px;
+	font-style: normal;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+button,input,select {
+	background: #516399;
+	border: 1px solid #bbb;
+	color: #ffffff;
+	font: normal 13px Verdana, Geneva, sans-serif;
+	font-style: normal;
+	height: 1.8em;
+}
+input[type=file] {
+	height: 1.6em;
+	width: 18em;
+}
+textarea:focus {
+	outline: none;
+}
+#container {
+	height: 42.5em;
+	overflow: hidden;
+	position: relative;
+}
+#wrap-left {
+	float: left;
+	height: 41em;
+	padding: 2px;
+	width: 54em;
+}
+#wrap-right {
+	height: 41em;
+	margin-left: 54em;
+	padding: 2px;
+}
+#monitor {
+	border: 1px solid #516399;
+	background-color: rgb(235, 235, 228);
+	display: inline-block;
+	width: 53em;
+	height: 23.2em;
+}
+#monitor:focus {
+	outline: 3px solid #516399;
+}
+#monitor b {
+	background-color: #eee;
+	color: #516399;
+}
+#memoryPreviev {
+	float: left;
+	height: 24em;
+	text-align: center;
+	width: 23em;
+}
+#areaMemoryPrewiew {
+	font-family: monospace;
+	height: 20.8em;
+	overflow: hidden;
+	resize: none;
+	width: 22.8em;
+	border: none;
+}
+#editBlock {
+	border: 1px solid #516399;
+	color: #516399;
+	height: 39.85em;
+	overflow: auto;
+	padding-left: 2px;
+	width: 95%;
+}
+#edit-table {
+	border: none;
+	border-spacing: 0;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	width: 100%;
+}
+#input {
+	border: none;
+	font-family: monospace;
+	overflow: hidden;
+	resize: none;
+	tab-size: 1em;
+	width: 100%;
+}
+#line-count {
+	height: auto;
+	min-height: 10em;
+	overflow: hidden;
+	padding: 0.5em;
+	resize: none;
+	text-align: right;
+	width: 2em;
+	background-color: rgb(235, 235, 228);
+}
+.execLine {
+	background-color: #516399;
+    color: white;
+}
+#hint {
+	color: #516399;
+	height: 1em;
+	width: 95%;
+}
+#hint b {
+	color: #90C695;
+}
+#hint i {
+	color: #777;
+}
+#menu {
+	height: 2em;
+	margin: auto;
+	width: 62em;
+}
+#ram {
+	border: 1px solid #516399;
+	color: #516399;
+	height: 15em;
+	resize: none;
+	width: 53em;
+}
+#debug {
+	font-size: 83%;
+	height: 24em;
+	border: none;
+	overflow: hidden;
+	resize: none;
+	white-space: pre;
+	width: 13.6em;
+}
+#screen {
+	float: left;
+	image-rendering: pixelated;
+	height: 100%;
+}
+#codePreviev {
+	float: left;
+	height: 21em;
+	width: 13em;
+}
+#alert {
+	border: 1px solid #516399;
+	max-height: 8em;
+	min-height: 2em;
+	overflow: auto;
+	width: 97%;
+	word-wrap: break-word;
+}
+#alert>b {
+	color: #F11;
+}
+#consoleInput {
+	border: 1px solid #516399;
+	display: block;
+	padding-bottom: 0.2em;
+	padding-top: 0.3em;
+	width: 97%;
+}
+#consoleInput>input {
+	height: 1.5em;
+	width: 90%;
+}
+.div_wind {
+	position: absolute;
+	box-shadow: 0 0 0.8em rgba(0,0,0,0.8);
+}
+.div_drag_wind {
+	cursor: move;
+	background: #516399;
+	color: #FFF;
+	line-height: 2em;
+}
+.div_drag_wind div {
+	padding-left: 10px;
+	padding-right: 10px;
+	height: 2em;
+}
+.content_wind {
+	padding: 5px;
+	background: #C0C0C0;
+}
+#div_wind1 {
+	top: 3em;
+	left: 3em;
+	display: none;
+}
+#div_wind2 {
+	top: 3em;
+	left: 13em;
+	display: none;
+}
+#div_wind3 {
+	top: 3em;
+	left: 23em;
+	display: none;
+}
+#disasm, #debugVariable {
+	background-color: #eee;
+	border: 1px solid #516399;
+	color: #516399;
+	height: 29.8em;
+	overflow: auto;
+	padding: 0.5em;
+	resize: none;
+	width: 21em;
+	tab-size: 16;
+}
+#disasm:focus {
+	outline: 3px solid #516399;
+}
+.close {
+	background-color: #A95151;
+	color: #FFF;
+	cursor: pointer;
+	height: 1.5em;
+	position: absolute;
+	line-height: 1.5;
+	margin-left: 17.6em;
+	margin-top: -2em;
+	text-align: center;
+	width: 3em;
+}
+#spriteEditior, #tutorial {
+	background-color: #eee;
+	border: 1px solid #516399;
+	height: 30em;
+	overflow: hidden;
+	padding: 0.5em;
+	resize: none;
+	top: 10em;
+	width: 21em;
+}
+#pixelearea {
+	image-rendering: pixelated;
+	width: 20em;
+}
+#spriteArea {
+	color: #516399;
+	height: 6.8em;
+	margin-top: 0.2em;
+	resize: none;
+	width: 19.9em;
+}
+.header {
+	border: 1px solid #516399;
+	border-bottom: none;
+	display: inline-block;
+	margin-right: 9em;
+	text-align: center;
+	width: 10em;
+}
+.column {
+	float: left;
+	width: 3.2em;
+}
+.thisip,.change {
+	background-color: #516399;
+	color: #FFF;
+}
+.S{
+	color:#90B629;
+}
+.C{
+	color:#ed7824;
+}
+.kwrd{
+	font-weight:bold;
+	color: #0070de;
+}
+.gly{
+	font-weight:bold;
+	color: #0070de;
+}
+@media screen and (max-width: 60em) {
+	#menu {
+		height: 6em;
+		width: 100%;
+	}
+	#container {
+		overflow: auto;
+	}
+	#wrap-right {
+		height: 41em;
+		margin-left: 0;
+		padding: 2px;
+	}
+}

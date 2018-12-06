@@ -1,0 +1,853 @@
+"use strict";
+
+var timers = [];
+
+function Cpu(){
+	var mem = [];			//память, максимум 65 534 байта
+	var reg = [];			//16 регистров, нулевой используется как указатель стека
+	var regx = 0;			//неявный регистр, указывает на Х позицию символа в текстовом режиме
+	var regy = 0;			//Y позиция символа
+	var imageSize = 1;		//влияет на множитель размера выводимой картинки, не относится к спрайтам
+	var pc = 0;				//указатель на текущую команду
+	var carry = 0;			//флаг переполнения
+	var zero = 0;			//флаг нуля
+	var negative = 0;		//флаг отрицательности
+	var sprites = [];		//массив адресов и координат спрайтов
+	var bgcolor = 0;		//фоновый цвет
+	var color = 1;			//цвет рисования
+	var charArray = [];		//массив символов, выводимых на экран
+	
+	function init(){
+		for(var i = 0; i < 0xffff; i++)
+			mem[i] = 0;
+		for(var i = 1; i < 16; i++)
+			reg[i] = 0;
+		//указываем последнюю ячейку памяти для стека, если памяти меньше то и значение соответственно меняется
+		reg[0] = 0xffff;
+		pc = 0;
+		regx = 0;
+		regy = 0;
+		imageSize = 1;
+		//задаем начальные координаты спрайтов вне границ экрана
+		for(var i = 0; i < 32; i++)
+			sprites[i]  = {address: 0, x: 255, y: 255};
+		for(var i = 0; i < 420; i++)
+			charArray[i] = '';
+		for(var i = 0; i < 8; i++)
+			timers[i] = 0;
+	}
+	//загрузка программы
+	function load(arr){
+		for(var i = 0; i < arr.length; i++)
+			mem[i] = arr[i];
+	}
+	
+	function writeInt(adr, n){
+		writeMem(adr + 1, (n & 0xff00) >> 8);
+		writeMem(adr, n & 0xff);
+	}
+	
+	function readInt(adr){
+		return (readMem(adr + 1) << 8) + readMem(adr);
+	}
+	
+	function writeMem(adr, n){
+		mem[adr & 0xffff] = n & 0xff;
+	}
+	
+	function readMem(adr){
+		return mem[adr & 0xffff];
+	}
+	
+	function setFlags(n){
+		carry = (n > 0xffff) ? 1 : 0;
+		zero = (n == 0) ? 1 : 0;
+		negative = (n < 0) ? 1 : 0;
+		n = n & 0xffff;
+		return n;
+	}
+	
+	function setFlagsC(n){
+		carry = 0;
+		zero = 0;
+		negative = 0;
+		if(n > 0xff){
+			carry = 1;
+		}
+		if(n == 0){
+			zero = 1;
+		}
+		else if(n < 0){
+			negative = 1;
+		}
+		n = n & 0xff;
+		return n;
+	}
+	
+	function setSprite(n, adr){
+		sprites[n].address = adr;
+	}
+	
+	function drawSprite(n, x1, y1){
+		var color;
+		var adr = sprites[n].address;
+		for(var y = 0; y < 8; y++)
+			for(var x = 0; x < 8; x++)
+				display.updatePixel(sprites[n].x + x, sprites[n].y + y);
+		sprites[n].x = x1;
+		sprites[n].y = y1;
+		for(var y = 0; y < 8; y++)
+			for(var x = 0; x < 8; x++){
+				color = (readMem(adr) & 0xf0) >> 4;
+				if(color > 0)
+					display.drawPixel(color, x1 + x, y1 + y);
+				x++;
+				color = (readMem(adr) & 0xf);
+				if(color > 0)
+					display.drawPixel(color, x1 + x, y1 + y);
+				adr++;
+			}
+	}
+	
+	function drawImage(adr, x1, y1, w, h){
+		var color;
+		for(var y = 0; y < h; y++)
+			for(var x = 0; x < w; x++){
+				color = (readMem(adr) & 0xf0) >> 4;
+				if(color > 0)
+					display.plot(color, x1 + x, y1 + y);
+				x++;
+				color = (readMem(adr) & 0xf);
+				if(color > 0)
+					display.plot(color, x1 + x, y1 + y);
+				adr++;
+			}
+	}
+	//функция рисования картинки, если ее размер отличается от 1
+	function drawImageS(adr, x1, y1, w, h){
+		var color,jx,jy;
+		var s = imageSize;
+		for(var y = 0; y < h; y++)
+			for(var x = 0; x < w; x++){
+				color = (readMem(adr) & 0xf0) >> 4;
+				if(color > 0)
+					for(jx = 0; jx < s; jx++)
+						for(jy = 0; jy < s; jy++)
+							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
+				x++;
+				color = (readMem(adr) & 0xf);
+				if(color > 0)
+					for(jx = 0; jx < s; jx++)
+						for(jy = 0; jy < s; jy++)
+							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
+				adr++;
+			}
+	}
+	
+	function drawLine(x1, y1, x2, y2) {
+		var deltaX = Math.abs(x2 - x1);
+		var deltaY = Math.abs(y2 - y1);
+		var signX = x1 < x2 ? 1 : -1;
+		var signY = y1 < y2 ? 1 : -1;
+		var error = deltaX - deltaY;
+		display.plot(color, x2, y2);
+		while(x1 != x2 || y1 != y2) 
+	   {
+			display.plot(color, x1, y1);
+			var error2 = error * 2;
+			if(error2 > -deltaY) 
+			{
+				error -= deltaY;
+				x1 += signX;
+			}
+			if(error2 < deltaX) 
+			{
+				error += deltaX;
+				y1 += signY;
+			}
+		}
+
+	}
+	
+	function charLineUp(n){
+		display.reset();
+		for(var i = 0; i < 420 - n * 21; i++){
+			charArray[i] = charArray[i + n * 21];
+			display.char(charArray[i] , (i % 21) * 6, Math.floor(i / 21) * 8, 1, 0);
+		}
+	}
+	
+	function printc(c, fc, bc){
+		if(c == '\n'){
+			regy++;
+			regx = 0;
+			if(regy > 19){
+				regy = 19;
+				charLineUp(1);
+			}
+		}
+		else{
+			display.char(c , regx * 6, regy * 8, fc, bc);
+			charArray[regx + regy * 21] = c;
+			regx++;
+			if(regx > 21){
+				regy++;
+				regx = 0;
+				if(regy > 19){
+					regy = 19;
+					charLineUp(1);
+				}
+			}
+		}
+	}
+	
+	function randomInteger(min, max) {
+		var rand = min - 0.5 + Math.random() * (max - min + 1)
+		rand = Math.round(rand);
+		return rand;
+	}
+	
+	function step(){
+		//все команды двухбайтные, за некоторыми следуют два байта данных
+		var op1 = mem[pc++]; //первый байт
+		var op2 = mem[pc++]; //второй байт
+		var reg1 = 0;		// дополнительные переменные
+		var reg2 = 0;
+		var reg3 = 0;
+		var n = 0;
+		switch(op1 & 0xf0){
+			case 0x00:
+				switch(op1){ 
+					case 0x01: 
+						//LDI R,int		01 0R XXXX
+						reg1 = (op2 & 0xf);
+						reg[reg1] = readInt(pc);
+						setFlags(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x02: 
+						//LDI R,(R)		02 RR
+						reg1 = ((op2 & 0xf0) >> 4);
+						reg2 = (op2 & 0xf);
+						reg[reg1] = readInt(reg[reg2]);
+						setFlags(reg[reg1]);
+						break;
+					case 0x03: 
+						//LDI R,(adr)	03 0R XXXX
+						reg1 = (op2 & 0xf);
+						reg[reg1] = readInt(readInt(pc));
+						setFlags(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x04: 
+						//LDI R,(int+R)	04 RR XXXX
+						reg1 = ((op2 & 0xf0) >> 4);
+						reg2 = (op2 & 0xf);
+						reg[reg1] = readInt(reg[reg2] + readInt(pc));
+						setFlags(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x05: 
+						//STI (R),R		05 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						writeInt(readInt(reg[reg1]),reg[reg2]);
+						break;
+					case 0x06:
+						if((op2 & 0x0f) == 0){
+							//STI (adr),R	06 R0 XXXX
+							reg1 = (op2 & 0xf0) >> 4;
+							writeInt(readInt(pc),reg[reg1]);
+							pc += 2;
+						}
+						else{
+							//STI (adr+R),R 06 RR XXXX
+							reg1 = (op2 & 0xf0) >> 4;
+							reg2 = op2 & 0xf;
+							writeInt(readInt(pc) + reg[reg1],reg[reg2]);
+							pc += 2;
+						}
+						break;
+					case 0x07:
+						//MOV R,R		07 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						reg[reg1] = reg[reg2];
+						break;
+					default:
+						pc++;
+				}
+				break;
+			case 0x10:
+				// LDC R,char	1R XX
+				reg1 = (op1 & 0xf);
+				reg[reg1] = op2;
+				setFlagsC(reg[reg1]);
+				break;
+			case 0x20:
+				if(op1 == 0x20){
+					// LDC R,(R)	20 RR
+					reg1 = ((op2 & 0xf0) >> 4);
+					reg2 = (op2 & 0xf);
+					reg[reg1] = readMem(reg[reg2]);
+					setFlagsC(reg[reg1]);
+				}
+				else{
+					// LDC R,(R+R)	2R RR
+					reg1 = (op1 & 0xf);
+					reg2 = ((op2 & 0xf0) >> 4);
+					reg3 = (op2 & 0xf);
+					reg[reg1] = readMem(reg[reg2] + reg[reg3]);
+					setFlagsC(reg[reg1]);
+				}
+				break;
+			case 0x30: 
+				switch(op1){
+					case 0x30:
+						// LDC R,(int+R)30 RR XXXX
+						reg1 = ((op2 & 0xf0) >> 4);
+						reg2 = (op2 & 0xf);
+						reg[reg1] = readMem(reg[reg2] + readInt(pc));
+						setFlagsC(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x31:
+						// LDC R,(adr)	31 0R XXXX
+						reg1 = (op2 & 0xf);
+						reg[reg1] = readMem(readInt(pc));
+						setFlagsC(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x32:
+						// STC (adr),R	32 0R XXXX
+						reg1 = (op2 & 0xf0) >> 4;
+						writeMem(readInt(pc),reg[reg1]);
+						pc += 2;
+						break;
+					case 0x33:
+						// STC (int+R),R33 RR XXXX
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						writeMem(readInt(pc) + reg[reg1],reg[reg2]);
+						pc += 2;
+						break;
+				}
+				break;
+			case 0x40:
+				if(op1 == 0x40){
+					// STC (R),R	40 RR
+					reg1 = (op2 & 0xf0) >> 4;
+					reg2 = op2 & 0xf;
+					writeMem(readInt(reg[reg1]),reg[reg2]);
+				}
+				else{
+					// STC (R+R),R	4R RR 
+					reg1 = (op1 & 0xf);
+					reg2 = ((op2 & 0xf0) >> 4);
+					reg3 = (op2 & 0xf);
+					writeMem(readMem(reg[reg2] + reg[reg3]), reg[reg1]);
+				}
+				break;
+			case 0x50:
+				switch(op1){ 
+					case 0x50:
+						//HLT				5000
+						pc -= 2;
+						break;
+					case 0x51:
+						// STIMER R,R		51RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						timers[reg[reg1] & 0x7] = reg[reg2];
+						break;
+					case 0x52:
+						// GTIMER R		520R
+						reg1 = op2 & 0xf;
+						reg[reg1] = timers[reg[reg1] & 0x7];
+						setFlags(reg[reg1]);
+						break;
+				}
+				break;
+			case 0x60:
+				// LDI R,(R+R)	6R RR
+				reg1 = (op1 & 0xf);
+				reg2 = ((op2 & 0xf0) >> 4);
+				reg3 = (op2 & 0xf);
+				reg[reg1] = readInt(reg[reg2] + reg[reg3]);
+				setFlags(reg[reg1]);
+				break;
+			case 0x70:
+				// STI (R+R),R	7R RR
+				reg1 = (op1 & 0xf);
+				reg2 = ((op2 & 0xf0) >> 4);
+				reg3 = (op2 & 0xf);
+				writeInt(readMem(reg[reg2] + reg[reg3]), reg[reg1]);
+				break;	
+			case 0x80:
+				switch(op1){
+					case 0x80:
+						// POP R		80 0R
+						reg1 = (op2 & 0xf);
+						reg[reg1] = readInt(reg[0]);
+						reg[0] += 2;
+						break;
+					case 0x81:
+						// POPN R		81 0R
+						reg1 = (op2 & 0xf);
+						for(var j = reg1; j >= 1; j--){
+							reg[j] = readInt(reg[0]);
+							reg[0] += 2;
+						}
+						break;
+					case 0x82:
+						// PUSH R		82 0R
+						reg1 = (op2 & 0xf);
+						reg[0] -= 2;
+						writeInt(reg[0], reg[reg1]);
+						break;
+					case 0x83:
+						// PUSHN R		83 0R
+						reg1 = (op2 & 0xf);
+						for(var j = 1; j <= reg1; j++){
+							reg[0] -= 2;
+							writeInt(reg[0], reg[j]);
+						}
+						break;
+				}
+				break;
+			case 0x90:
+				switch(op1){
+					case 0x90:
+						// JMP adr		90 00 XXXX
+						pc = readInt(pc);
+						break;
+					case 0x91:
+						// JNZ adr		91 00 XXXX
+						if(zero == 0)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x92:
+						// JZ adr		92 00 XXXX
+						if(zero != 0)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x93:
+						// JNP adr		93 00 XXXX
+						if(negative != 1)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x94:
+						// JP adr		94 00 XXXX
+						if(negative == 1)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x95:
+						// JNC adr		95 00 XXXX
+						if(carry != 1)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x96:
+						// JC adr		96 00 XXXX
+						if(carry == 1)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x97:
+						// JZR R,adr	97 0R XXXX
+						reg1 = op2 & 0xf;
+						if(reg[reg1] == 0)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x98:
+						// JNZR R,adr	98 0R XXXX
+						reg1 = op2 & 0xf;
+						if(reg[reg1] != 0)
+							pc = readInt(pc);
+						else 
+							pc += 2;
+						break;
+					case 0x99:
+						// CALL adr		99 00 XXXX
+						reg[0] -= 2;
+						if(reg[0] < 0)
+							reg[0] += 0xffff;
+						writeInt(reg[0], pc + 2);
+						pc = readInt(pc);
+						break;
+					case 0x9A:
+						// RET			9A 00
+						pc = readInt(reg[0]);
+						reg[0] += 2;
+						break;
+				}
+				break;
+			case 0xA0:
+				switch(op1){
+					case 0xA0:
+						// ADD R,R		A0 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] + reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA1:
+						// ADC R,R		A1 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] + reg[reg2] + carry;
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA2:
+						// SUB R,R		A2 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] - reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA3:
+						// SBC R,R		A3 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] - reg[reg2] - carry;
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA4:
+						// MUL R,R		A4 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] * reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA5:
+						// DIV R,R		A5 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] / reg[reg2];
+						n = setFlags(n);
+						reg[reg2] = reg[reg1] % reg[reg2];
+						reg[reg1] = n;
+						break;
+					case 0xA6:
+						// AND R,R		A6 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] & reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA7:
+						// OR R,R		A7 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] | reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xA8:
+						if(op2 == 0x10){
+							// INC adr		A8 10 XXXX
+							reg1 = op2 & 0xf;
+							n = readInt(readInt(pc)) + 1;
+							n = setFlags(n);
+							writeInt(readInt(pc), n);
+							pc += 2;
+						}
+						else if(op2 > 0x10){
+							// INC R,n		A8 nR
+							reg1 = op2 & 0xf;
+							n = reg[reg1] + (op2 >> 4);
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
+						else{
+							// INC R		A8 0R				
+							reg1 = op2 & 0xf;
+							n = reg[reg1] + 1;
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
+						break;
+					case 0xA9:
+						if(op2 == 0x10){
+							// DEC adr		A9 10 XXXX
+							reg1 = op2 & 0xf;
+							n = readInt(readInt(pc)) - 1;
+							n = setFlags(n);
+							writeInt(readInt(pc), n);
+							pc += 2;
+						}
+						else if(op2 > 0x10){
+							// DEC R,n		A9 nR
+							reg1 = op2 & 0xf;
+							n = reg[reg1] - (op2 >> 4);
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
+						else{
+							// DEC R		A9 0R
+							reg1 = op2 & 0xf;
+							n = reg[reg1] - 1;
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
+						break;
+					case 0xAA:
+						// XOR R,R		AA RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] ^ reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xAB:
+						// SHL R,R		AB RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] << reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xAC:
+						// SHR R,R		AC RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] >> reg[reg2];
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xAD:
+						// RAND R,R		AD 0R
+						reg1 = op2 & 0xf;
+						n = randomInteger(0, reg[reg1]);
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+				}
+				break;
+			case 0xB0:
+				//CMP R,CHR		BR XX
+				reg1 = (op1 & 0x0f);
+				n = reg[reg1] - op2;
+				n = setFlags(n);
+				break;
+			case 0xC0:
+				switch(op1){
+					case 0xC0:
+						//CMP R,INT		C0 R0 XXXX
+						reg1 = (op2 & 0xf0) >> 4;
+						n = reg[reg1] - readInt(pc);
+						n = setFlags(n);
+						pc += 2;
+						break;
+					case 0xC1:
+						//CMP R,R		C1 RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = reg[reg1] - reg[reg2];
+						n = setFlags(n);
+						break;
+					case 0xC2:
+						//LDF R,F		C2 RF
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						if(reg2 == 0)
+							reg[reg1] = carry;
+						else if(reg2 == 1)
+							reg[reg1] = zero;
+						else if(reg2 == 2)
+							reg[reg1] = negative;
+						else if(reg2 == 3){ //pozitive
+							if(negative == 0 && zero == 0)
+								reg[reg1] = 1;
+							else
+								reg[reg1] = 0;
+						}
+						else if(reg2 == 4){ //not pozitive
+							if(negative == 0 && zero == 0)
+								reg[reg1] = 0;
+							else
+								reg[reg1] = 1;
+						}
+						else if(reg2 == 5)
+							reg[reg1] = 1 - zero;
+						else
+							reg[reg1] = 0;
+						break;
+				}
+				break;
+			case 0xD0:
+				switch(op1){ 
+					case 0xD0:
+						//CLS		D000
+						display.reset();
+						pc--;
+						break;
+					case 0xD1:
+						switch(op2 & 0xf0){
+							case 0x00:
+								//PUTC R	D10R
+								reg1 = (op2 & 0xf);
+								//console.log(String.fromCharCode(reg[reg1]) + ':' + reg[reg1]);
+								printc(String.fromCharCode(reg[reg1]), color, bgcolor);
+								break;
+							case 0x10:
+								//PUTS R	D11R
+								reg1 = (op2 & 0xf);
+								var i = 0;
+								//console.log(String.fromCharCode(readMem(reg[reg1])));
+								while(!(readMem(reg[reg1] + i) == 0 || i > 1000)){
+									printc(String.fromCharCode(readMem(reg[reg1] + i)), color, bgcolor);
+									i++;
+								}
+								break;
+							case 0x20:
+								//PUTN R D12R
+								reg1 = (op2 & 0xf);
+								var s;
+								if(reg[reg1] < 32768)
+									s = reg[reg1].toString(10);
+								else
+									s = (reg[reg1] - 0x10000).toString(10);
+								for(var i = 0; i < s.length; i++){
+									printc(s[i], color, bgcolor);
+								}
+								break;
+						}
+						break;
+					case 0xD2: 
+						switch(op2 & 0xf0){
+							case 0x00:
+								// GETK R			D20R
+								reg1 = (op2 & 0xf);
+								if(globalKey != 0)
+									reg[reg1] = globalKey;
+								else
+									pc -= 2;
+								globalKey = 0;
+								break;
+							case 0x10:
+								// GETJ R			D21R
+								reg1 = (op2 & 0xf);
+								reg[reg1] = globalJKey;
+								break;
+						}
+						break;
+					case 0xD3:
+						// PPIX R,R		D3RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						display.plot(color, reg[reg1], reg[reg2]);
+						break;
+					case 0xD4:
+						switch(op2 & 0xf0){
+							case 0x00:
+								// DRWIM R			D40R
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+								if(imageSize > 1)
+									drawImageS(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								else
+									drawImage(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
+							case 0x10:
+								// SFCLR R			D41R
+								reg1 = op2 & 0xf;
+								color = reg[reg1] & 0xf;
+								break;
+							case 0x20:
+								// SBCLR R			D42R
+								reg1 = op2 & 0xf;
+								bgcolor = reg[reg1] & 0xf;
+								break;
+							case 0x30:
+								// GFCLR R			D43R
+								reg1 = op2 & 0xf;
+								reg[reg1] = color;
+								break;
+							case 0x40:
+								// GBCLR R			D44R
+								reg1 = op2 & 0xf;
+								reg[reg1] = bgcolor;
+								break;
+							case 0x50:
+								// ISIZE			D45R
+								reg1 = op2 & 0xf;
+								imageSize = reg[reg1] & 0x7;
+								break;
+							case 0x60:
+								// DLINE			D46R
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
+								drawLine(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
+						}
+						break;
+					case 0xD5:
+						// LDSPRT R,R		D5RR
+						reg1 = (op2 & 0xf0) >> 4;//номер спрайта
+						reg2 = op2 & 0xf;//адрес спрайта
+						setSprite(reg[reg1] & 0x1f, reg[reg2]);
+						break;
+				}
+				break;
+			case 0xE0:
+				// DRSPRT R,R,R	ERRR
+				reg1 = (op1 & 0xf);//номер спрайта
+				reg2 = (op2 & 0xf0) >> 4;//x
+				reg3 = op2 & 0xf;//y
+				drawSprite(reg[reg1] & 0x1f, reg[reg2], reg[reg3]);
+				break;
+		}
+	}
+	
+	function debug(){
+		var d = '';
+		var s = 'pc:' + toHex4(pc) + '\n';
+		s += 'op:' + toHex4((mem[pc] << 8) + mem[pc + 1]) + '\n';
+		s += 'C' + carry + 'Z' + zero + 'N' + negative + '\n';
+		for(var i = 0; i < 16; i++)
+			s += 'R' + i + ':' + reg[i] + '\n';
+		for(var i = 0; i < debugVar.length; i++){
+			d += debugVar[i].variable + '\t';
+			d += toHex4(debugVar[i].adress) + '   ';
+			d += readInt(debugVar[i].adress) + '\n';
+		}
+		debugVarArea.value = d;
+		viewMemory();
+		for(var i = 0; i < numberDebugString.length; i++)
+			if(numberDebugString[i][2] == pc){
+				thisDebugString = numberDebugString[i][1];
+			}
+		highliteLine();
+		return s;
+	}
+	
+	return {
+		init:init,
+		load:load,
+		step:step,
+		debug:debug,
+		readMem:readMem
+	};
+}
+
+var cpu = new Cpu;
+cpu.init();
