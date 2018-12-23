@@ -221,7 +221,7 @@ function listing(){
 	var d = document.getElementById("div_wind1");
 	d.value = asmSource;
 	d.style.display = "block";
-	d.style.left = "3em";
+	d.style.left = "1em";
 	d.style.top = "3em";
 	var d = document.getElementById("disasm");
 	d.value = asmSource;
@@ -230,22 +230,19 @@ function listing(){
 function debugVars(){
 	var d = document.getElementById("div_wind3");
 	d.style.display = "block";
-	d.style.left = "49em";
+	d.style.left = window.innerWidth/4*2 + 'px';
 	d.style.top = "3em";
 }
 
-function closewindow1(){
-	var d = document.getElementById("div_wind1");
-	d.style.display = "none";
+function viewHelp(){
+	var d = document.getElementById("div_wind4");
+	d.style.display = "block";
+	d.style.left = window.innerWidth/4*3 + 'px';
+	d.style.top = "3em";
 }
 
-function closewindow2(){
-	var d = document.getElementById("div_wind2");
-	d.style.display = "none";
-}
-
-function closewindow3(){
-	var d = document.getElementById("div_wind3");
+function closewindow(id){
+	var d = document.getElementById(id);
 	d.style.display = "none";
 }
 
@@ -351,6 +348,14 @@ function Display() {
 		drawPixel(color, x, y);
 		displayArray[x * 128 + y] = color & 0x0f;
     }
+	function largeplot(color, x, y, s) {
+		var x1,y1;
+		for(x1 = 0; x1 < s; x1++)
+			for(y1 = 0; y1 < s; y1++){
+				drawPixel(color, x + x1, y + y1);
+				displayArray[(x + x1) * 128 + y + y1] = color & 0x0f;
+			}
+    }
 
     return {
       init: init,
@@ -358,7 +363,8 @@ function Display() {
 	  char:char,
 	  updatePixel: updatePixel,
 	  drawPixel: drawPixel,
-	  plot:plot
+	  plot:plot,
+	  largeplot:largeplot
     };
 }
 

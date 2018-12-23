@@ -123,6 +123,48 @@ function Cpu(){
 				adr++;
 			}
 	}
+	
+	function drawImageRLE(adr, x1, y1, w, h){
+		var i = 0;
+		var repeat = readMem(adr);
+		adr++;
+		var color1 = (readMem(adr) & 0xf0) >> 4;
+		var color2 = readMem(adr) & 0xf
+		while(i < w * h){
+			if(repeat > 0x81){
+				if(color1 > 0)
+					display.plot(color1, x1 + i % w, y1 + Math.floor(i / w));
+				if(color2 > 0)
+					display.plot(color2, x1 + i % w + 1, y1 + Math.floor(i / w));
+				i += 2;
+				adr++;
+				repeat--;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf;
+			}
+			else if(repeat == 0x81){
+				repeat = readMem(adr);
+				adr++;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf;
+			}
+			else if(repeat > 0){
+				if(color1 > 0)
+					display.plot(color1, x1 + i % w, y1 + Math.floor(i / w));
+				if(color2 > 0)
+					display.plot(color2, x1 + i % w + 1, y1 + Math.floor(i / w));
+				i += 2;
+				repeat--;
+			}
+			else if(repeat == 0){
+				adr++;
+				repeat = readMem(adr);
+				adr++;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf;
+			}
+		}
+	}
 	//функция рисования картинки, если ее размер отличается от 1
 	function drawImageS(adr, x1, y1, w, h){
 		var color,jx,jy;
@@ -142,6 +184,49 @@ function Cpu(){
 							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
 				adr++;
 			}
+	}
+	
+	function drawImageRLES(adr, x1, y1, w, h){
+		var i = 0;
+		var s = imageSize;
+		var repeat = readMem(adr);
+		adr++;
+		var color1 = (readMem(adr) & 0xf0) >> 4;
+		var color2 = readMem(adr) & 0xf
+		while(i < w * h){
+			if(repeat > 0x81){
+				if(color1 > 0)
+					display.largeplot(color1, x1 + (i % w) * s, y1 + Math.floor(i / w) * s, s);
+				if(color2 > 0)
+					display.largeplot(color2, x1 + (i % w) * s + s, y1 + Math.floor(i / w) * s, s);
+				i += 2;
+				adr++;
+				repeat--;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf
+			}
+			else if(repeat == 0x81){
+				repeat = readMem(adr);
+				adr++;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf
+			}
+			else if(repeat > 0){
+				if(color1 > 0)
+					display.largeplot(color1, x1 + (i % w) * s, y1 + Math.floor(i / w) * s, s);
+				if(color2 > 0)
+					display.largeplot(color2, x1 + (i % w) * s + s, y1 + Math.floor(i / w) * s, s);
+				i += 2;
+				repeat--;
+			}
+			else if(repeat == 0){
+				adr++;
+				repeat = readMem(adr);
+				adr++;
+				color1 = (readMem(adr) & 0xf0) >> 4;
+				color2 = readMem(adr) & 0xf
+			}
+		}
 	}
 	
 	function drawLine(x1, y1, x2, y2) {
@@ -179,11 +264,31 @@ function Cpu(){
 	
 	function printc(c, fc, bc){
 		if(c == '\n'){
+			for(var i = regx; i <= 21; i++){
+				display.char(' ' , i * 6, regy * 8, fc, bc);
+				charArray[i + regy * 21] = ' ';
+			}
 			regy++;
 			regx = 0;
 			if(regy > 19){
 				regy = 19;
 				charLineUp(1);
+			}
+		}
+		else if(c == '\t'){
+			for(var i = 0; i <= regx % 5; i++){
+				display.char(' ' , regx * 6, regy * 8, fc, bc);
+				charArray[regx + regy * 21] = ' ';
+				regx++;
+				if(regx > 21){
+					i = 99;
+					regy++;
+					regx = 0;
+					if(regy > 19){
+						regy = 19;
+						charLineUp(1);
+					}
+				}
 			}
 		}
 		else{
@@ -251,7 +356,8 @@ function Cpu(){
 						//STI (R),R		05 RR
 						reg1 = (op2 & 0xf0) >> 4;
 						reg2 = op2 & 0xf;
-						writeInt(readInt(reg[reg1]),reg[reg2]);
+						//writeInt(readInt(reg[reg1]),reg[reg2]);
+						writeInt(reg[reg1],reg[reg2]);
 						break;
 					case 0x06:
 						if((op2 & 0x0f) == 0){
@@ -338,14 +444,15 @@ function Cpu(){
 					// STC (R),R	40 RR
 					reg1 = (op2 & 0xf0) >> 4;
 					reg2 = op2 & 0xf;
-					writeMem(readInt(reg[reg1]),reg[reg2]);
+					//writeMem(readInt(reg[reg1]),reg[reg2]);
+					writeMem(reg[reg1], reg[reg2]);
 				}
 				else{
 					// STC (R+R),R	4R RR 
 					reg1 = (op1 & 0xf);
 					reg2 = ((op2 & 0xf0) >> 4);
 					reg3 = (op2 & 0xf);
-					writeMem(readMem(reg[reg2] + reg[reg3]), reg[reg1]);
+					writeMem(reg[reg1] + reg[reg2], reg[reg3]);
 				}
 				break;
 			case 0x50:
@@ -381,7 +488,7 @@ function Cpu(){
 				reg1 = (op1 & 0xf);
 				reg2 = ((op2 & 0xf0) >> 4);
 				reg3 = (op2 & 0xf);
-				writeInt(readMem(reg[reg2] + reg[reg3]), reg[reg1]);
+				writeInt(reg[reg1] + reg[reg2], reg[reg3]);
 				break;	
 			case 0x80:
 				switch(op1){
@@ -437,14 +544,14 @@ function Cpu(){
 						break;
 					case 0x93:
 						// JNP adr		93 00 XXXX
-						if(negative != 1)
+						if(negative == 1)
 							pc = readInt(pc);
 						else 
 							pc += 2;
 						break;
 					case 0x94:
 						// JP adr		94 00 XXXX
-						if(negative == 1)
+						if(negative != 1)
 							pc = readInt(pc);
 						else 
 							pc += 2;
@@ -730,6 +837,16 @@ function Cpu(){
 									printc(s[i], color, bgcolor);
 								}
 								break;
+							case 0x30:
+								//SETX R			D13R
+								reg1 = (op2 & 0xf);
+								regx = (reg[reg1] & 0xff);
+								break;
+							case 0x40:
+								//SETY R			D14R
+								reg1 = (op2 & 0xf);
+								regy = (reg[reg1] & 0xff);
+								break;
 						}
 						break;
 					case 0xD2: 
@@ -798,6 +915,15 @@ function Cpu(){
 								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
 								drawLine(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 								break;
+							case 0x70:
+								// DRWRLE R		D47R
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+								if(imageSize > 1)
+									drawImageRLES(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								else
+									drawImageRLE(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
 						}
 						break;
 					case 0xD5:
@@ -824,7 +950,7 @@ function Cpu(){
 		s += 'op:' + toHex4((mem[pc] << 8) + mem[pc + 1]) + '\n';
 		s += 'C' + carry + 'Z' + zero + 'N' + negative + '\n';
 		for(var i = 0; i < 16; i++)
-			s += 'R' + i + ':' + reg[i] + '\n';
+			s += 'R' + i + ':' + toHex4(reg[i]) + ' (' + reg[i] + ')\n';
 		for(var i = 0; i < debugVar.length; i++){
 			d += debugVar[i].variable + '\t';
 			d += toHex4(debugVar[i].adress) + '   ';

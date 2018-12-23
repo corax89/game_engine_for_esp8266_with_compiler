@@ -1,5 +1,10 @@
 "use strict";
+
+var mousedown;
+
 function SpriteEditor(){
+	var data = [];
+	var isRLE = false;
 	var palette = [
 		  "#000000", "#ffffff", "#880000", "#aaffee",
 		  "#cc44cc", "#00cc55", "#0000aa", "#eeee77",
@@ -11,6 +16,11 @@ function SpriteEditor(){
 	var sprite = [];
 	var pixelarea = document.getElementById("pixelearea");
 	var pixelareactx = pixelarea.getContext('2d');
+	
+	function setRle(b){
+		isRLE = b;
+		updateText();
+	}
 	
 	function init(){
 		pixelareactx.fillStyle = "#000000";
@@ -26,7 +36,24 @@ function SpriteEditor(){
 			}
 		}
 		pixelareactx.fillStyle = "#000000";
+		pixelarea.addEventListener('mousedown', function (e) {
+			mousedown = 1;
+			setPixel(e);
+		});
 		pixelarea.addEventListener('mouseup', function (e) {
+			mousedown = 0;
+		});
+		pixelarea.addEventListener('mouseout', function (e) {
+			mousedown = 0;
+		});
+		pixelarea.addEventListener('mousemove', function (e) {
+			setPixel(e);
+		});
+	}
+	
+	function setPixel(e){
+		if(mousedown){
+			data = [];
 			var rect = pixelarea.getBoundingClientRect();
 			var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/16));
 			var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/17));
@@ -51,25 +78,125 @@ function SpriteEditor(){
 					}
 				}
 			}
-			var spr = '{';
 			for(i = 0; i <= spriteheight; i++)
 				for(j = 0; j <= spritewidth; j++){
-						spr +='0x' + (sprite[j][i] & 0xf).toString(16);
-						j++;
-						spr +=(sprite[j][i] & 0xf).toString(16) + ',';
+						data.push(((sprite[j][i] & 0xf) << 4) + (sprite[++j][i] & 0xf));					
 				}
-			spr += '0x00};';
+			updateText();
 			spriteheight++;
 			spritewidth++;
-			document.getElementById("spriteArea").value = spr;
 			document.getElementById("spriteInfo").innerHTML = spritewidth + 'x' + spriteheight;
-		});
+		}
+	}
+	
+	function updateText(){
+		var i;
+		var datarle = [];
+		var spr = '{';
+		if(isRLE){
+			if( data.length > 1)
+				datarle = RLE(data);
+			else
+				datarle = [0x82, 0 + data[0]];
+			for(i = 0; i < datarle.length; i++)
+				spr +='0x' + datarle[i].toString(16) + ',';
+			spr += '0x00};';
+			document.getElementById("checkRleLabel").innerHTML = 'RLE ' + Math.floor(100 * datarle.length / data.length) + '%';
+		}
+		else{
+			for(i = 0; i < data.length; i++)
+				spr +='0x' + data[i].toString(16) + ',';
+			spr += '0x00};';
+			document.getElementById("checkRleLabel").innerHTML = 'RLE 100%';
+		}
+		document.getElementById("spriteArea").value = spr;
+	}
+	
+/*	function RLE(data){
+		var i = 1;
+		var c = d[0];
+		var l = 1;
+		var out = [];
+		while(i != d.length){
+			if(d[i] == c){
+				l++;
+				if( i == d.length - 1){
+					out.push(l);
+					out.push(c);
+					l = 1;
+					c = d[i];
+				}
+			}
+			else{
+				out.push(l);
+				out.push(c);
+				l = 1;
+				c = d[i];
+			}
+			i++;
+		}
+		return out;
+	}*/
+	
+	function RLE(d){
+		var i = 1;
+		var repeat = false;
+		var pos = 0;
+		var c = d[0];
+		var l = 1;
+		var out = [];
+		if(c == d[1])
+			repeat = true;
+		else{
+			out.push(0x81);
+			out.push(d[0]);
+		}
+		while(i != d.length){
+			if(repeat){
+				if(d[i] == c){
+					l++;
+					if( i == d.length - 1){
+						out.push(l);
+						out.push(c);
+						l = 1;
+						c = d[i];
+					}
+				}
+				else{
+					out.push(l);
+					out.push(c);
+					l = 1;
+					c = d[i];
+					if(c != d[i + 1]){
+						repeat = false;
+						pos = out.length;
+						out.push(0x80);
+						i--;
+						c = d[i];
+					}
+				}
+			}
+			else{
+				if(d[i] == c){
+					repeat = true;
+					i--;
+					out.pop();
+				}
+				else{
+					out[pos]++;
+					out.push(d[i]);
+					c = d[i];
+				}
+			}
+			i++;
+		}
+		return out;
 	}
 	
 	function edit(){
 		var d = document.getElementById("div_wind2");
 		d.style.display = "block";
-		d.style.left = "26em";
+		d.style.left = window.innerWidth/4 + 'px';
 		d.style.top = "3em";
 	}
 
@@ -148,7 +275,7 @@ function SpriteEditor(){
 		var sourceData = pixelareactx.getImageData(0, 0, imageWidth, imageHeight);
 		var data = sourceData.data;
 		// iterate over all pixels
-		var output = "";
+		var output = [];
 		var spr = '{';
 		var x = 0;
 		var y = 0;
@@ -236,6 +363,7 @@ function SpriteEditor(){
 	}
 	
 	return {
+		setRle:setRle,
 		init:init,
 		edit:edit,
 		loadSprite:loadSprite,

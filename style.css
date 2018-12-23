@@ -240,13 +240,28 @@ textarea:focus {
 #pixelearea {
 	image-rendering: pixelated;
 	width: 20em;
+	margin-bottom: -0.8em;
+    margin-left: 0.5em;
+}
+#checkRle{
+	position: relative;
+    top: 0.5em;
+}
+#checkRleLabel{
+	display: inline-block;
+    width: 2em;
+    font-size: 0.9em;
+    position: relative;
+    top: 0.5em;
+	left: -0.4em;
+    width: 1.8em;
 }
 #spriteArea {
 	color: #516399;
 	height: 6.8em;
 	margin-top: 0.2em;
 	resize: none;
-	width: 19.9em;
+	width: 21em;
 }
 .header {
 	border: 1px solid #516399;
