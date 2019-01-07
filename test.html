@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<title>test</title>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#7CCD7C">
+</head>
+<style type='text/css'>
+	#testOut{
+		height: 100%;
+		width: 100%;
+	}
+</style>
+</head>
+
+<body>
+	<div id="testOut"></div>
+	<script type="text/javascript" src="asm.js"></script>
+	<script type="text/javascript" src="cpu.js"></script>
+	<script type="text/javascript" src="compiler.js"></script>
+	<script type="text/javascript">
+	var chars = [];
+	var globalJKey = 0;
+	var globalKey = 0;
+	var debugVar = [];
+	var numberDebugString = [];
+	var d = document.getElementById("testOut");
+	var err = '';
+	
+	function test(src, out){
+		err = '';
+		var t = tokenize(src);
+		var c = compile(t);
+		asmSource = c.join('\n');
+		asm(asmSource);
+		chars = [];
+		for(var i=0;i<100000;i++)
+			cpu.step();
+		d.innerHTML += "<br><b>" + out + "</b> - <b>" + chars + "</b> - ";
+		if(out == chars)
+			d.innerHTML += "true";
+		else
+			d.innerHTML += "false " + err;
+	} 
+	
+	function info(s){
+		console.log(s);
+		err += s;
+	}
+	
+	function Display() {
+		function init() {}
+		function reset() {}
+		function char(c,x,y,color,bgcolor){
+			chars += c;
+		}
+		function updatePixel(x,y) {}
+		function drawPixel(color, x, y) {}
+		function plot(color, x, y) {}
+		return {
+		  init: init,
+		  reset: reset,
+		  char:char,
+		  updatePixel: updatePixel,
+		  drawPixel: drawPixel,
+		  plot:plot
+		};
+	}
+	
+	var display = new Display();
+	d.innerHTML = "";
+	test('putn(42);','42');
+	test('putn(41+3-2);','42');
+	test('printf("%d",41+3-2);','42');
+	test('printf("%d%d",2+2*(4-1)-4,2);','42');
+	test('printf("HELLO %S","WORLD");','HELLO WORLD');
+	test('int x=1;int y=1;int i;int n=15;void main(){for(i=1;i<n;i++){x=x+y;y=x-y;}putn(y);}','610');
+	</script>
+</body>
+
+</html>
