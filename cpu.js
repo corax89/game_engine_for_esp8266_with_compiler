@@ -12,7 +12,11 @@ function Cpu(){
 	var carry = 0;			//флаг переполнения
 	var zero = 0;			//флаг нуля
 	var negative = 0;		//флаг отрицательности
+	var redraw = 0;			//флаг, устанавливаемый после перерисовки
 	var sprites = [];		//массив адресов и координат спрайтов
+	var particles = [];		//массив для частиц
+	var maxParticles = 32;	//максимальное количество частиц
+	var emitter = [];		//настройки для частиц
 	var bgcolor = 0;		//фоновый цвет
 	var color = 1;			//цвет рисования
 	var charArray = [];		//массив символов, выводимых на экран
@@ -29,8 +33,13 @@ function Cpu(){
 		regy = 0;
 		imageSize = 1;
 		//задаем начальные координаты спрайтов вне границ экрана
-		for(var i = 0; i < 32; i++)
-			sprites[i]  = {address: 0, x: 255, y: 255};
+		for(var i = 0; i < 32; i++){
+			sprites[i]  = {address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0};	
+		}
+		for(var i = 0; i < maxParticles; i++){
+			particles[i] = {time: 0, x: 0, y: 0, gravity: 0, speedx: 0, speedy: 0, color: 0};
+		}
+		emitter = { time: 0, timer: 0, timeparticle: 0, count: 0, x: 0, y: 0, gravity: 0, speedx: 0, speedy: 0, speedx1: 0, speedy1: 0, color: 0};
 		for(var i = 0; i < 420; i++)
 			charArray[i] = '';
 		for(var i = 0; i < 8; i++)
@@ -57,6 +66,10 @@ function Cpu(){
 	
 	function readMem(adr){
 		return mem[adr & 0xffff];
+	}
+	
+	function setRedraw(){
+		redraw = 1;
 	}
 	
 	function setFlags(n){
@@ -88,25 +101,142 @@ function Cpu(){
 		sprites[n].address = adr;
 	}
 	
+	function scrollScreen(step, direction){
+		var bufPixel;
+		if(direction == 2){
+			for(var y = 0; y < 128; y++){
+				bufPixel = display.getPixel(0, y);
+				for(var x = 1; x < 128; x++)
+					display.plot(display.getPixel(x, y), x - 1, y);
+				display.plot(bufPixel, 127, y);
+			}
+		}
+		else if(direction == 1){
+			for(var x = 0; x < 128; x++){
+				bufPixel = display.getPixel(x, 0);
+				for(var y = 1; y < 128; y++)
+					display.plot(display.getPixel(x, y), x, y - 1);
+				display.plot(bufPixel, x, 127);
+			}
+		}
+		else if(direction == 0){
+			for(var y = 0; y < 128; y++){
+				bufPixel = display.getPixel(127, y);
+				for(var x = 127; x > 0; x--)
+					display.plot(display.getPixel(x - 1, y), x, y);
+				display.plot(bufPixel, 0, y);
+			}
+		}
+		else {
+			for(var x = 0; x < 128; x++){
+				bufPixel = display.getPixel(x, 127);
+				for(var y = 127; y > 0; y--)
+					display.plot(display.getPixel(x, y - 1), x, y);
+				display.plot(bufPixel, x, 0);
+			}
+		}
+	}
+	
 	function drawSprite(n, x1, y1){
-		var color;
-		var adr = sprites[n].address;
-		for(var y = 0; y < 8; y++)
-			for(var x = 0; x < 8; x++)
-				display.updatePixel(sprites[n].x + x, sprites[n].y + y);
 		sprites[n].x = x1;
 		sprites[n].y = y1;
-		for(var y = 0; y < 8; y++)
-			for(var x = 0; x < 8; x++){
-				color = (readMem(adr) & 0xf0) >> 4;
-				if(color > 0)
-					display.drawPixel(color, x1 + x, y1 + y);
-				x++;
-				color = (readMem(adr) & 0xf);
-				if(color > 0)
-					display.drawPixel(color, x1 + x, y1 + y);
-				adr++;
+	}
+
+	function setParticle(gravity, count, time){
+		emitter.gravity = gravity;
+		emitter.count = count;
+		emitter.timeparticle = time;
+	}
+
+	function setEmitter(time, dir, dir1, speed){
+		emitter.time = time;
+		emitter.speedx = Math.round(speed * Math.cos(dir / 57));
+		emitter.speedy = Math.round(speed * Math.sin(dir / 57));
+		emitter.speedx1 = Math.round(speed * Math.cos(dir1 / 57));
+		emitter.speedy1 = Math.round(speed * Math.sin(dir1 / 57));
+	}
+	
+	function drawParticle(x, y, color){
+		emitter.x = x;
+		emitter.y = y;
+		emitter.color = color;
+		emitter.timer = emitter.time;
+	}
+	
+	function randomD(a, b) {
+		var min = Math.min(a, b);
+		var max = Math.max(a, b);
+		var rand = min - 0.5 + Math.random() * (max - min + 1)
+		rand = Math.round(rand);
+		return rand;
+	  }
+	
+	function redrawParticle(){
+		var n, i;
+		if(emitter.timer > 0){
+			emitter.timer -= 50;
+			i = emitter.count;
+			for(var n = 0; n < maxParticles; n++){
+				if(i == 0)
+					break;
+				if(particles[n].time <= 0){
+					i--;
+					particles[n].time = emitter.timeparticle;
+					particles[n].x = emitter.x;
+					particles[n].y = emitter.y;
+					particles[n].color = emitter.color;
+					particles[n].speedx = randomD(emitter.speedx, emitter.speedx1);
+					particles[n].speedy = randomD(emitter.speedy, emitter.speedy1);
+					particles[n].gravity = emitter.gravity;
+				}
 			}
+		}
+		for(n = 0; n < maxParticles; n++)
+			if(particles[n].time > 0){
+				display.drawSpritePixel(particles[n].color, particles[n].x, particles[n].y);
+				particles[n].time -= 50;		
+				if(randomD(0,1) == 1){
+					particles[n].x += particles[n].speedx;
+					particles[n].speedy += particles[n].gravity;
+					particles[n].y += particles[n].speedy;					
+				}
+				else{
+					particles[n].x += Math.floor(particles[n].speedx/2);
+					particles[n].y += Math.floor(particles[n].speedy/2);
+				}
+				if(particles[n].x < 0 || particles[n].x > 128 || particles[n].y < 0 || particles[n].y > 128)
+					particles[n].time = 0;
+			}
+	}
+	
+	function drawRotateSprPixel(color, x1, y1, x, y, a){
+		var nx = x * Math.cos(a) - y * Math.sin(a);
+		var ny = y * Math.cos(a) + x * Math.sin(a);
+		display.drawSpritePixel(color, x1 + Math.floor(nx), y1 + Math.floor(ny));
+	}
+	
+	function redrawSprite(){
+		var color, n, i;
+		for(n = 0; n < 32; n++){
+			var adr = sprites[n].address;
+			sprites[n].x += sprites[n].speedx;
+			sprites[n].y += sprites[n].speedy;
+			var x1 = sprites[n].x;
+			var y1 = sprites[n].y;
+			for(var y = 0; y < sprites[n].height; y++)
+				for(var x = 0; x < sprites[n].width; x++){
+					color = (readMem(adr) & 0xf0) >> 4;
+					if(color > 0)
+						//display.drawSpritePixel(color, x1 + x, y1 + y);
+						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].angle / 57);
+					x++;
+					color = (readMem(adr) & 0xf);
+					if(color > 0)
+						//display.drawSpritePixel(color, x1 + x, y1 + y);
+						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].angle / 57);
+					adr++;
+				}
+		}	
 	}
 	
 	function drawImage(adr, x1, y1, w, h){
@@ -795,6 +925,10 @@ function Cpu(){
 						}
 						else if(reg2 == 5)
 							reg[reg1] = 1 - zero;
+						else if(reg2 == 6){
+							reg[reg1] = redraw;
+							redraw = 0;
+						}
 						else
 							reg[reg1] = 0;
 						break;
@@ -805,7 +939,7 @@ function Cpu(){
 					case 0xD0:
 						//CLS		D000
 						display.reset();
-						pc--;
+						//pc--;
 						break;
 					case 0xD1:
 						switch(op2 & 0xf0){
@@ -932,6 +1066,70 @@ function Cpu(){
 						reg2 = op2 & 0xf;//адрес спрайта
 						setSprite(reg[reg1] & 0x1f, reg[reg2]);
 						break;
+					case 0xD6:
+						// SPALET R,R		D6 RR
+						reg1 = (op2 & 0xf0) >> 4;//номер цвета
+						reg2 = op2 & 0xf;//новый цвет
+						display.changePalette(reg[reg1], reg[reg2]);
+						break;
+					case 0xD7:
+						reg1 = op2 & 0xf;
+						reg2 = reg[reg1];
+						if((op2 & 0xf0) == 0)
+							// SPART R 		D7 0R
+							//регистр указывает на участок памяти, в котором расположены последовательно count, time, gravity
+							setParticle(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						else if((op2 & 0xf0) == 0x10)
+							//регистр указывает на участок памяти, в котором расположены последовательно speed, direction2, direction1, time
+							setEmitter(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						else if((op2 & 0xf0) == 0x20)
+							//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
+							drawParticle(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						break;
+					case 0xD8:
+						// SCROLL R,R		D8RR
+						reg1 = (op2 & 0xf0) >> 4;//шаг
+						reg2 = op2 & 0xf;//направление
+						for(var i = 0; i < reg[reg1] + reg[reg1] % 2; i++)
+							scrollScreen(reg[reg1], reg[reg2]);
+						break;
+					case 0xD9:
+						// GETPIX R,R		D9RR
+						reg1 = (op2 & 0xf0) >> 4;//x
+						reg2 = op2 & 0xf;//y
+						reg[reg1] = display.getPixel(reg[reg1], reg[reg2]);
+						break;
+					case 0xDA:
+						// SPRSPX R,R		DA RR
+						reg1 = (op2 & 0xf0) >> 4;//num
+						reg2 = op2 & 0xf;//speed x
+
+						break;
+					case 0xDB:
+						// SPRSPX R,R		DB RR
+						reg1 = (op2 & 0xf0) >> 4;//num
+						reg2 = op2 & 0xf;//speed y
+
+						break;
+					case 0xDC:
+						// SPRGET R,R		DC RR
+						reg1 = (op2 & 0xf0) >> 4;//num
+						reg2 = op2 & 0xf;//type
+						if(reg[reg2] == 0)
+							reg[reg1] = sprites[reg[reg1] & 31].x;
+						else if(reg[reg2] == 1)
+							reg[reg1] = sprites[reg[reg1] & 31].y;
+						else if(reg[reg2] == 2)
+							reg[reg1] = sprites[reg[reg1] & 31].speedx;
+						else if(reg[reg2] == 3)
+							reg[reg1] = sprites[reg[reg1] & 31].speedy;
+						else if(reg[reg2] == 4)
+							reg[reg1] = sprites[reg[reg1] & 31].width;
+						else if(reg[reg2] == 5)
+							reg[reg1] = sprites[reg[reg1] & 31].height;
+						else if(reg[reg2] == 6)
+							reg[reg1] = sprites[reg[reg1] & 31].angle;
+						break;
 				}
 				break;
 			case 0xE0:
@@ -940,6 +1138,34 @@ function Cpu(){
 				reg2 = (op2 & 0xf0) >> 4;//x
 				reg3 = op2 & 0xf;//y
 				drawSprite(reg[reg1] & 0x1f, reg[reg2], reg[reg3]);
+				break;
+			case 0xF0:
+				// SSPRTV R,R,R	FR RR
+				reg1 = (op1 & 0xf);//номер спрайта
+				reg2 = (op2 & 0xf0) >> 4;//type
+				reg3 = op2 & 0xf;//value
+				if(reg[reg2] == 0)
+					sprites[reg[reg1] & 31].x = reg[reg3];
+				else if(reg[reg2] == 1)
+					sprites[reg[reg1] & 31].y = reg[reg3];
+				else if(reg[reg2] == 2){
+					if(reg[reg3] > 128)
+						sprites[reg[reg1] & 31].speedx = -(256 - (reg[reg3] & 0xff));
+					else
+						sprites[reg[reg1] & 31].speedx = reg[reg3];
+				}
+				else if(reg[reg2] == 3){
+					if(reg[reg3] > 128)
+						sprites[reg[reg1] & 31].speedy = -(256 - (reg[reg3] & 0xff));
+					else
+						sprites[reg[reg1] & 31].speedy = reg[reg3];
+				}
+				else if(reg[reg2] == 4)
+					sprites[reg[reg1] & 31].width = reg[reg3];
+				else if(reg[reg2] == 5)
+					sprites[reg[reg1] & 31].height = reg[reg3];
+				else if(reg[reg2] == 6)
+					sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
 				break;
 		}
 	}
@@ -971,7 +1197,10 @@ function Cpu(){
 		load:load,
 		step:step,
 		debug:debug,
-		readMem:readMem
+		readMem:readMem,
+		setRedraw:setRedraw,
+		redrawSprite:redrawSprite,
+		redrawParticle:redrawParticle
 	};
 }
 

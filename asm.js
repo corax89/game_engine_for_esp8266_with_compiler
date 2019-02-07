@@ -549,8 +549,40 @@ function asm(s) {
 				out.push(0xD5); // LDSPRT R,R		D5RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
+			case 'SPALET':
+				out.push(0xD6); // SPALET R,R		D6RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'SPART':
+				out.push(0xD7); // SPART R 		D7 0R
+				out.push(0x00 + getRegister(a[i + 1]));
+				return;
+			case 'SEMIT':
+				out.push(0xD7); // SEMIT R		D7 1R 
+				out.push(0x10 + getRegister(a[i + 1]));
+				return;
+			case 'DPART':
+				out.push(0xD7); // DPART R 		D7 2R
+				out.push(0x20 + getRegister(a[i + 1]));
+				return;
+			case 'SCROLL':
+				out.push(0xD8); // SCROLL R,R		D8RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'GETPIX':
+				out.push(0xD9); // GETPIX R,R		D9RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'SPRGET':
+				out.push(0xDC); // SPRGET R,X		DC RX
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'DRSPRT':
 				out.push(0xE0 + getRegister(a[i + 1])); // DRSPRT R,R,R	ERRR
+				out.push((getRegister(a[i + 3]) << 4) + (getRegister(a[i + 5])));
+				return;
+			case 'SSPRTV':
+				out.push(0xF0 + getRegister(a[i + 1])); // SSPRTV R,R,R	FRRR
 				out.push((getRegister(a[i + 3]) << 4) + (getRegister(a[i + 5])));
 				return;
 			case 'CALL':
@@ -573,6 +605,10 @@ function asm(s) {
 			case 'GTIMER':
 				out.push(0x52); // GTIMER R		520R
 				out.push(getRegister(a[i + 1]));
+				return;
+			case 'SPALET':
+				out.push(0xF0 + getRegister(a[i + 1])); // SPALET R,R,R	FR RR
+				out.push((getRegister(a[i + 3]) << 4) + (getRegister(a[i + 5])));
 				return;
 			case 'DB':
 				dbparse(a.join(''));

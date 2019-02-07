@@ -245,12 +245,20 @@ function closewindow(id){
 	var d = document.getElementById(id);
 	d.style.display = "none";
 }
-
+/*
 var palette = [
   "#000000", "#ffffff", "#880000", "#aaffee",
   "#cc44cc", "#00cc55", "#0000aa", "#eeee77",
   "#dd8855", "#664400", "#ff7777", "#333333",
   "#777777", "#aaff66", "#0088ff", "#bbbbbb"
+];
+*/
+
+var palette = [
+  "#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
+  "#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
+  "#B48D6C", "#39373F", "#C0624D", "#333333",
+  "#777777", "#8FAB62", "#3ABFD1", "#bbbbbb"
 ];
 
 function viewMemory(){
@@ -299,6 +307,9 @@ function run(){
 //функция вывода на экран
 function Display() {
     var displayArray = [];
+	var spriteArray = [];
+	var canvasArray = [];
+	var canvasArray2 = [];
     var ctx;
     var width;
     var height;
@@ -319,10 +330,19 @@ function Display() {
 		ctx.font=pixelSize*8+"px monospace";
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, width+20, height+20);
-		for(var i = 0; i < 20480; i++)
+		for(var i = 0; i < 20480; i++){
 			displayArray[i] = 0;
+			canvasArray[i] = 0;
+			canvasArray2[i] = 0;
+		}
 		cpuLostCycle += 2000;
     }
+	
+	function clearSprite(){
+		for(var i = 0; i < 20480; i++){
+			spriteArray[i] = 0;
+		}
+	}
 
 	function char(c,x,y,color,bgcolor){
 		cpuLostCycle += 5;
@@ -333,21 +353,26 @@ function Display() {
     }
 	
 	function updatePixel(x,y) {
-		var color = displayArray[x * 128 + y];
-		ctx.fillStyle = palette[color & 0x0f];
-		ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+		canvasArray[x * 128 + y] = displayArray[x * 128 + y];
+		
     }
 	
 	function drawPixel(color, x, y) {
 		cpuLostCycle += 2;
-		ctx.fillStyle = palette[color & 0x0f];
-		ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+		if(x >= 0 && x < 128 && y >= 0 && y < 128)
+			canvasArray[x * 128 + y] = color;
+    }
+	
+	function drawSpritePixel(color, x, y) {
+		if(x >= 0 && x < 128 && y >= 0 && y < 128)
+			spriteArray[x * 128 + y] = color;
     }
 	
 	function plot(color, x, y) {
 		drawPixel(color, x, y);
 		displayArray[x * 128 + y] = color & 0x0f;
     }
+	
 	function largeplot(color, x, y, s) {
 		var x1,y1;
 		for(x1 = 0; x1 < s; x1++)
@@ -356,6 +381,51 @@ function Display() {
 				displayArray[(x + x1) * 128 + y + y1] = color & 0x0f;
 			}
     }
+	
+	function getPixel(x, y){
+		return displayArray[x * 128 + y];
+	}
+	
+	function redraw(){
+		var color, x, y;
+		for(x = 0; x < 128; x++)
+			for(y = 0; y < 128; y++){
+				if(spriteArray[x * 128 + y] > 0){
+					color = spriteArray[x * 128 + y];
+					canvasArray2[x * 128 + y] = color;
+					ctx.fillStyle = palette[color & 0x0f];
+					ctx.fillRect(x * pixelSize, (y + 16) * pixelSize, pixelSize, pixelSize);
+				}
+				else if(canvasArray[x * 128 + y] != canvasArray2[x * 128 + y]){
+					canvasArray2[x * 128 + y] = canvasArray[x * 128 + y];
+					color = canvasArray[x * 128 + y];
+					ctx.fillStyle = palette[color & 0x0f];
+					ctx.fillRect(x * pixelSize, (y + 16) * pixelSize, pixelSize, pixelSize);
+				}
+			}
+	}
+	
+	function rgbToHex(rgb) { 
+	  var hex = Number(rgb).toString(16);
+	  if (hex.length < 2) {
+		   hex = "0" + hex;
+	  }
+	  return hex;
+	}
+	
+	function fullColorHex(r,g,b) {   
+	  var red = rgbToHex(r);
+	  var green = rgbToHex(g);
+	  var blue = rgbToHex(b);
+	  return '#' + red+green+blue;
+	}
+	
+	function changePalette(n, color){
+		var r = ((color >> 11) & 0x1F);
+		var g = ((color >> 5) & 0x3F);
+		var b = (color & 0x1F);
+		palette[n] = fullColorHex(r, g, b);
+	}
 
     return {
       init: init,
@@ -363,13 +433,31 @@ function Display() {
 	  char:char,
 	  updatePixel: updatePixel,
 	  drawPixel: drawPixel,
+	  drawSpritePixel:drawSpritePixel,
 	  plot:plot,
-	  largeplot:largeplot
+	  largeplot:largeplot,
+	  getPixel:getPixel,
+	  redraw:redraw,
+	  changePalette:changePalette,
+	  clearSprite:clearSprite,
     };
 }
+
+function redraw() {
+    setTimeout(function() {
+        requestAnimationFrame(redraw);
+		display.clearSprite();
+		cpu.redrawSprite();
+		cpu.redrawParticle();
+		display.redraw();
+		cpu.setRedraw();
+    }, 50);
+}
+
 
 var display = new Display();
 display.init();
 var spriteEditor = new SpriteEditor();
 spriteEditor.init();
 lineCount();
+redraw();

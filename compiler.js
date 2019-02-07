@@ -5,7 +5,10 @@ function tokenize(s) {
 	var thisToken = 0;
 	var l;
 	var lastDefine;
-
+	var tokenReplace = [
+		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5,
+		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8
+		];
 	//упрощенный вариант #define, лишь замена
 	function define(s) {
 		lastDefine = [''];
@@ -112,8 +115,12 @@ function tokenize(s) {
 				i++;
 				tokens[thisToken] += s[i];
 			}
-			thisToken++;
-			tokens[thisToken] = '';
+			if(!(s[i] == '-' 
+					&& (tokens[thisToken - 1] == '=' || tokens[thisToken - 1] == '(' || tokens[thisToken - 1] == ',' || tokens[thisToken - 1] == '>' || tokens[thisToken - 1] == '<') 
+					&& s[i + 1] >= '0' && s[i + 1] <= '9')){
+				thisToken++;
+				tokens[thisToken] = '';
+			}
 			break;
 		case '\t':
 		case ' ':
@@ -129,6 +136,12 @@ function tokenize(s) {
 			tokens[thisToken] += s[i];
 		}
 	}
+	for(var i = 0; i < tokens.length; i++){
+		var n = tokenReplace.indexOf(tokens[i]);
+		if(n > -1 && n % 2 == 0)
+			tokens[i] = '' + tokenReplace[n + 1];
+	}
+		
 	return tokens;
 }
 
@@ -795,6 +808,8 @@ function compile(t) {
 		} else {
 			getToken();
 			execut();
+			if (getRangOperation(thisToken) > 0)
+				execut();
 			getToken();
 			if (getRangOperation(thisToken) > 0)
 				execut();
@@ -1022,7 +1037,7 @@ function compile(t) {
 			execut();
 		}
 		asm.push(' JMP start_while_' + labe + ' \nend_while_' + labe + ':');
-		removeNewLine();
+		//removeNewLine();
 	}
 
 	function forToken() {
@@ -1109,8 +1124,8 @@ function compile(t) {
 		}
 		asm.push('end_switch_' + labe + ':');
 		switchStack.pop();
-		getToken();
-		removeNewLine();
+		//getToken();
+		//removeNewLine();
 	}
 
 	function caseToken() {
@@ -1306,7 +1321,7 @@ function compile(t) {
 		} else if (isNumber(thisToken)) {
 			thisToken = '' + parseInt(thisToken);
 			//байт код для добавления восьмибитного числа будет короче на два байта, по возможности добавляем его
-			if ((thisToken * 1) < 255)
+			if ((thisToken * 1) < 255 && (thisToken * 1) >= 0)
 				asm.push(' LDC R' + registerCount + ',' + thisToken);
 			else
 				asm.push(' LDI R' + registerCount + ',' + thisToken);
@@ -1388,23 +1403,40 @@ function compile(t) {
 	registerFunction('puts', 'int', ['*char', 'c'], 1, 'PUTS R%1', true, 0);
 	registerFunction('putn', 'int', ['int', 'n'], 1, 'PUTN R%1', true, 0);
 	registerFunction('gettimer', 'int', ['int', 'n'], 1, 'GTIMER R%1', true, 0);
-	registerFunction('settimer', 'void', ['int', 'n', 'int', 't'], 1, 'STIMER R%2,R%1', true, 0);
-	registerFunction('clearscreen', 'void', [], 1, 'CLS', true, 0);
+	registerFunction('settimer', 'void', ['int', 'n', 'int', 'time'], 1, 'STIMER R%2,R%1', true, 0);
+	registerFunction('clearscreen', 'int', [], 1, 'CLS', true, 0);
 	registerFunction('setcolor', 'void', ['int', 'c'], 1, 'SFCLR R%1', true, 0);
+	registerFunction('setpallette', 'void', ['int', 'n', 'int', 'c'], 1, 'SPALET R%2,R%1', true, 0);
 	registerFunction('getchar', 'int', [], 1, 'GETK R%0', true, 0);
 	registerFunction('getkey', 'int', [], 1, 'GETJ R%0', true, 0);
 	registerFunction('putpixel', 'void', ['int', 'x', 'int', 'y'], 1, 'PPIX R%2,R%1', true, 0);
+	registerFunction('getpixel', 'int', ['int', 'x', 'int', 'y'], 1, 'GETPIX R%2,R%1', true, 0);
 	registerFunction('getsprite', 'void', ['int', 'n', 'int', 'a'], 1, 'LDSPRT R%2,R%1', true, 0);
 	registerFunction('putsprite', 'void', ['int', 'n', 'int', 'x', 'int', 'y'], 1, 'DRSPRT R%3,R%2,R%1', true, 0);
+	registerFunction('spritespeedx', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,2 \n SSPRTV R%2,R15,R%1', true, 0);
+	registerFunction('spritespeedy', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,3 \n SSPRTV R%2,R15,R%1', true, 0);
+	registerFunction('spritegetvalue', 'int', ['int', 'n', 'int', 'type'], 1, 'SPRGET R%2,R%1', true, 0);
+	registerFunction('spritesetvalue', 'void', ['int', 'n', 'int', 'type', 'int', 'value'], 1, 'SSPRTV R%3,R%2,R%1', true, 0);
 	registerFunction('setimagesize', 'void', ['int', 's'], 1, 'ISIZE R%1', true, 0);
+	registerFunction('scroll', 'void', ['char', 'step', 'char', 'direction'], 1, 'SCROLL R%2,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
+	registerFunction('delayredraw', 'void', [], 1, '_delayredraw: \n LDF R1,6\n CMP R1,0\n JZ _delayredraw \n RET', false, 0);
 	dataAsm = [];
 	dataAsm.push('_putimage: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWIM R1 \n RET');
 	registerFunction('putimage', 'void', ['int', 'a', 'int', 'x', 'int', 'y', 'int', 'w', 'int', 'h'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_putimagerle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWRLE R1 \n RET');
 	registerFunction('putimagerle', 'void', ['int', 'a', 'int', 'x', 'int', 'y', 'int', 'w', 'int', 'h'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_setparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SPART R1 \n RET');
+	registerFunction('setparticle', 'void', ['int', 'gravity', 'int', 'count', 'int', 'time'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_setemitter: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SEMIT R1 \n RET');
+	registerFunction('setemitter', 'void', ['int', 'time', 'int', 'dir', 'int', 'dir1', 'int', 'speed'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_drawparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DPART R1 \n RET');
+	registerFunction('drawparticle', 'void', ['int', 'x', 'int', 'y', 'int', 'color'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_printf: \n MOV R2,R0 \n ADD R2,R1 \n LDI R2,(R2) \n LDC R3,(R2) \nnext_printf_c:')
 	dataAsm.push(' CMP R3,37 ;% \n JZ printf_get\n PUTC R3\n INC R2 \n LDC R3,(R2) \n JNZ next_printf_c');

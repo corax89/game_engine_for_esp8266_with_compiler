@@ -65,33 +65,6 @@ void main()
 	}
 }		
 
-//------------------------------------------
- int main() {
-    int n, i, j, c, tmp;
-    int a[] ={1,3,4,2,5,7,66,5,8};
-    // считываем количество чисел n
-		n = 9;
-    // формируем массив n чисел
-    
-    for(i = 0 ; i < n - 1; i++) { 
-       // сравниваем два соседних элемента.
-				c = n - i - 1;
-       for(j = 0 ; j < c ; j++) {  
-           if(a[j] > a[j+1]) {           
-              // если они идут в неправильном порядке, то  
-              //  меняем их местами. 
-              tmp = a[j];
-              a[j] = a[j+1] ;
-              a[j+1] = tmp; 
-           }
-        }
-    }
-		for(i = 0 ; i < n; i++) { 
-        putn(a[i]);
-				 putchar(',');
-    }
- }
- 
  //------------------------------------------
 int is_prime(int n) {
     if (n <= 1)
@@ -238,4 +211,43 @@ void main()
 		line(x,y,x1,y1);
 	}
 }	
+
+//speed
+int a;
+int b;
+
+void main(){
+while(1){
+	gotoxy(1,1);
+	printf("press key");
+	while(getkey() == 0){};
+		clearscreen();
+		a = 0;
+		b = 0;
+		settimer(1, 1000);
+		while(gettimer(1) > 0){
+			a++;
+			if(a > 61){
+				a = 0;
+				b++;
+			}
+		}
+		gotoxy(1,2);
+		printf("speed %d kGz", b);
+	}
+}
+//particle
+void main(){
+	while(1){
+		//gravity, time, count
+		setparticle(1, 4, 2000);
+		//time, dir, dir1, speed			
+		setemitter(50, 200, 250, 12);	
+		for(int i =0; i< 60; i++){
+			//x, y, color
+			drawparticle(60 + i, 60, i);
+			delayredraw();
+		}
+	}
+}
 	

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<title>esp8266gameConsole</title>
+<title>esp8266gameEngine</title>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -34,6 +34,7 @@
 				<canvas id="screen" width="256" height="320"></canvas>
 				cpu speed,Hz
 				<select id="cpuSpeed" name="cpuSpeed" onchange="cpuSpeed=this.value">
+					<option value="8000">500 000</option>
 					<option value="3200">200 000</option>
 					<option selected value="1600">100 000</option>
 					<option value="800">50 000</option>
@@ -73,7 +74,7 @@ void main()
 while(1){
 clearscreen();
 x = 60;
-y = 150;
+y = 118;
 play = 1;
 getsprite(16,shatle);
 for (j = 0; j < 16; j++)
@@ -97,10 +98,10 @@ while(play){
 	for (j = 0; j < 16; j++){
 		getsprite(j,cadrs[random(1)]);
 		sprites[j] = sprites[j] + random(2);
-		if(sprites[j] > 144){
+		if(sprites[j] > 112){
 			if(((sprites[j + 16] + 8) > x) & (sprites[j + 16] < (x + 8)))
 				play = 0;
-		if(sprites[j] > 152){
+		if(sprites[j] > 120){
 				sprites[j + 16] = random(120);
 				sprites[j] = 0;
 				}
@@ -113,7 +114,7 @@ while(play){
 	if((key == 8) & (x < 119)){
 		x++;x++;}
 	putsprite(16, x, y);
-}
+};
 putimage(game, 50, 70, 16, 5);
 putimage(over, 70, 70, 14, 5);
 while(getkey() == 0){};
@@ -181,30 +182,40 @@ while(getkey() == 0){};
             </div>
         </div>
         <div class="content_wind">
-<pre style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;'><span style='color:#0070de; font-weight:bold; '>char</span> <span style='color:#003060; '>putchar</span><span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>char</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> <span style='color:#003060; '>puts</span><span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>char</span><span style='color:#308080; '>[</span><span style='color:#308080; '>]</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> putn<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> <span style='color:#003060; '>printf</span><span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>char</span><span style='color:#308080; '>[</span><span style='color:#308080; '>]</span><span style='color:#308080; '>,</span> arg<span style='color:#308080; '>-</span>list<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> random<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> <span style='color:#003060; '>getchar</span><span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> getkey<span style='color:#308080; '>(</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>int</span> gettimer<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> settimer<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> clearscreen<span style='color:#308080; '>(</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> setcolor<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> putpixel<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> getsprite<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> n<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> address<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> putsprite<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> n<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> setimagesize<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> gotoxy<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> line<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> x1<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> y1<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> putimage<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> address<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span>
- <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> w<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> h<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> putimagerle<span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span> address<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> x<span style='color:#308080; '>,</span>
- <span style='color:#0070de; font-weight:bold; '>int</span> y<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> w<span style='color:#308080; '>,</span> <span style='color:#0070de; font-weight:bold; '>int</span> h<span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#308080; '>*</span><span style='color:#0070de; font-weight:bold; '>int</span> <span style='color:#003060; '>malloc</span><span style='color:#308080; '>(</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-<span style='color:#0070de; font-weight:bold; '>void</span> <span style='color:#003060; '>free</span><span style='color:#308080; '>(</span><span style='color:#308080; '>*</span><span style='color:#0070de; font-weight:bold; '>int</span><span style='color:#308080; '>)</span><span style='color:#406080; '>;</span>
-</pre>
+<pre style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;height: 31em;overflow: auto;'>
+<code class="hljs"><span><span class="kwrd">char</span> <span>putchar</span><span class="hljs-params">(<span class="kwrd">char</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>puts</span><span class="hljs-params">(<span class="kwrd">char</span>[])</span></span>;
+<span><span class="kwrd">int</span> <span>putn</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>printf</span><span class="hljs-params">(<span class="kwrd">char</span>[], arg-<span class="hljs-built_in">list</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>random</span><span class="hljs-params">(<span class="kwrd">int</span> max)</span></span>;
+<span><span class="kwrd">int</span> <span>getchar</span><span class="hljs-params">()</span></span>;
+<span><span class="kwrd">int</span> <span>getkey</span><span class="hljs-params">()</span></span>;
+<span class="C">/*key is KEY_UP, KEY_LEFT,
+ KEY_DOWN, KEY_RIGHT*/</span>
+<span><span class="kwrd">int</span> <span>getpixel</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">int</span> <span>spritegetvalue</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type)</span></span>;
+<span class="C">/*type is S_X, S_Y, S_SPEEDX,
+ S_SPEEDY, S_WIDTH, S_HEIGHT*/</span>
+<span><span class="kwrd">int</span> <span>gettimer</span><span class="hljs-params">(<span class="kwrd">int</span> n)</span></span>;
+<span><span class="kwrd">void</span> <span>settimer</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> time)</span></span>;
+<span><span class="kwrd">void</span> <span>delayredraw</span><span class="hljs-params">()</span></span>;
+<span><span class="kwrd">void</span> <span>clearscreen</span><span class="hljs-params">()</span></span>;
+<span><span class="kwrd">void</span> <span>setcolor</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">void</span> <span>scroll</span><span class="hljs-params">(<span class="kwrd">int</span> step, <span class="kwrd">int</span> dir)</span></span>;
+<span><span class="kwrd">void</span> <span>putpixel</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>getsprite</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> address)</span></span>;
+<span><span class="kwrd">void</span> <span>putsprite</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>spritesetvalue</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type,
+ <span class="kwrd">int</span> value)</span></span>;
+<span><span class="kwrd">void</span> <span>setimagesize</span><span class="hljs-params">(<span class="kwrd">int</span> size)</span></span>;
+<span><span class="kwrd">void</span> <span>gotoxy</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>line</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y, <span class="kwrd">int</span> x1, <span class="kwrd">int</span> y1)</span></span>;
+<span><span class="kwrd">void</span> <span>putimage</span><span class="hljs-params">(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
+ <span class="kwrd">int</span> y, <span class="kwrd">int</span> w, <span class="kwrd">int</span> h)</span></span>;
+<span><span class="kwrd">void</span> <span>putimagerle</span><span class="hljs-params">(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
+ <span class="kwrd">int</span> y, <span class="kwrd">int</span> w, <span class="kwrd">int</span> h)</span></span>;
+*<span><span class="kwrd">int</span> <span>malloc</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">void</span> <span>free</span><span class="hljs-params">(*<span class="kwrd">int</span>)</span></span>;</code></pre>
         </div>
     </div>
 	<script type="text/javascript" src="asm.js"></script>
