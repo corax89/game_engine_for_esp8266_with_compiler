@@ -13,10 +13,11 @@ for (x = 0; x < 8; x++){
 for (j = 0; j < 32; j++){
 	getsprite(j,s0);
 	putsprite(j, random(120), random(120));
-	spritespeedx(j, 2);
+	spritespeedx(j, -4);
 	spritespeedy(j, 2);
 	spritesetvalue(j,4,16);
 	spritesetvalue(j,5,16);
+	spritesetvalue(j,9,1);
 }
 //gravity, time, count
 setparticle(1, 4, 2000);
@@ -30,9 +31,9 @@ while(1){
 	for (j = 0; j < 32; j++){
 		spritesetvalue(j,6,a);
 		if(spritegetvalue(j, 0) < 2){
-			spritespeedx(j, 2);}
+			spritespeedx(j, 4);}
 		if(spritegetvalue(j, 0) >118){
-			spritespeedx(j, 0-2);}
+			spritespeedx(j, -4);}
 		if(spritegetvalue(j, 1) < 2){
 			spritespeedy(j, 2);}
 		if(spritegetvalue(j, 1) > 118){

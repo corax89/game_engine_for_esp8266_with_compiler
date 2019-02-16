@@ -122,11 +122,12 @@ function asm(s) {
 
 	function dbparse(s) {
 		var buffer = '';
+		var c;
 		for (var i = 2; i < s.length; i++) {
 			switch (s[i]) {
 			case ',':
 				if (buffer.length > 0)
-					out.push(strToNum(buffer));
+					pushChar(buffer);
 				buffer = '';
 				break;
 			case '\'':
@@ -142,7 +143,11 @@ function asm(s) {
 				i++;
 				for (i; i < s.length; i++) {
 					if (s[i] != '"') {
-						out.push(s.charCodeAt(i));
+						c = s.charCodeAt(i);
+						if(c > 127)
+							c = c - 848;
+						if(c < 255)
+							out.push(c);
 					} else
 						break;
 				}
@@ -154,7 +159,7 @@ function asm(s) {
 			}
 		}
 		if (buffer != '') {
-			out.push(strToNum(buffer));
+			pushChar(buffer);
 		}
 	}
 
@@ -165,9 +170,7 @@ function asm(s) {
 			switch (s[i]) {
 			case ',':
 				if (buffer.length > 0) {
-					n = strToNum(buffer);
-					out.push(0xff & n);
-					out.push((0xff00 & n) >> 8);
+					pushInt(buffer);
 				}
 				buffer = '';
 				break;
@@ -200,9 +203,7 @@ function asm(s) {
 			}
 		}
 		if (buffer != '') {
-			n = strToNum(buffer);
-			out.push(0xff & n);
-			out.push((0xff00 & n) >> 8);
+			pushInt(buffer);
 		}
 	}
 
@@ -544,6 +545,14 @@ function asm(s) {
 			case 'DRWRLE':
 				out.push(0xD4); // DRWRLE R		D47R
 				out.push(0x70 + getRegister(a[i + 1]));
+				return;
+			case 'LDTILE':
+				out.push(0xD4); // LDTILE R		D4 8R
+				out.push(0x80 + getRegister(a[i + 1]));
+				return;
+			case 'DRTILE':
+				out.push(0xDA); // DRTILE R		DA RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
 			case 'LDSPRT':
 				out.push(0xD5); // LDSPRT R,R		D5RR

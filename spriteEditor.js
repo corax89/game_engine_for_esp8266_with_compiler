@@ -16,6 +16,50 @@ function SpriteEditor(){
 	var sprite = [];
 	var pixelarea = document.getElementById("pixelearea");
 	var pixelareactx = pixelarea.getContext('2d');
+	var lastx = 0, lasty = 0;
+	
+	function scroll(direction){
+		var bufPixel;
+		data = [];
+		if(direction == 2){
+			for(var y = 0; y < 16; y++){
+				bufPixel = sprite[0][ y];
+				for(var x = 1; x < 16; x++)
+					sprite[x - 1][ y] = sprite[x][ y];
+				sprite[15][ y] = bufPixel;
+			}
+		}
+		else if(direction == 1){
+			for(var x = 0; x < 16; x++){
+				bufPixel = sprite[x][ 0];
+				for(var y = 1; y < 16; y++)
+					sprite[x][ y - 1] = sprite[x][ y];
+				sprite[x][ 15] = bufPixel;
+			}
+		}
+		else if(direction == 0){
+			for(var y = 0; y < 16; y++){
+				bufPixel = sprite[15][ y];
+				for(var x = 15; x > 0; x--)
+					sprite[x][ y] = sprite[x - 1][ y];
+				sprite[0][ y] = bufPixel;
+			}
+		}
+		else {
+			for(var x = 0; x < 16; x++){
+				bufPixel = sprite[x][ 15];
+				for(var y = 15; y > 0; y--)
+					sprite[x][ y] = sprite[x][ y - 1];
+				sprite[x][ 0] = bufPixel;
+			}
+		}
+		for(var i = 0; i <= 15; i++)
+			for(var j = 0; j <= 15; j++){
+				pixelareactx.fillStyle = palette[sprite[i][j]];
+				pixelareactx.fillRect(i, j, 1, 1);					
+			}
+		updateText();
+	}
 	
 	function setRle(b){
 		isRLE = b;
@@ -52,11 +96,11 @@ function SpriteEditor(){
 	}
 	
 	function setPixel(e){
+		var rect = pixelarea.getBoundingClientRect();
+		var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/16));
+		var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/17));
 		if(mousedown){
 			data = [];
-			var rect = pixelarea.getBoundingClientRect();
-			var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/16));
-			var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/17));
 			if(y == 16){
 				thiscolor = x;
 				pixelareactx.fillStyle = palette[x];
@@ -87,6 +131,20 @@ function SpriteEditor(){
 			spritewidth++;
 			document.getElementById("spriteInfo").innerHTML = spritewidth + 'x' + spriteheight;
 		}
+		if(x >=0 && x < 16 && y >=0 && y < 16){	
+			if(x != lastx || y != lasty){
+				pixelareactx.fillStyle = palette[sprite[lastx][lasty]];
+				pixelareactx.fillRect(lastx, lasty, 1, 1);
+				lastx = x;
+				lasty = y;
+				pixelareactx.fillStyle = 'rgba(255,105,180,0.5)';
+				pixelareactx.fillRect(x, y, 1, 1);
+			}
+		}
+		else{
+			pixelareactx.fillStyle = palette[sprite[lastx][lasty]];
+			pixelareactx.fillRect(lastx, lasty, 1, 1);
+		}
 	}
 	
 	function updateText(){
@@ -100,43 +158,19 @@ function SpriteEditor(){
 				datarle = [0x82, 0 + data[0]];
 			for(i = 0; i < datarle.length; i++)
 				spr +='0x' + datarle[i].toString(16) + ',';
-			spr += '0x00};';
+			spr = spr.substring(0, spr.length - 1)
+			spr += '};';
 			document.getElementById("checkRleLabel").innerHTML = 'RLE ' + Math.floor(100 * datarle.length / data.length) + '%';
 		}
 		else{
 			for(i = 0; i < data.length; i++)
 				spr +='0x' + data[i].toString(16) + ',';
-			spr += '0x00};';
+			spr = spr.substring(0, spr.length - 1)
+			spr += '};';
 			document.getElementById("checkRleLabel").innerHTML = 'RLE 100%';
 		}
 		document.getElementById("spriteArea").value = spr;
 	}
-	
-/*	function RLE(data){
-		var i = 1;
-		var c = d[0];
-		var l = 1;
-		var out = [];
-		while(i != d.length){
-			if(d[i] == c){
-				l++;
-				if( i == d.length - 1){
-					out.push(l);
-					out.push(c);
-					l = 1;
-					c = d[i];
-				}
-			}
-			else{
-				out.push(l);
-				out.push(c);
-				l = 1;
-				c = d[i];
-			}
-			i++;
-		}
-		return out;
-	}*/
 	
 	function RLE(d){
 		var i = 1;
@@ -214,7 +248,6 @@ function SpriteEditor(){
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
 		  var reader = new FileReader();
-			// TODO: tidy up. use Image.onload instead of timeout assumption.
 			reader.onload = function (event) {
 			  img.src = event.target.result;
 			  setTimeout(processImage, 500);
@@ -368,6 +401,7 @@ function SpriteEditor(){
 		edit:edit,
 		loadSprite:loadSprite,
 		clear:clear,
-		selectAll:selectAll
+		selectAll:selectAll,
+		scroll:scroll
 	};
 }

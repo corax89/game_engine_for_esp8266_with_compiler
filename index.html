@@ -11,9 +11,7 @@
 	<div id="menu">
 		<button onclick="onlyAsm();">asm</button>
 		<button onclick="main();">compile</button>
-		<button onclick="cpu.step();document.getElementById('debug').value = cpu.debug();clearTimeout(timerId);">step</button>
-		<button onclick="run()">run</button>
-		<button onclick="clearTimeout(timerId);document.getElementById('debug').value = cpu.debug();">stop</button>
+		<button onclick="savebin();">save</button>
 		<button onclick="spriteEditor.edit()">sprite</button>
 		<button onclick="listing();">listing</button>
 		<button onclick="debugVars();">debug</button>
@@ -32,6 +30,10 @@
 					<textarea id="areaMemoryPrewiew" disabled="disabled"></textarea>
 				</div>
 				<canvas id="screen" width="256" height="320"></canvas>
+				<button onclick="cpu.step();document.getElementById('debug').value = cpu.debug();clearTimeout(timerId);">step</button>
+				<button onclick="run()">run</button>
+				<button onclick="clearTimeout(timerId);document.getElementById('debug').value = cpu.debug();">stop</button>
+				<br>
 				cpu speed,Hz
 				<select id="cpuSpeed" name="cpuSpeed" onchange="cpuSpeed=this.value">
 					<option value="8000">500 000</option>
@@ -130,8 +132,8 @@ while(getkey() == 0){};
 	<div class="header">information</div>
 	<div id="alert"></div>
 	<br>
-	<div class="header">console input</div>
-	<div id="consoleInput" onkeypress="if(event.keyCode == 13)sendToConsole();">
+	<div class="header" style="display:none">console input</div>
+	<div id="consoleInput" style="display:none" onkeypress="if(event.keyCode == 13)sendToConsole();">
 		<input id="textForConsole">
 		<button onclick="sendToConsole();">send</button>
 	</div>
@@ -154,14 +156,16 @@ while(getkey() == 0){};
         <div class="content_wind">
            <div id="spriteEditior">
 			<canvas id="pixelearea" width="16" height="17" ondrop="pAreaOnDrop(event)" ondragover="pAreaAllowDrop(event)"></canvas>	
-			<button onclick="spriteEditor.clear();">clear</button>
-			<button onclick="spriteEditor.selectAll();">select</button>
-			<button onclick="spriteEditor.loadSprite();">load</button>
+			<button onclick="spriteEditor.clear();">cls</button>
+			<button onclick = "spriteEditor.scroll(0);" style = "width: 1.8em;">&#8594</button>
+			<button onclick = "spriteEditor.scroll(1);" style = "width: 1.8em;">&#8593</button> 
+			<button onclick = "spriteEditor.scroll(2);" style = "width: 1.8em;">&#8592</button>
+			<button onclick = "spriteEditor.scroll(3);" style = "width: 1.8em;">&#8595</button>
 			<input type="checkbox" id="checkRle" onclick="spriteEditor.setRle(this.checked)">
 			<label for="checkRle" id="checkRleLabel">RLE 100%</label>
 			<b id="selectColor">[]</b>
 			<b id="spriteInfo"></b>
-			<textarea id="spriteArea">{0,0,0}</textarea>
+			<textarea id="spriteArea" onclick = "spriteEditor.selectAll();">{0,0,0}</textarea>
 		</div>
         </div>
     </div>
@@ -218,10 +222,12 @@ while(getkey() == 0){};
 <span><span class="kwrd">void</span> <span>free</span><span class="hljs-params">(*<span class="kwrd">int</span>)</span></span>;</code></pre>
         </div>
     </div>
+	<script type="text/javascript" src="FileSaver.js"></script>
 	<script type="text/javascript" src="asm.js"></script>
 	<script type="text/javascript" src="cpu.js"></script>
 	<script type="text/javascript" src="spriteEditor.js"></script>
 	<script type="text/javascript" src="compiler.js"></script>
+	<script type="text/javascript" src="font.js"></script>
 	<script type="text/javascript" src="ui.js"></script>
 </body>
 </html>

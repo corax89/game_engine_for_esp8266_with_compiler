@@ -19,6 +19,8 @@ var obj_wind;				//переменные, используемые для пер�
 var obj_drag_wind;
 var delta_x = 0;
 var delta_y = 0;
+var file = '';
+var isDebug = false;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -83,29 +85,49 @@ function keyDownHandler(e) {
 	switch(e.keyCode){
 		case 38: 
 		case 87:
-			globalJKey = 1;
+			globalJKey |= 1;
 			break;
 		case 40:
 		case 83:
-			globalJKey = 2;
+			globalJKey |= 2;
 			break;
 		case 37:
 		case 65:
-			globalJKey = 4;
+			globalJKey |= 4;
 			break;
 		case 39:
 		case 68:
-			globalJKey = 8;
+			globalJKey |= 8;
 			break;
 		case 32: //A - space
-			globalJKey = 32;
+			globalJKey |= 32;
 			break;
 	}
 	globalKey = e.keyCode;
 }
 
 function keyUpHandler(e) {
-	globalJKey=0;
+	switch(e.keyCode){
+		case 38: 
+		case 87:
+			globalJKey &= ~1;
+			break;
+		case 40:
+		case 83:
+			globalJKey &= ~2;
+			break;
+		case 37:
+		case 65:
+			globalJKey &= ~4;
+			break;
+		case 39:
+		case 68:
+			globalJKey &= ~8;
+			break;
+		case 32: //A - space
+			globalJKey &= ~32;
+			break;
+	}
 }
 
 function highlite(code){
@@ -142,7 +164,8 @@ function onlyAsm(){
 	numberDebugString = [];
 	for(var i = 0; i < n; i++)
 		numberDebugString.push([i, i, 0]);
-	document.getElementById('ram').value = toHexA(asm(s));
+	file = asm(s);
+	document.getElementById('ram').value = toHexA(file);
 }
 //компиляция си кода из поля ввода
 function main(){
@@ -152,8 +175,9 @@ function main(){
 	console.log(t);
 	var c = compile(t);
 	asmSource = '\n' + c.join('\n') + '\n';
+	file = asm(asmSource);
 	document.getElementById('disasm').innerHTML = highlite(asmSource);
-	document.getElementById('ram').value = toHexA(asm(asmSource));
+	document.getElementById('ram').value = toHexA(file);
 }
 //вывод информации о ходе сборки
 function info(s){
@@ -232,6 +256,7 @@ function debugVars(){
 	d.style.display = "block";
 	d.style.left = window.innerWidth/4*2 + 'px';
 	d.style.top = "3em";
+	isDebug = true;
 }
 
 function viewHelp(){
@@ -243,6 +268,8 @@ function viewHelp(){
 
 function closewindow(id){
 	var d = document.getElementById(id);
+	if(id == "div_wind3")
+		isDebug = false;
 	d.style.display = "none";
 }
 /*
@@ -315,6 +342,7 @@ function Display() {
     var height;
     var pixelSize = 2;
 	var canvas = document.getElementById("screen");
+	var isDebug = false;
 
     function init() {
 		width = canvas.getBoundingClientRect().width;
@@ -344,13 +372,29 @@ function Display() {
 		}
 	}
 
-	function char(c,x,y,color,bgcolor){
-		cpuLostCycle += 5;
-        ctx.fillStyle = palette[bgcolor];//"black";
-        ctx.fillRect(x*pixelSize, y*pixelSize, pixelSize*6, pixelSize*8);
-        ctx.fillStyle = palette[color];//"green";
-        ctx.fillText(c,x*pixelSize, y*pixelSize);
+	function char(chr, x, y, color, bgcolor){
+		var c = chr.charCodeAt(0);
+		for(var i=0; i<5; i++ ) { // Char bitmap = 5 columns
+			var line = font[c * 5 + i];
+			for(var j=0; j<8; j++, line >>= 1) {
+				if(line & 1)
+					drawPixel(color, x+i, y+j);
+				else
+					drawPixel(bgcolor, x+i, y+j);
+			}
+		}
     }
+	
+	function drawTestRect(x,y,w,h,c){
+		if(c == 0)
+			ctx.strokeStyle = "pink";
+		else
+			ctx.strokeStyle = "red";
+		ctx.beginPath();
+		ctx.rect(x * pixelSize, (y + 16) * pixelSize, w * pixelSize, h * pixelSize);
+		ctx.stroke();
+		isDebug = true;
+	}
 	
 	function updatePixel(x,y) {
 		canvasArray[x * 128 + y] = displayArray[x * 128 + y];
@@ -396,13 +440,14 @@ function Display() {
 					ctx.fillStyle = palette[color & 0x0f];
 					ctx.fillRect(x * pixelSize, (y + 16) * pixelSize, pixelSize, pixelSize);
 				}
-				else if(canvasArray[x * 128 + y] != canvasArray2[x * 128 + y]){
+				else if(canvasArray[x * 128 + y] != canvasArray2[x * 128 + y] || isDebug){
 					canvasArray2[x * 128 + y] = canvasArray[x * 128 + y];
 					color = canvasArray[x * 128 + y];
 					ctx.fillStyle = palette[color & 0x0f];
 					ctx.fillRect(x * pixelSize, (y + 16) * pixelSize, pixelSize, pixelSize);
 				}
 			}
+		isDebug = false;
 	}
 	
 	function rgbToHex(rgb) { 
@@ -440,6 +485,7 @@ function Display() {
 	  redraw:redraw,
 	  changePalette:changePalette,
 	  clearSprite:clearSprite,
+	  drawTestRect:drawTestRect
     };
 }
 
@@ -450,10 +496,22 @@ function redraw() {
 		cpu.redrawSprite();
 		cpu.redrawParticle();
 		display.redraw();
+		cpu.testSpriteCollision(isDebug);
 		cpu.setRedraw();
     }, 50);
 }
 
+function savebin(){
+	var newByteArr=[];
+	if(file.length>1){
+		for(var i=0;i<file.length;i++){
+			newByteArr.push(file[i] & 0xFF);
+		}
+		var newFile=new Uint8Array(newByteArr);
+		var blob = new Blob([newFile], {type: "charset=iso-8859-1"});
+		saveAs(blob, "rom.bin");
+	}
+}
 
 var display = new Display();
 display.init();

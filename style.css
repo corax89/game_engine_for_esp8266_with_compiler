@@ -128,7 +128,7 @@ textarea:focus {
 }
 #debug {
 	font-size: 83%;
-	height: 24em;
+	height: 22em;
 	border: none;
 	overflow: hidden;
 	resize: none;
@@ -295,7 +295,7 @@ textarea:focus {
 }
 @media screen and (max-width: 60em) {
 	#menu {
-		height: 6em;
+		height: 4em;
 		width: 100%;
 	}
 	#container {

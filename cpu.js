@@ -17,6 +17,7 @@ function Cpu(){
 	var particles = [];		//массив для частиц
 	var maxParticles = 32;	//максимальное количество частиц
 	var emitter = [];		//настройки для частиц
+	var tile = [];			//настройки для отрисовки тайлов
 	var bgcolor = 0;		//фоновый цвет
 	var color = 1;			//цвет рисования
 	var charArray = [];		//массив символов, выводимых на экран
@@ -34,12 +35,13 @@ function Cpu(){
 		imageSize = 1;
 		//задаем начальные координаты спрайтов вне границ экрана
 		for(var i = 0; i < 32; i++){
-			sprites[i]  = {address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0};	
+			sprites[i]  = {address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, lives: 0, collision: -1, solid: 0, gravity: 0};	
 		}
 		for(var i = 0; i < maxParticles; i++){
 			particles[i] = {time: 0, x: 0, y: 0, gravity: 0, speedx: 0, speedy: 0, color: 0};
 		}
 		emitter = { time: 0, timer: 0, timeparticle: 0, count: 0, x: 0, y: 0, gravity: 0, speedx: 0, speedy: 0, speedx1: 0, speedy1: 0, color: 0};
+		tile = { adr: 0, imgwidth: 0, imgheight: 0, width: 0, height: 0, x: 0, y: 0};
 		for(var i = 0; i < 420; i++)
 			charArray[i] = '';
 		for(var i = 0; i < 8; i++)
@@ -75,7 +77,7 @@ function Cpu(){
 	function setFlags(n){
 		carry = (n > 0xffff) ? 1 : 0;
 		zero = (n == 0) ? 1 : 0;
-		negative = (n < 0) ? 1 : 0;
+		negative = ((n & 0xffff) > 0x7fff) ? 1 : 0;
 		n = n & 0xffff;
 		return n;
 	}
@@ -101,8 +103,14 @@ function Cpu(){
 		sprites[n].address = adr;
 	}
 	
+	function fillRect(x, y, w, h, c){
+		for(var jx = x; jx < x + w; jx++)
+			for(var jy = y; jy < y + h; jy++)
+				display.plot(c, jx, jy);
+	}
+	
 	function scrollScreen(step, direction){
-		var bufPixel;
+		var bufPixel, n;
 		if(direction == 2){
 			for(var y = 0; y < 128; y++){
 				bufPixel = display.getPixel(0, y);
@@ -110,6 +118,8 @@ function Cpu(){
 					display.plot(display.getPixel(x, y), x - 1, y);
 				display.plot(bufPixel, 127, y);
 			}
+			for(n = 0; n < 32; n++)
+				sprites[n].x--;
 		}
 		else if(direction == 1){
 			for(var x = 0; x < 128; x++){
@@ -118,6 +128,8 @@ function Cpu(){
 					display.plot(display.getPixel(x, y), x, y - 1);
 				display.plot(bufPixel, x, 127);
 			}
+			for(n = 0; n < 32; n++)
+				sprites[n].y++;
 		}
 		else if(direction == 0){
 			for(var y = 0; y < 128; y++){
@@ -126,6 +138,8 @@ function Cpu(){
 					display.plot(display.getPixel(x - 1, y), x, y);
 				display.plot(bufPixel, 0, y);
 			}
+			for(n = 0; n < 32; n++)
+				sprites[n].x++;
 		}
 		else {
 			for(var x = 0; x < 128; x++){
@@ -134,6 +148,92 @@ function Cpu(){
 					display.plot(display.getPixel(x, y - 1), x, y);
 				display.plot(bufPixel, x, 0);
 			}
+			for(n = 0; n < 32; n++)
+				sprites[n].y--;
+		}
+		if(tile.adr > 0)
+			tileDrawLine(step, direction);
+	}
+	
+	function tileDrawLine(step, direction){
+		var x,y,x0,y0,y1,imgadr;
+		if(direction == 2){
+			tile.x -= step;
+			x0 = tile.x;
+			y0 = tile.y;
+			x = Math.floor((127 - x0) / tile.imgwidth);
+			if(x < tile.width && x >= 0){
+				for(y = 0; y < tile.height; y++){
+					if(y0 + y * tile.imgheight > 0 && y0 + y * tile.imgheight < 128){
+						imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
+						if(imgadr > 0)
+							drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
+						else
+							fillRect(x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight, bgcolor);
+					}
+				}
+			}
+			else if(tile.width * tile.imgwidth + x0 >= 0){
+				y0 = (y0 > 0) ? y0 : 0;
+				y1 = (tile.y + tile.height * tile.imgheight < 128) ? tile.y + tile.height * tile.imgheight - y0 : 127 - y0;
+				if(y0 < 127 && y1 > 0)
+					fillRect(127 - step, y0, step, y1, bgcolor);
+			}
+		}
+		else if(direction == 1){
+			tile.y -= step;
+			x0 = tile.x;
+			y0 = tile.y;
+			y = Math.floor((127 - y0) / tile.imgheight);
+			if(y < tile.height && y >= 0)
+				for(x = 0; x < tile.width; x++){
+					if(x0 + x * tile.imgwidth > 0 && x0 + x * tile.imgwidth < 128){
+						imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
+						if(imgadr > 0)
+							drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
+						else
+							fillRect(x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight, bgcolor);
+					}
+				}
+		}
+		else if(direction == 0){
+			tile.x += step;
+			x0 = tile.x;
+			y0 = tile.y;
+			x = Math.floor((0 - x0) / tile.imgwidth);
+			if(x0 < 0 && x >= 0){
+				for(y = 0; y < tile.height; y++){
+					if(y0 + y * tile.imgheight > 0 && y0 + y * tile.imgheight < 128){
+						imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
+						if(imgadr > 0)
+							drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
+						else
+							fillRect(x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight, bgcolor);
+					}
+				}
+			}
+			else if(x0 < 128){
+				y0 = (y0 > 0) ? y0 : 0;
+				y1 = (tile.y + tile.height * tile.imgheight < 128) ? tile.y + tile.height * tile.imgheight - y0 : 127 - y0;
+				if(y0 < 127 && y1 > 0)
+					fillRect(0, y0, step, y1, bgcolor);
+			}
+		}
+		else if(direction == 3){
+			tile.y += step;
+			x0 = tile.x;
+			y0 = tile.y;
+			y = Math.floor((0 - y0) / tile.imgheight);
+			if(y >= 0)
+				for(x = 0; x < tile.width; x++){
+					if(x0 + x * tile.imgwidth > 0 && x0 + x * tile.imgwidth < 128){
+						imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
+						if(imgadr > 0)
+							drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
+						else
+							fillRect(x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight, bgcolor);
+					}
+				}
 		}
 	}
 	
@@ -209,9 +309,21 @@ function Cpu(){
 			}
 	}
 	
-	function drawRotateSprPixel(color, x1, y1, x, y, a){
-		var nx = x * Math.cos(a) - y * Math.sin(a);
-		var ny = y * Math.cos(a) + x * Math.sin(a);
+	function loadTile(adr, iwidth, iheight, width, height){
+		tile.adr = adr;
+		tile.imgwidth = iwidth;
+		tile.imgheight = iheight;
+		tile.width = width;
+		tile.height = height;
+	}
+	
+	function drawRotateSprPixel(color, x1, y1, x, y, w, h, a){
+		var x0 = w/2;
+		var y0 = h/2;
+		//var nx = x * Math.cos(a) - y * Math.sin(a);
+		//var ny = y * Math.cos(a) + x * Math.sin(a);
+		var nx = x0 + (x - x0) * Math.cos(a) - (y - y0) * Math.sin(a);
+		var ny = y0 + (y - y0) * Math.cos(a) + (x - x0) * Math.sin(a);
 		display.drawSpritePixel(color, x1 + Math.floor(nx), y1 + Math.floor(ny));
 	}
 	
@@ -219,8 +331,7 @@ function Cpu(){
 		var color, n, i;
 		for(n = 0; n < 32; n++){
 			var adr = sprites[n].address;
-			sprites[n].x += sprites[n].speedx;
-			sprites[n].y += sprites[n].speedy;
+			
 			var x1 = sprites[n].x;
 			var y1 = sprites[n].y;
 			for(var y = 0; y < sprites[n].height; y++)
@@ -228,15 +339,152 @@ function Cpu(){
 					color = (readMem(adr) & 0xf0) >> 4;
 					if(color > 0)
 						//display.drawSpritePixel(color, x1 + x, y1 + y);
-						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].angle / 57);
+						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 					x++;
 					color = (readMem(adr) & 0xf);
 					if(color > 0)
 						//display.drawSpritePixel(color, x1 + x, y1 + y);
-						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].angle / 57);
+						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 					adr++;
 				}
+			sprites[n].speedy += sprites[n].gravity;
+			sprites[n].x += sprites[n].speedx;
+			sprites[n].y += sprites[n].speedy;
 		}	
+	}
+	
+	function testSpriteCollision(debug){
+		var n, i, x0, y0, x1, y1, newspeed, adr;
+		for(n = 0; n < 32; n++)
+			sprites[n].collision = (-1) & 0xffff;
+		for(n = 0; n < 32; n++){
+			if(sprites[n].lives > 0){
+				for(i = 0; i < n; i++){
+					if(sprites[i].lives > 0)
+						if(sprites[n].x < sprites[i].x + sprites[i].width && 
+						sprites[n].x + sprites[n].width > sprites[i].x &&
+						sprites[n].y < sprites[i].y + sprites[i].height && 
+						sprites[n].y + sprites[n].height > sprites[i].y){
+							sprites[n].collision = i;
+							sprites[i].collision = n;
+							if(sprites[n].solid != 0 && sprites[i].solid != 0){
+								if((sprites[n].speedx > 0 && sprites[i].speedx < 0) || (sprites[n].speedx < 0 && sprites[i].speedx > 0)){
+									newspeed = (Math.abs(sprites[n].speedx) + Math.abs(sprites[i].speedx)) / 2;
+									if(sprites[n].x > sprites[i].x){
+										sprites[n].speedx = newspeed;
+										sprites[i].speedx = -newspeed;
+									}
+									else{
+										sprites[n].speedx = -newspeed;
+										sprites[i].speedx = newspeed;
+									}
+									sprites[n].x -= 2;
+								}
+								if((sprites[n].speedy > 0 && sprites[i].speedy < 0) || (sprites[n].speedy < 0 && sprites[i].speedy > 0)){
+									newspeed = (Math.abs(sprites[n].speedy) + Math.abs(sprites[i].speedy)) / 2;
+									if(sprites[n].y > sprites[i].y){
+										sprites[n].speedy = newspeed;
+										sprites[i].speedy = -newspeed;
+									}
+									else{
+										sprites[n].speedy = -newspeed;
+										sprites[i].speedy = newspeed;
+									}
+									sprites[n].y -=  2;
+								}
+							}
+						}	
+				}
+				if(sprites[n].solid != 0){
+					x0 = Math.floor((sprites[n].x + sprites[n].width / 2 - tile.x) / tile.imgwidth);
+					y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
+					if(x0 >= -1 && x0 <= tile.width && y0 >= -1 && y0 <= tile.height){
+						if(debug){
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0));
+							display.drawTestRect(tile.x + (x0 - 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0 - 1,y0));
+							display.drawTestRect(tile.x + (x0 + 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0 + 1,y0));
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 - 1));
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 + 1));
+						}
+						if(getTail(x0, y0) != 0){
+							if(sprites[n].speedx != 0){
+								if(sprites[n].speedx > 0){
+									sprites[n].x = tile.x + x0 * tile.imgwidth - sprites[n].width ;
+									sprites[n].speedx /= 2;
+								}
+								else{
+									sprites[n].x = tile.x + (x0 + 1) * tile.imgwidth;
+									sprites[n].speedx /= 2;
+								}
+							}
+							if(sprites[n].speedy != 0){
+								if(sprites[n].speedy > 0){
+									sprites[n].y = tile.y + y0 * tile.imgheight - sprites[n].height ;
+									sprites[n].speedy /= 2;
+								}
+								else{
+									sprites[n].y = tile.y + (y0 + 1) * tile.imgheight;
+									sprites[n].speedy /= 2;
+								}
+							}
+							x0 = Math.floor((sprites[n].x + sprites[n].width / 2 - tile.x) / tile.imgwidth);
+							y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
+						}
+						else{
+							if(sprites[n].speedy > 0 && getTail(x0, y0 + 1) != 0){
+								if((tile.y + (y0 + 1) * tile.imgheight - sprites[n].height) - sprites[n].y < sprites[n].speedy){
+									sprites[n].y = tile.y + (y0 + 1) * tile.imgheight - sprites[n].height;	
+									sprites[n].speedy = 0;
+								}
+							}
+							else if(sprites[n].speedy < 0 && getTail(x0, y0 - 1) != 0){
+								if(sprites[n].y - (tile.y + y0 * tile.imgheight) < sprites[n].speedy){
+									sprites[n].y = tile.y + y0 * tile.imgheight;	
+									sprites[n].speedy = 0;
+								}
+							}
+							if(sprites[n].speedx > 0  && getTail(x0 + 1, y0) != 0){
+								if((tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width) - sprites[n].x < sprites[n].speedx){
+									sprites[n].x = tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width;	
+									sprites[n].speedx = 0;
+								}
+							}
+							else if(sprites[n].speedx < 0 && getTail(x0 - 1, y0) != 0){
+								if(sprites[n].x - (tile.x + x0 * tile.imgwidth) < sprites[n].speedx){
+									sprites[n].x = tile.x + x0 * tile.imgwidth;	
+									sprites[n].speedx = 0;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	function getTail(x, y){
+		if(x < 0 || x >= tile.width || y < 0 || y >= tile.height)
+			return 0;
+		return readInt(tile.adr + (x + y * tile.width) * 2);
+	}
+	
+	function drawTile(x0, y0){
+		if(x0 > 0x7fff)
+			x0 -= 0xffff;
+		if(y0 > 0x7fff)
+			y0 -= 0xffff;
+		var x,y,imgadr;
+		tile.x = x0;
+		tile.y = y0;
+		for(x = 0; x < tile.width; x++){
+			for(y = 0; y < tile.height; y++){
+				if(x0 + x * tile.imgwidth > 0 && x0 + x * tile.imgwidth < 128 && y0 + y * tile.imgheight > 0 && y0 + y * tile.imgheight < 128){
+					imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
+					if(imgadr > 0)
+						drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
+				}
+			}
+		}
 	}
 	
 	function drawImage(adr, x1, y1, w, h){
@@ -1041,7 +1289,7 @@ function Cpu(){
 							case 0x50:
 								// ISIZE			D45R
 								reg1 = op2 & 0xf;
-								imageSize = reg[reg1] & 0x7;
+								imageSize = reg[reg1] & 31;
 								break;
 							case 0x60:
 								// DLINE			D46R
@@ -1057,6 +1305,12 @@ function Cpu(){
 									drawImageRLES(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 								else
 									drawImageRLE(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
+							case 0x80:
+								// LDTILE R		D4 8R
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
+								loadTile(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 								break;
 						}
 						break;
@@ -1100,10 +1354,10 @@ function Cpu(){
 						reg[reg1] = display.getPixel(reg[reg1], reg[reg2]);
 						break;
 					case 0xDA:
-						// SPRSPX R,R		DA RR
-						reg1 = (op2 & 0xf0) >> 4;//num
-						reg2 = op2 & 0xf;//speed x
-
+						// DRTILE R		DA RR
+						reg1 = (op2 & 0xf0) >> 4;//x
+						reg2 = op2 & 0xf;//y
+						drawTile(reg[reg1], reg[reg2]);
 						break;
 					case 0xDB:
 						// SPRSPX R,R		DB RR
@@ -1129,6 +1383,14 @@ function Cpu(){
 							reg[reg1] = sprites[reg[reg1] & 31].height;
 						else if(reg[reg2] == 6)
 							reg[reg1] = sprites[reg[reg1] & 31].angle;
+						else if(reg[reg2] == 7)
+							reg[reg1] = sprites[reg[reg1] & 31].lives;
+						else if(reg[reg2] == 8)
+							reg[reg1] = sprites[reg[reg1] & 31].collision;
+						else if(reg[reg2] == 9)
+							reg[reg1] = sprites[reg[reg1] & 31].solid;
+						else if(reg[reg2] == 10)
+							reg[reg1] = sprites[reg[reg1] & 31].gravity;
 						break;
 				}
 				break;
@@ -1138,6 +1400,8 @@ function Cpu(){
 				reg2 = (op2 & 0xf0) >> 4;//x
 				reg3 = op2 & 0xf;//y
 				drawSprite(reg[reg1] & 0x1f, reg[reg2], reg[reg3]);
+				if(sprites[reg[reg1] & 31].lives < 1)
+					sprites[reg[reg1] & 31].lives = 1;
 				break;
 			case 0xF0:
 				// SSPRTV R,R,R	FR RR
@@ -1166,13 +1430,19 @@ function Cpu(){
 					sprites[reg[reg1] & 31].height = reg[reg3];
 				else if(reg[reg2] == 6)
 					sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
+				else if(reg[reg2] == 7)
+					sprites[reg[reg1] & 31].lives = reg[reg3];
+				else if(reg[reg2] == 9)
+					sprites[reg[reg1] & 31].solid = reg[reg3];
+				else if(reg[reg2] == 10)
+					sprites[reg[reg1] & 31].gravity = reg[reg3];
 				break;
 		}
 	}
 	
 	function debug(){
 		var d = '';
-		var s = 'pc:' + toHex4(pc) + '\n';
+		var s = 'pc:' + toHex4(pc) + '\t';
 		s += 'op:' + toHex4((mem[pc] << 8) + mem[pc + 1]) + '\n';
 		s += 'C' + carry + 'Z' + zero + 'N' + negative + '\n';
 		for(var i = 0; i < 16; i++)
@@ -1200,7 +1470,8 @@ function Cpu(){
 		readMem:readMem,
 		setRedraw:setRedraw,
 		redrawSprite:redrawSprite,
-		redrawParticle:redrawParticle
+		redrawParticle:redrawParticle,
+		testSpriteCollision:testSpriteCollision
 	};
 }
 

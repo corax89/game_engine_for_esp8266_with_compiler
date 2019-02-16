@@ -74,6 +74,8 @@ GBCLR R			D4 4R
 ISIZE R			D4 5R
 DLINE R			D4 6R
 DRWRLE R		D4 7R
+LDTILE R		D4 8R
+
 LDSPRT R,R		D5 RR
 SPALET R,R		D6 RR
 SPART R 		D7 0R
@@ -82,14 +84,17 @@ DPART R			D7 2R
 SCROLL R,R		D8 RR
 GETPIX R,R		D9 RR
 
+DRTILE R		DA RR
 SPRGET R,R		DC RR
 DRSPRT R,R,R	ER RR
 SSPRTV R,R,R	FR RR
 ______________________________
-sprite.x 0
-sprite.y 1
-sprite.speedx 2
-sprite.speedy 3
-sprite.width  4
-sprite.height 5
-
+sprite.x			0
+sprite.y			1
+sprite.speedx		2
+sprite.speedy		3
+sprite.width		4
+sprite.height		5
+sprite.angle		6
+sprite.lives		7
+sprite.collision	8

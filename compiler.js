@@ -6,8 +6,9 @@ function tokenize(s) {
 	var l;
 	var lastDefine;
 	var tokenReplace = [
-		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5,
-		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8
+		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5, 
+		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
+		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8, 'KEY_A', 16, 'KEY_B', 32
 		];
 	//упрощенный вариант #define, лишь замена
 	function define(s) {
@@ -636,19 +637,27 @@ function compile(t) {
 			//массив уже заполнен, считаем количество элементов
 			else if (thisToken == '{') {
 				while (thisToken && thisToken != '}') {
+					
 					getToken();
+					removeNewLine();
 					if (!thisToken)
 						return;
-					buf += parseInt(thisToken) + ',';
+					if(isNumber(parseInt(thisToken)))
+						buf += parseInt(thisToken) + ',';
+					else if(isVar(thisToken))
+						buf += '_' + thisToken + ',';
+					else
+						buf += '0,';
 					length++;
 					getToken();
+					removeNewLine();
 					if (!(thisToken == '}' || thisToken == ','))
 						info("" + lineCount + " неправильное объявление массива");
 				}
 				if (type == 'int')
-					dataAsm.push('_' + name + ': \n DW ' + buf + '0');
+					dataAsm.push('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
 				else if (type == 'char')
-					dataAsm.push('_' + name + ': \n DB ' + buf + '0');
+					dataAsm.push('_' + name + ': \n DB ' + buf.substring(0, buf.length - 1));
 				varTable.push({
 					name: name,
 					type: type,
@@ -1418,6 +1427,7 @@ function compile(t) {
 	registerFunction('spritegetvalue', 'int', ['int', 'n', 'int', 'type'], 1, 'SPRGET R%2,R%1', true, 0);
 	registerFunction('spritesetvalue', 'void', ['int', 'n', 'int', 'type', 'int', 'value'], 1, 'SSPRTV R%3,R%2,R%1', true, 0);
 	registerFunction('setimagesize', 'void', ['int', 's'], 1, 'ISIZE R%1', true, 0);
+	registerFunction('drawtile', 'void', ['int', 'x', 'int', 'y'], 1, 'DRTILE R%2,R%1', true, 0);
 	registerFunction('scroll', 'void', ['char', 'step', 'char', 'direction'], 1, 'SCROLL R%2,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
@@ -1437,6 +1447,9 @@ function compile(t) {
 	dataAsm = [];
 	dataAsm.push('_drawparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DPART R1 \n RET');
 	registerFunction('drawparticle', 'void', ['int', 'x', 'int', 'y', 'int', 'color'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_loadtile: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n LDTILE R1 \n RET');
+	registerFunction('loadtile', 'void', ['int', 'a', 'int', 'imgwidth', 'int', 'imgheight', 'int', 'width', 'int', 'height'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_printf: \n MOV R2,R0 \n ADD R2,R1 \n LDI R2,(R2) \n LDC R3,(R2) \nnext_printf_c:')
 	dataAsm.push(' CMP R3,37 ;% \n JZ printf_get\n PUTC R3\n INC R2 \n LDC R3,(R2) \n JNZ next_printf_c');
