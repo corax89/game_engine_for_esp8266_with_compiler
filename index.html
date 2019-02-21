@@ -127,6 +127,15 @@ while(getkey() == 0){};
 			</td></tr>
 			</table>
 			</div>
+			<select id="example" name="example">
+				<option value="0">particle</option>
+				<option value="1">pi</option>
+				<option value="2">snake</option>
+				<option value="3">sprite</option>
+				<option value="4">maze generate</option>
+				<option value="5">platform</option>
+			</select>
+			<button onclick="loadExample();">load examle</button>
 		</div>
 	</div>
 	<div class="header">information</div>
@@ -187,39 +196,50 @@ while(getkey() == 0){};
         </div>
         <div class="content_wind">
 <pre style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;height: 31em;overflow: auto;'>
-<code class="hljs"><span><span class="kwrd">char</span> <span>putchar</span><span class="hljs-params">(<span class="kwrd">char</span>)</span></span>;
-<span><span class="kwrd">int</span> <span>puts</span><span class="hljs-params">(<span class="kwrd">char</span>[])</span></span>;
-<span><span class="kwrd">int</span> <span>putn</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
-<span><span class="kwrd">int</span> <span>printf</span><span class="hljs-params">(<span class="kwrd">char</span>[], arg-<span class="hljs-built_in">list</span>)</span></span>;
-<span><span class="kwrd">int</span> <span>random</span><span class="hljs-params">(<span class="kwrd">int</span> max)</span></span>;
-<span><span class="kwrd">int</span> <span>getchar</span><span class="hljs-params">()</span></span>;
-<span><span class="kwrd">int</span> <span>getkey</span><span class="hljs-params">()</span></span>;
+<code class="hljs"><span><span class="kwrd">char</span> <span>putchar</span><span>(<span class="kwrd">char</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>puts</span><span>(<span class="kwrd">char</span>[])</span></span>;
+<span><span class="kwrd">int</span> <span>putn</span><span>(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>printf</span><span>(<span class="kwrd">char</span>[], arg-<span class="hljs-built_in">list</span>)</span></span>;
+<span><span class="kwrd">int</span> <span>random</span><span>(<span class="kwrd">int</span> max)</span></span>;
+<span><span class="kwrd">int</span> <span>getchar</span><span>()</span></span>;
+<span><span class="kwrd">int</span> <span>getkey</span><span>()</span></span>;
 <span class="C">/*key is KEY_UP, KEY_LEFT,
- KEY_DOWN, KEY_RIGHT*/</span>
-<span><span class="kwrd">int</span> <span>getpixel</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
-<span><span class="kwrd">int</span> <span>spritegetvalue</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type)</span></span>;
+ KEY_DOWN, KEY_RIGHT, KEY_A, KEY_B*/</span>
+<span><span class="kwrd">int</span> <span>getpixel</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">int</span> <span>spritegetvalue</span><span>(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type)</span></span>;
 <span class="C">/*type is S_X, S_Y, S_SPEEDX,
- S_SPEEDY, S_WIDTH, S_HEIGHT*/</span>
-<span><span class="kwrd">int</span> <span>gettimer</span><span class="hljs-params">(<span class="kwrd">int</span> n)</span></span>;
-<span><span class="kwrd">void</span> <span>settimer</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> time)</span></span>;
-<span><span class="kwrd">void</span> <span>delayredraw</span><span class="hljs-params">()</span></span>;
-<span><span class="kwrd">void</span> <span>clearscreen</span><span class="hljs-params">()</span></span>;
-<span><span class="kwrd">void</span> <span>setcolor</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
-<span><span class="kwrd">void</span> <span>scroll</span><span class="hljs-params">(<span class="kwrd">int</span> step, <span class="kwrd">int</span> dir)</span></span>;
-<span><span class="kwrd">void</span> <span>putpixel</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
-<span><span class="kwrd">void</span> <span>getsprite</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> address)</span></span>;
-<span><span class="kwrd">void</span> <span>putsprite</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
-<span><span class="kwrd">void</span> <span>spritesetvalue</span><span class="hljs-params">(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type,
+ S_SPEEDY, S_WIDTH, S_HEIGHT,
+ S_ANGLE, S_LIVES, S_COLLISION,
+ S_SOLID, S_GRAVITY*/</span>
+<span><span class="kwrd">int</span> <span>gettimer</span><span>(<span class="kwrd">int</span> n)</span></span>;
+<span><span class="kwrd">void</span> <span>settimer</span><span>(<span class="kwrd">int</span> n, <span class="kwrd">int</span> time)</span></span>;
+<span><span class="kwrd">void</span> <span>delayredraw</span><span>()</span></span>;
+<span><span class="kwrd">void</span> <span>clearscreen</span><span>()</span></span>;
+<span><span class="kwrd">void</span> <span>setcolor</span><span>(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">void</span> <span>scroll</span><span>(<span class="kwrd">int</span> step, <span class="kwrd">int</span> dir)</span></span>;
+<span><span class="kwrd">void</span> <span>putpixel</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>getsprite</span><span>(<span class="kwrd">int</span> n, <span class="kwrd">int</span> address)</span></span>;
+<span><span class="kwrd">void</span> <span>putsprite</span><span>(<span class="kwrd">int</span> n, <span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>spritesetvalue</span><span>(<span class="kwrd">int</span> n, <span class="kwrd">int</span> type,
  <span class="kwrd">int</span> value)</span></span>;
-<span><span class="kwrd">void</span> <span>setimagesize</span><span class="hljs-params">(<span class="kwrd">int</span> size)</span></span>;
-<span><span class="kwrd">void</span> <span>gotoxy</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
-<span><span class="kwrd">void</span> <span>line</span><span class="hljs-params">(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y, <span class="kwrd">int</span> x1, <span class="kwrd">int</span> y1)</span></span>;
-<span><span class="kwrd">void</span> <span>putimage</span><span class="hljs-params">(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
+<span><span class="kwrd">void</span> <span>setimagesize</span><span>(<span class="kwrd">int</span> size)</span></span>;
+<span><span class="kwrd">void</span> <span>gotoxy</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;
+<span><span class="kwrd">void</span> <span>line</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y, <span class="kwrd">int</span> x1, <span class="kwrd">int</span> y1)</span></span>;
+<span><span class="kwrd">void</span> <span>putimage</span><span>(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
  <span class="kwrd">int</span> y, <span class="kwrd">int</span> w, <span class="kwrd">int</span> h)</span></span>;
-<span><span class="kwrd">void</span> <span>putimagerle</span><span class="hljs-params">(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
+<span><span class="kwrd">void</span> <span>putimagerle</span><span>(<span class="kwrd">int</span> address, <span class="kwrd">int</span> x,
  <span class="kwrd">int</span> y, <span class="kwrd">int</span> w, <span class="kwrd">int</span> h)</span></span>;
-*<span><span class="kwrd">int</span> <span>malloc</span><span class="hljs-params">(<span class="kwrd">int</span>)</span></span>;
-<span><span class="kwrd">void</span> <span>free</span><span class="hljs-params">(*<span class="kwrd">int</span>)</span></span>;</code></pre>
+*<span><span class="kwrd">int</span> <span>malloc</span><span>(<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">void</span> <span>free</span><span>(*<span class="kwrd">int</span>)</span></span>;
+<span><span class="kwrd">void</span> <span>setparticle</span><span>(<span class="kwrd">int</span> gravity, <span class="kwrd">int</span> count,
+ <span class="kwrd">int</span> time)</span></span>;
+<span><span class="kwrd">void</span> <span>setemitter</span><span>(<span class="kwrd">int</span> time, <span class="kwrd">int</span> dir,
+ <span class="kwrd">int</span> dir1, <span class="kwrd">int</span> speed)</span></span>;
+<span><span class="kwrd">void</span> <span>drawparticle</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y,
+ <span class="kwrd">int</span> color)</span></span>;
+<span><span class="kwrd">void</span> <span>loadtile</span><span>(<span class="kwrd">int</span> adress, <span class="kwrd">int</span> imgwidth,
+ <span class="kwrd">int</span> imgheight, <span class="kwrd">int</span> width, <span class="kwrd">int</span> height)</span></span>;
+<span><span class="kwrd">void</span> <span>drawtile</span><span>(<span class="kwrd">int</span> x, <span class="kwrd">int</span> y)</span></span>;</code></pre>
         </div>
     </div>
 	<script type="text/javascript" src="FileSaver.js"></script>
@@ -229,5 +249,6 @@ while(getkey() == 0){};
 	<script type="text/javascript" src="compiler.js"></script>
 	<script type="text/javascript" src="font.js"></script>
 	<script type="text/javascript" src="ui.js"></script>
+	<script type="text/javascript" src="example.js"></script>
 </body>
 </html>

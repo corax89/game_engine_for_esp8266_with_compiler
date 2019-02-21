@@ -8,7 +8,7 @@ function SpriteEditor(){
 	var palette = [
 	  "#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
 	  "#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
-	  "#B48D6C", "#39373F", "#C0624D", "#333333",
+	  "#B48D6C", "#42595A", "#C0624D", "#333333",
 	  "#777777", "#8FAB62", "#3ABFD1", "#bbbbbb"
 	];
 	var thiscolor = 0;

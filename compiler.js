@@ -27,7 +27,7 @@ function tokenize(s) {
 
 	s = define(s);
 	s = s.replace(/#include[^\n]*/g, ''); //удаление инклюдов, дабы не мешали
-	s = s.replace(/(\w*\d*)\s*([\/\*\+\-])\s*=([^;]*)/g, '$1=$1$2($3)'); //замена сокращенной записи операции с переменной
+	//s = s.replace(/(\w*\d*)\s*([\/\*\+\-])\s*=([^;]*)/g, '$1=$1$2($3)'); //замена сокращенной записи операции с переменной
 	l = s.length;
 	tokens[0] = '';
 	for (var i = 0; i < l; i++) {
@@ -61,7 +61,7 @@ function tokenize(s) {
 			}
 			break;
 		case '=':
-			if (s[i - 1] == '=' || s[i - 1] == '!') {
+			if (s[i - 1] == '=' || s[i - 1] == '!' || s[i - 1] == '+' || s[i - 1] == '-' || s[i - 1] == '*' || s[i - 1] == '/') {
 				tokens[thisToken - 1] += '=';
 				break;
 			}
@@ -712,6 +712,7 @@ function compile(t) {
 	function varToken() {
 		var v = getVar(thisToken);
 		var point = false;
+		var op;
 		if(lastToken == '*' && registerCount == 1)
 			point = true;
 		getToken();
@@ -726,7 +727,7 @@ function compile(t) {
 			}
 			getToken();
 			//загрузка ячейки массива
-			if (thisToken != '=') {
+			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
 				previousToken();
 				if (v.type == 'char' || v.type == '*char') {
 					if(v.type == '*char' && !point){
@@ -747,6 +748,7 @@ function compile(t) {
 			}
 			//сохранение ячейки массива
 			else {
+				op = thisToken;
 				getToken();
 				execut();
 				getToken();
@@ -758,8 +760,27 @@ function compile(t) {
 					if(v.type == '*char' && !point){
 						asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name +')');
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
-					} else
+					} else{
+						if(op == '+='){
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '-='){
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
+							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '*='){
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '/='){
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
+							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						}
 						asm.push(' STC (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
+					}
 				} else {
 					if(v.type == '*int' && !point){
 						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
@@ -767,6 +788,24 @@ function compile(t) {
 						asm.push(' STI (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else{
 						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						if(op == '+='){
+							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '-='){
+							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
+							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '*='){
+							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
+						}
+						else if(op == '/='){
+							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
+							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						}
 						asm.push(' STI (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
 					}
 				}
@@ -774,7 +813,7 @@ function compile(t) {
 			}
 		}
 		//загрузка значения переменной
-		else if (thisToken != '=') {
+		else if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
 			previousToken();
 			if (v.length > 1) {
 				asm.push(' LDI R' + registerCount + ',_' + thisToken);
@@ -810,6 +849,7 @@ function compile(t) {
 	//присваивание значения переменной
 	function assigment() {
 		var variable = lastToken;
+		var op = thisToken;
 		registerCount = 2;
 		if (localVarTable.indexOf(variable) > -1) {
 			previousToken();
@@ -823,6 +863,24 @@ function compile(t) {
 			if (getRangOperation(thisToken) > 0)
 				execut();
 			registerCount--;
+			if(op == '+='){
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
+			}
+			else if(op == '-='){
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
+				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+			}
+			else if(op == '*='){
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
+			}
+			else if(op == '/='){
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
+				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+			}
 			asm.push(' STI (_' + variable + '),R' + registerCount);
 		}
 	}
@@ -1010,6 +1068,10 @@ function compile(t) {
 		//иначе просто выполняем до конца строки
 		else {
 			execut();
+			if(isVar(thisToken)){
+				getToken();
+				execut();
+			}
 		}
 		registerCount = 1;
 		getToken();
@@ -1044,6 +1106,10 @@ function compile(t) {
 			getToken();
 		} else {
 			execut();
+			if(isVar(thisToken)){
+				getToken();
+				execut();
+			}
 		}
 		asm.push(' JMP start_while_' + labe + ' \nend_while_' + labe + ':');
 		//removeNewLine();
@@ -1096,6 +1162,10 @@ function compile(t) {
 			skipBrace();
 		} else {
 			execut();
+			if(isVar(thisToken)){
+				getToken();
+				execut();
+			}
 		}
 		//теперь транслируем третий параметр
 		memToken = thisTokenNumber;
@@ -1359,7 +1429,7 @@ function compile(t) {
 			if (thisToken == ';')
 				info("" + lineCount + " ожидалась скобка");
 			getToken();
-		} else if (thisToken == '=') {
+		} else if (thisToken == '=' || thisToken == '+=' || thisToken == '-=' || thisToken == '*=' || thisToken == '/=') {
 			assigment();
 		} else if (thisToken == ';') {
 			//после точки с запятой данные, оставшиеся в регистрах, больше не нужны, указатель регистра обнуляется
@@ -1446,7 +1516,7 @@ function compile(t) {
 	registerFunction('setemitter', 'void', ['int', 'time', 'int', 'dir', 'int', 'dir1', 'int', 'speed'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_drawparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DPART R1 \n RET');
-	registerFunction('drawparticle', 'void', ['int', 'x', 'int', 'y', 'int', 'color'], 1, dataAsm, false, 0);
+	registerFunction('drawparticle', 'void', ['int', 'x', 'int', 'y', 'char', 'color'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_loadtile: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n LDTILE R1 \n RET');
 	registerFunction('loadtile', 'void', ['int', 'a', 'int', 'imgwidth', 'int', 'imgheight', 'int', 'width', 'int', 'height'], 1, dataAsm, false, 0);
