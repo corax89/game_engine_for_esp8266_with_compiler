@@ -33,6 +33,8 @@ function Cpu(){
 		regx = 0;
 		regy = 0;
 		imageSize = 1;
+		bgcolor = 0;
+		color = 1;
 		//задаем начальные координаты спрайтов вне границ экрана
 		for(var i = 0; i < 32; i++){
 			sprites[i]  = {address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, lives: 0, collision: -1, solid: 0, gravity: 0};	
@@ -101,6 +103,12 @@ function Cpu(){
 	
 	function setSprite(n, adr){
 		sprites[n].address = adr;
+	}
+	
+	function angleBetweenSprites(n1, n2){
+	  var A = Math.floor(Math.atan2(sprites[n1].y - sprites[n2].y, sprites[n1].x - sprites[n2].x) * 57.4);
+	  A = (A < 0) ? A + 360 : A;
+	  return A;
 	}
 	
 	function fillRect(x, y, w, h, c){
@@ -317,6 +325,19 @@ function Cpu(){
 		tile.height = height;
 	}
 	
+	function spriteSetDirectionAndSpeed(n, speed, direction){
+		if(speed > 0x7fff)
+			speed -= 0xffff;
+		if(direction > 0x7fff){
+			direction = 360 + direction % 360;
+			
+		}
+		var nx = speed * Math.cos(direction / 57);
+		var ny = speed * Math.sin(direction / 57);
+		sprites[n].speedx = Math.floor(nx);
+		sprites[n].speedy = Math.floor(ny);
+	}
+	
 	function drawRotateSprPixel(color, x1, y1, x, y, w, h, a){
 		var x0 = w/2;
 		var y0 = h/2;
@@ -330,26 +351,27 @@ function Cpu(){
 	function redrawSprite(){
 		var color, n, i;
 		for(n = 0; n < 32; n++){
-			var adr = sprites[n].address;
-			
-			var x1 = sprites[n].x;
-			var y1 = sprites[n].y;
-			for(var y = 0; y < sprites[n].height; y++)
-				for(var x = 0; x < sprites[n].width; x++){
-					color = (readMem(adr) & 0xf0) >> 4;
-					if(color > 0)
-						//display.drawSpritePixel(color, x1 + x, y1 + y);
-						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
-					x++;
-					color = (readMem(adr) & 0xf);
-					if(color > 0)
-						//display.drawSpritePixel(color, x1 + x, y1 + y);
-						drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
-					adr++;
-				}
-			sprites[n].speedy += sprites[n].gravity;
-			sprites[n].x += sprites[n].speedx;
-			sprites[n].y += sprites[n].speedy;
+			if(sprites[n].lives > 0){
+				var adr = sprites[n].address;
+				var x1 = sprites[n].x;
+				var y1 = sprites[n].y;
+				for(var y = 0; y < sprites[n].height; y++)
+					for(var x = 0; x < sprites[n].width; x++){
+						color = (readMem(adr) & 0xf0) >> 4;
+						if(color > 0)
+							//display.drawSpritePixel(color, x1 + x, y1 + y);
+							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+						x++;
+						color = (readMem(adr) & 0xf);
+						if(color > 0)
+							//display.drawSpritePixel(color, x1 + x, y1 + y);
+							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+						adr++;
+					}
+				sprites[n].speedy += sprites[n].gravity;
+				sprites[n].x += sprites[n].speedx;
+				sprites[n].y += sprites[n].speedy;
+			}
 		}	
 	}
 	
@@ -367,9 +389,13 @@ function Cpu(){
 						sprites[n].y + sprites[n].height > sprites[i].y){
 							sprites[n].collision = i;
 							sprites[i].collision = n;
+							if(debug){
+								display.drawTestRect(sprites[n].x, sprites[n].y, sprites[n].width, sprites[n].height, sprites[n].solid);
+								display.drawTestRect(sprites[i].x, sprites[i].y, sprites[i].width, sprites[i].height, sprites[i].solid);
+							}
 							if(sprites[n].solid != 0 && sprites[i].solid != 0){
-								if((sprites[n].speedx > 0 && sprites[i].speedx < 0) || (sprites[n].speedx < 0 && sprites[i].speedx > 0)){
-									newspeed = (Math.abs(sprites[n].speedx) + Math.abs(sprites[i].speedx)) / 2;
+								if((sprites[n].speedx >= 0 && sprites[i].speedx <= 0) || (sprites[n].speedx <= 0 && sprites[i].speedx >= 0)){
+									newspeed = Math.floor((Math.abs(sprites[n].speedx) + Math.abs(sprites[i].speedx)) / 2);
 									if(sprites[n].x > sprites[i].x){
 										sprites[n].speedx = newspeed;
 										sprites[i].speedx = -newspeed;
@@ -380,8 +406,8 @@ function Cpu(){
 									}
 									sprites[n].x -= 2;
 								}
-								if((sprites[n].speedy > 0 && sprites[i].speedy < 0) || (sprites[n].speedy < 0 && sprites[i].speedy > 0)){
-									newspeed = (Math.abs(sprites[n].speedy) + Math.abs(sprites[i].speedy)) / 2;
+								if((sprites[n].speedy >= 0 && sprites[i].speedy <= 0) || (sprites[n].speedy <= 0 && sprites[i].speedy >= 0)){
+									newspeed = Math.floor((Math.abs(sprites[n].speedy) + Math.abs(sprites[i].speedy)) / 2);
 									if(sprites[n].y > sprites[i].y){
 										sprites[n].speedy = newspeed;
 										sprites[i].speedy = -newspeed;
@@ -758,6 +784,21 @@ function Cpu(){
 						reg2 = op2 & 0xf;
 						reg[reg1] = reg[reg2];
 						break;
+					case 0x08:
+						//LDIAL R,(int+R*2)	08 RR XXXX
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						reg[reg1] = readInt(reg[reg2] * 2 + readInt(pc));
+						setFlags(reg[reg1]);
+						pc += 2;
+						break;
+					case 0x09:
+						//STIAL (adr+R*2),R 	09 RR XXXX
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						writeInt(readInt(pc) + reg[reg1] * 2,reg[reg2]);
+						pc += 2;
+						break;
 					default:
 						pc++;
 				}
@@ -1119,11 +1160,20 @@ function Cpu(){
 						reg[reg1] = n;
 						break;
 					case 0xAD:
-						// RAND R,R		AD 0R
 						reg1 = op2 & 0xf;
-						n = randomInteger(0, reg[reg1]);
-						n = setFlags(n);
-						reg[reg1] = n;
+						reg2 = op2 & 0xf0;
+						// RAND R,R		AD 0R
+						if(reg2 == 0x00){
+							n = randomInteger(0, reg[reg1]);
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
+						// SQRT R		AD 1R
+						else if(reg2 == 0x10){
+							n = Math.floor(Math.sqrt(reg[reg1]));
+							n = setFlags(n);
+							reg[reg1] = n;
+						}
 						break;
 				}
 				break;
@@ -1186,7 +1236,7 @@ function Cpu(){
 				switch(op1){ 
 					case 0xD0:
 						//CLS		D000
-						display.reset();
+						display.clearScreen();
 						//pc--;
 						break;
 					case 0xD1:
@@ -1312,6 +1362,12 @@ function Cpu(){
 								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
 								loadTile(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 								break;
+							case 0x90:
+								// SPRSDS R*2	D4 9R
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
+								spriteSetDirectionAndSpeed(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
 						}
 						break;
 					case 0xD5:
@@ -1391,6 +1447,12 @@ function Cpu(){
 							reg[reg1] = sprites[reg[reg1] & 31].solid;
 						else if(reg[reg2] == 10)
 							reg[reg1] = sprites[reg[reg1] & 31].gravity;
+						break;
+					case 0xDE:
+						// AGBSPR R,R			DE RR
+						reg1 = (op2 & 0xf0) >> 4;//n1
+						reg2 = op2 & 0xf;//n2
+						reg[reg1] = angleBetweenSprites(reg[reg1], reg[reg2]);
 						break;
 				}
 				break;

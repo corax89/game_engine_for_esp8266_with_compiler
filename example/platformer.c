@@ -25,7 +25,7 @@ void scrollscreen(){
 }
 
 void init(){
-for(i = 0; i < 16; i++){
+	for(i = 0; i < 16; i++){
 		putimagerle(cloud2, i * 16, 0, 16, 16);
 		putimagerle(cloud1, i * 16, 16, 16, 13);
 	}

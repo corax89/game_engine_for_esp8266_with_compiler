@@ -259,6 +259,13 @@ function asm(s) {
 					}
 				}
 				break;
+			case 'LDIAL':
+				if (getRegister(a[i + 4]) == -1 && a[i + 5] == '+') { //LDIAL R,(int+R*2)	08 RR XXXX
+					out.push(0x08);
+					out.push((getRegister(a[i + 1]) << 4) + getRegister(a[i + 6]));
+					pushInt(a[i + 4]);
+				}
+				break;
 			case 'STI':
 				if (getRegister(a[i + 2]) == -1 && a[i + 3] == '+') { //STI (adr+R),R 	06 RR XXXX
 					out.push(0x06);
@@ -278,6 +285,13 @@ function asm(s) {
 					out.push(getRegister(a[i + 5]) << 4);
 					pushInt(a[i + 2]);
 					return;
+				}
+				break;
+			case 'STIAL':
+				if (getRegister(a[i + 2]) == -1 && a[i + 3] == '+') { //STIAL (adr+R*2),R 	09 RR XXXX
+					out.push(0x09);
+					out.push((getRegister(a[i + 4]) << 4) + getRegister(a[i + 7]));
+					pushInt(a[i + 2]);
 				}
 				break;
 			case 'LDC':
@@ -478,6 +492,10 @@ function asm(s) {
 					pushInt(a[i + 1]);
 				}
 				return;
+			case 'SQRT':
+				out.push(0xAD); //SQRT R				AD 1R
+				out.push(0x10 + (getRegister(a[i + 1]) & 0xf));
+				return;
 			case 'CLS':
 				out.push(0xD0); // CLS				D000
 				out.push(0x00);
@@ -550,8 +568,12 @@ function asm(s) {
 				out.push(0xD4); // LDTILE R		D4 8R
 				out.push(0x80 + getRegister(a[i + 1]));
 				return;
+			case 'SPRSDS':
+				out.push(0xD4); // SPRSDS R*2			D4 9R
+				out.push(0x90 + getRegister(a[i + 1]));
+				return;
 			case 'DRTILE':
-				out.push(0xDA); // DRTILE R		DA RR
+				out.push(0xDA); // DRTILE R,R		DA RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
 			case 'LDSPRT':
@@ -584,6 +606,10 @@ function asm(s) {
 				return;
 			case 'SPRGET':
 				out.push(0xDC); // SPRGET R,X		DC RX
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'AGBSPR':
+				out.push(0xDE); // AGBSPR R,R		DE RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
 			case 'DRSPRT':

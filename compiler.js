@@ -524,8 +524,9 @@ function compile(t) {
 						info("" + lineCount + " работа с локальными массивами не поддерживается ");
 				} else {
 					if(type == '*int' && !point){
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						//asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
 					} else
 						info("" + lineCount + " работа с локальными массивами не поддерживается ");
@@ -549,8 +550,9 @@ function compile(t) {
 					}
 				} else {
 					if(type == '*int' && !point){
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						//asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else{
 						info("" + lineCount + " работа с локальными массивами не поддерживается ");
@@ -737,12 +739,13 @@ function compile(t) {
 						asm.push(' LDC R' + (registerCount - 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 				} else {
 					if(v.type == '*int' && !point){
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						asm.push(' LDI R' + registerCount + ',(_' + v.name +')');
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						asm.push(' LDIAL R' + registerCount + ',(_' + v.name +')');
 						asm.push(' LDI R' + (registerCount - 1) + ',(R' + registerCount + '+R' + (registerCount - 1) + ')');
 					} else{
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						asm.push(' LDI R' + (registerCount - 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						//asm.push(' LDI R' + (registerCount - 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+						asm.push(' LDIAL R' + (registerCount - 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 					}
 				}
 			}
@@ -783,11 +786,11 @@ function compile(t) {
 					}
 				} else {
 					if(v.type == '*int' && !point){
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name +')');
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name +')');
 						asm.push(' STI (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else{
-						asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
+						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
 						if(op == '+='){
 							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
@@ -806,7 +809,8 @@ function compile(t) {
 							asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
 						}
-						asm.push(' STI (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
+						//asm.push(' STI (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
+						asm.push(' STIAL (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
 					}
 				}
 				registerCount--;
@@ -1000,6 +1004,8 @@ function compile(t) {
 		//если следующая операция выше рангом, то выполняем сразу ее
 		if (getRangOperation(thisToken) > 1)
 			execut();
+		if(operation.length > 1)
+			execut();
 		registerCount--;
 		if (operation == '&' || operation == '&&')
 			asm.push(' AND R' + (registerCount - 1) + ',R' + registerCount);
@@ -1072,6 +1078,8 @@ function compile(t) {
 				getToken();
 				execut();
 			}
+			if(thisToken == ')')
+				getToken();
 		}
 		registerCount = 1;
 		getToken();
@@ -1478,6 +1486,7 @@ function compile(t) {
 	console.time("compile");
 	//регистрируем некоторые стандартные функции
 	registerFunction('random', 'int', ['int', 'i'], 1, 'RAND R%1', true, 0);
+	registerFunction('sqrt', 'int', ['int', 'n'], 1, 'SQRT R%1', true, 0);
 	registerFunction('putchar', 'char', ['char', 'c'], 1, 'PUTC R%1', true, 0);
 	registerFunction('puts', 'int', ['*char', 'c'], 1, 'PUTS R%1', true, 0);
 	registerFunction('putn', 'int', ['int', 'n'], 1, 'PUTN R%1', true, 0);
@@ -1485,6 +1494,7 @@ function compile(t) {
 	registerFunction('settimer', 'void', ['int', 'n', 'int', 'time'], 1, 'STIMER R%2,R%1', true, 0);
 	registerFunction('clearscreen', 'int', [], 1, 'CLS', true, 0);
 	registerFunction('setcolor', 'void', ['int', 'c'], 1, 'SFCLR R%1', true, 0);
+	registerFunction('setbgcolor', 'void', ['int', 'c'], 1, 'SBCLR R%1', true, 0);
 	registerFunction('setpallette', 'void', ['int', 'n', 'int', 'c'], 1, 'SPALET R%2,R%1', true, 0);
 	registerFunction('getchar', 'int', [], 1, 'GETK R%0', true, 0);
 	registerFunction('getkey', 'int', [], 1, 'GETJ R%0', true, 0);
@@ -1492,6 +1502,7 @@ function compile(t) {
 	registerFunction('getpixel', 'int', ['int', 'x', 'int', 'y'], 1, 'GETPIX R%2,R%1', true, 0);
 	registerFunction('getsprite', 'void', ['int', 'n', 'int', 'a'], 1, 'LDSPRT R%2,R%1', true, 0);
 	registerFunction('putsprite', 'void', ['int', 'n', 'int', 'x', 'int', 'y'], 1, 'DRSPRT R%3,R%2,R%1', true, 0);
+	registerFunction('angbetweenspr', 'int', ['int', 'n1', 'int', 'n2'], 1, 'AGBSPR R%2,R%1', true, 0);
 	registerFunction('spritespeedx', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,2 \n SSPRTV R%2,R15,R%1', true, 0);
 	registerFunction('spritespeedy', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,3 \n SSPRTV R%2,R15,R%1', true, 0);
 	registerFunction('spritegetvalue', 'int', ['int', 'n', 'int', 'type'], 1, 'SPRGET R%2,R%1', true, 0);
@@ -1501,6 +1512,7 @@ function compile(t) {
 	registerFunction('scroll', 'void', ['char', 'step', 'char', 'direction'], 1, 'SCROLL R%2,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
+	registerFunction('spritespeed', 'void', ['int', 'n', 'int', 'speed', 'int', 'dir'], 1, '_spritespeed: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SPRSDS R1 \n RET', false, 0);
 	registerFunction('delayredraw', 'void', [], 1, '_delayredraw: \n LDF R1,6\n CMP R1,0\n JZ _delayredraw \n RET', false, 0);
 	dataAsm = [];
 	dataAsm.push('_putimage: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWIM R1 \n RET');

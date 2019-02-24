@@ -145,7 +145,7 @@ function highlite(code){
 		.replace(/([^\\])((?:'(?:\\'|[^'])*')|(?:"(?:\\"|[^"])*"))/g, function(m, f, s)
 			{ var l=strings.length; strings.push(s); return f+'~~~S'+l+'~~~'; })
 	// Выделяем ключевые слова
-		.replace(/(mov|ldi|ldc|sti|stc|pop|popn|push|pushn|jmp|jz|jnz|jc|jnc|call|ret|add|sub|mul|div|cmp|inc|dec|ldf|hlt)([^a-z0-9\$_])/gi,
+		.replace(/(mov|ldi|ldial|ldc|sti|stial|stc|pop|popn|push|pushn|jmp|jz|jnz|jc|jnc|call|ret|add|and|sub|mul|div|cmp|inc|dec|ldf|hlt)([^a-z0-9\$_])/gi,
 			'<span class="kwrd">$1</span>$2')
 	// Выделяем скобки
 		.replace(/(\(|\))/gi,
@@ -365,6 +365,13 @@ function Display() {
 		cpuLostCycle += 2000;
     }
 	
+	function clearScreen(){
+		for(var i = 0; i < 20480; i++){
+			displayArray[i] = 0;
+			canvasArray[i] = 0;
+		}
+	}
+	
 	function clearSprite(){
 		for(var i = 0; i < 20480; i++){
 			spriteArray[i] = 0;
@@ -474,6 +481,7 @@ function Display() {
     return {
       init: init,
       reset: reset,
+	  clearScreen:clearScreen,
 	  char:char,
 	  updatePixel: updatePixel,
 	  drawPixel: drawPixel,
