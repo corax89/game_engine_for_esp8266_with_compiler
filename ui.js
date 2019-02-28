@@ -21,6 +21,8 @@ var delta_x = 0;
 var delta_y = 0;
 var file = '';
 var isDebug = false;
+var tickCount = 0;
+var isRedraw = true;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -325,6 +327,14 @@ function run(){
 		i += cpuLostCycle;
 		cpuLostCycle = 0;
 	}
+	//обработка спрайтов
+	if(isRedraw){
+		display.clearSprite();
+		cpu.redrawSprite();
+		cpu.testSpriteCollision(isDebug);
+		cpu.setRedraw();
+		isRedraw = false;
+	}
 	//выводим отладочную информацию
 	document.getElementById('debug').value = cpu.debug();
 	clearTimeout(timerId);
@@ -499,13 +509,14 @@ function Display() {
 function redraw() {
     setTimeout(function() {
         requestAnimationFrame(redraw);
-		display.clearSprite();
-		cpu.redrawSprite();
+		//display.clearSprite();
+		//cpu.redrawSprite();
 		cpu.redrawParticle();
 		display.redraw();
-		cpu.testSpriteCollision(isDebug);
+		//cpu.testSpriteCollision(isDebug);
 		cpu.setRedraw();
-    }, 50);
+		isRedraw = true;
+    }, 48);
 }
 
 function savebin(){

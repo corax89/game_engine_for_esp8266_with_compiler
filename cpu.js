@@ -12,6 +12,7 @@ function Cpu(){
 	var carry = 0;			//флаг переполнения
 	var zero = 0;			//флаг нуля
 	var negative = 0;		//флаг отрицательности
+	var interrupt = 0;		//флаг прерывания
 	var redraw = 0;			//флаг, устанавливаемый после перерисовки
 	var sprites = [];		//массив адресов и координат спрайтов
 	var particles = [];		//массив для частиц
@@ -21,6 +22,7 @@ function Cpu(){
 	var bgcolor = 0;		//фоновый цвет
 	var color = 1;			//цвет рисования
 	var charArray = [];		//массив символов, выводимых на экран
+	var interruptBuffer = [];
 	
 	function init(){
 		for(var i = 0; i < 0xffff; i++)
@@ -35,9 +37,13 @@ function Cpu(){
 		imageSize = 1;
 		bgcolor = 0;
 		color = 1;
+		interrupt = 0;
 		//задаем начальные координаты спрайтов вне границ экрана
 		for(var i = 0; i < 32; i++){
-			sprites[i]  = {address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, lives: 0, collision: -1, solid: 0, gravity: 0};	
+			sprites[i]  = {
+				address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, 
+				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0
+			};	
 		}
 		for(var i = 0; i < maxParticles; i++){
 			particles[i] = {time: 0, x: 0, y: 0, gravity: 0, speedx: 0, speedy: 0, color: 0};
@@ -371,8 +377,43 @@ function Cpu(){
 				sprites[n].speedy += sprites[n].gravity;
 				sprites[n].x += sprites[n].speedx;
 				sprites[n].y += sprites[n].speedy;
+				if(sprites[n].onexitscreen > 0){
+					if(sprites[n].x + sprites[n].width < 0 || sprites[n].x > 127 || sprites[n].y + sprites[n].height < 0 || sprites[n].y > 127)
+						setinterrupt(sprites[n].onexitscreen, n);
+				}
 			}
 		}	
+	}
+	
+	function flagsToByte(){
+		return (carry & 0x1) + ((zero & 0x1) << 1)  + ((negative & 0x1) << 2);
+	}
+	
+	function byteToFlags(b){
+		carry = b & 0x1;
+		zero = (b & 0x2) >> 1;
+		negative = (b & 0x4) >> 2;
+	}
+	
+	function setinterrupt(adr, param){
+		if(interrupt == 0){
+			reg[0] -= 2;
+			writeInt(reg[0], flagsToByte());
+			for(var j = 1; j <= 15; j++){
+				reg[0] -= 2;
+				writeInt(reg[0], reg[j]);
+			}
+			reg[0] -= 2;
+			writeInt(reg[0], param);
+			reg[0] -= 2;
+			writeInt(reg[0], pc);
+			interrupt = pc;
+			pc = adr;
+		}
+		else if(interruptBuffer.length < 10){
+			interruptBuffer.push(param);
+			interruptBuffer.push(adr);
+		}
 	}
 	
 	function testSpriteCollision(debug){
@@ -389,6 +430,10 @@ function Cpu(){
 						sprites[n].y + sprites[n].height > sprites[i].y){
 							sprites[n].collision = i;
 							sprites[i].collision = n;
+							if(sprites[n].oncollision > 0)
+								setinterrupt(sprites[n].oncollision, n);
+							if(sprites[i].oncollision > 0)
+								setinterrupt(sprites[i].oncollision, i);
 							if(debug){
 								display.drawTestRect(sprites[n].x, sprites[n].y, sprites[n].width, sprites[n].height, sprites[n].solid);
 								display.drawTestRect(sprites[i].x, sprites[i].y, sprites[i].width, sprites[i].height, sprites[i].solid);
@@ -1015,8 +1060,27 @@ function Cpu(){
 						break;
 					case 0x9A:
 						// RET			9A 00
-						pc = readInt(reg[0]);
-						reg[0] += 2;
+						if(interrupt == 0){
+							pc = readInt(reg[0]);
+							reg[0] += 2;
+						}
+						else{
+							pc = readInt(reg[0]);
+							if(pc == interrupt){
+								reg[0] += 4;
+								for(var j = 15; j >= 1; j--){
+									reg[j] = readInt(reg[0]);
+									reg[0] += 2;
+								}
+								byteToFlags(readInt(reg[0]));
+								reg[0] += 2;
+								interrupt = 0;
+								if(interruptBuffer.length > 0)
+									setinterrupt(interruptBuffer.pop(), interruptBuffer.pop());
+							}
+							else
+								reg[0] += 2;
+						}
 						break;
 				}
 				break;
@@ -1498,6 +1562,10 @@ function Cpu(){
 					sprites[reg[reg1] & 31].solid = reg[reg3];
 				else if(reg[reg2] == 10)
 					sprites[reg[reg1] & 31].gravity = reg[reg3];
+				else if(reg[reg2] == 11)
+					sprites[reg[reg1] & 31].oncollision = reg[reg3];
+				else if(reg[reg2] == 12)
+					sprites[reg[reg1] & 31].onexitscreen = reg[reg3];
 				break;
 		}
 	}

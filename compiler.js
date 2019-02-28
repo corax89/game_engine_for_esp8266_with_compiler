@@ -8,6 +8,7 @@ function tokenize(s) {
 	var tokenReplace = [
 		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5, 
 		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
+		'S_ON_COLLISION', 11, 'S_ON_EXIT_SCREEN', 12,
 		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8, 'KEY_A', 16, 'KEY_B', 32
 		];
 	//упрощенный вариант #define, лишь замена
@@ -374,7 +375,14 @@ function compile(t) {
 			longArg = true;
 		getToken();
 		if (thisToken != '(') {
-			info("" + lineCount + " ожидалась открывающая скобка в функции " + t);
+			if(thisToken == ')' || thisToken == ','){
+				asm.push(' LDI R' + registerCount + ',_' + func.name);
+				func.use++;
+				registerCount++;
+				return;
+			}
+			else
+				info("" + lineCount + " ожидалась открывающая скобка в функции " + t);
 			return false;
 		}
 		if (func.inline == true) {
@@ -1048,6 +1056,8 @@ function compile(t) {
 			asm.push(' SHR R' + (registerCount - 1) + ',R' + registerCount);
 		else if (operation == '<<')
 			asm.push(' SHL R' + (registerCount - 1) + ',R' + registerCount);
+		else
+			return false;
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
 			getToken();
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
