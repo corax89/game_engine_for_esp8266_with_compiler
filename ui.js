@@ -131,7 +131,7 @@ function keyUpHandler(e) {
 	}
 }
 
-function highlite(code){
+function highliteasm(code){
 	//подсветка от etcdema
 	var comments	= [];	// Тут собираем все каменты
 	var strings		= [];	// Тут собираем все строки
@@ -158,6 +158,39 @@ function highlite(code){
 	// Выставляем переводы строк
 		.replace(/\n/g,'<br/>')
 }
+
+function highlitec(){
+	//подсветка от etcdema
+	var code = document.getElementById("help_hl").innerHTML;
+	var comments	= [];	// Тут собираем все каменты
+	var strings		= [];	// Тут собираем все строки
+	var res			= [];	// Тут собираем все RegExp
+	var all			= { 'C': comments, 'S': strings, 'R': res };
+	var safe		= { '<': '<', '>': '>', '&': '&' };
+
+	document.getElementById("help_hl").innerHTML = code
+	// Убираем каменты
+		.replace(/([^\/])\/\/[^\n]*/g, function(m, f)
+			{ var l=comments.length; comments.push(m); return f+'~~~C'+l+'~~~'; })
+	// Убираем строки
+		.replace(/()(\/\*[\S\s]*?\*\/)/g, function(m, f, s)
+			{ var l=strings.length; strings.push(s); return f+'~~~S'+l+'~~~'; })
+	// Выделяем ключевые слова
+		.replace(/(int|char|void)([^a-z0-9\$_])/gi,
+			'<span class="kwrd">$1</span>$2')
+	// Выделяем скобки
+		.replace(/(\(|\))/gi,
+			'<span class="gly">$1</span>')
+	// Возвращаем на место каменты, строки
+		.replace(/~~~([CSR])(\d+)~~~/g, function(m, t, i)
+			{ return '<span class="'+t+'">'+all[t][i]+'</span>'; })
+	// Выставляем переводы строк
+		.replace(/\n/g,'<br/>')
+		.replace(/\t/g, '');
+}
+
+highlitec();
+
 //компиляция ассемблерного кода из поля ввода
 function onlyAsm(){
 	var s = document.getElementById('input').value;
@@ -177,7 +210,7 @@ function main(){
 	var c = compile(t);
 	asmSource = '\n' + c.join('\n') + '\n';
 	file = asm(asmSource);
-	document.getElementById('disasm').innerHTML = highlite(asmSource);
+	document.getElementById('disasm').innerHTML = highliteasm(asmSource);
 	document.getElementById('ram').value = toHexA(file);
 }
 //вывод информации о ходе сборки
@@ -359,7 +392,20 @@ function Display() {
 		ctx = canvas.getContext('2d');
 		ctx.imageSmoothingEnabled = false;
 		reset();
+		canvas.addEventListener('mousemove', function (e) {
+			position(e);
+		});
     }
+	
+	function position(e){
+		var rect = canvas.getBoundingClientRect();
+		var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/128));
+		var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/160)) - 16;
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
+		ctx.fillStyle = "white";
+		ctx.fillText("x " + x + "; y " + y , 1, 1);
+	}
 
     function reset() {
 		ctx.textAlign="start";
@@ -375,10 +421,12 @@ function Display() {
 		cpuLostCycle += 2000;
     }
 	
-	function clearScreen(){
+	function clearScreen(color){
+		if (color === undefined || color === null)
+			color = 0;
 		for(var i = 0; i < 20480; i++){
-			displayArray[i] = 0;
-			canvasArray[i] = 0;
+			displayArray[i] = color;
+			canvasArray[i] = color;
 		}
 	}
 	

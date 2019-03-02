@@ -1239,6 +1239,22 @@ function Cpu(){
 							reg[reg1] = n;
 						}
 						break;
+					case 0xAE:
+						// ANDL R,R		AE RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = (reg[reg1] != 0 && reg[reg2] != 0) ? 1 : 0;
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
+					case 0xAF:
+						// ORL R,R		AF RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						n = (reg[reg1] != 0 || reg[reg2] != 0) ? 1 : 0;
+						n = setFlags(n);
+						reg[reg1] = n;
+						break;
 				}
 				break;
 			case 0xB0:
@@ -1300,7 +1316,7 @@ function Cpu(){
 				switch(op1){ 
 					case 0xD0:
 						//CLS		D000
-						display.clearScreen();
+						display.clearScreen(bgcolor);
 						//pc--;
 						break;
 					case 0xD1:

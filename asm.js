@@ -431,6 +431,14 @@ function asm(s) {
 				out.push(0xA7); //OR R,R			A7 RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
+			case 'ANDL':
+				out.push(0xAE); //AND R,R			A6 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'ORL':
+				out.push(0xAF); //OR R,R			A7 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'XOR':
 				out.push(0xAA); //XOR R,R			AA RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));

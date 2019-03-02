@@ -1015,10 +1015,14 @@ function compile(t) {
 		if(operation.length > 1)
 			execut();
 		registerCount--;
-		if (operation == '&' || operation == '&&')
+		if (operation == '&')
 			asm.push(' AND R' + (registerCount - 1) + ',R' + registerCount);
-		else if (operation == '|' || operation == '||')
+		else if (operation == '|')
 			asm.push(' OR R' + (registerCount - 1) + ',R' + registerCount);
+		if (operation == '&&')
+			asm.push(' ANDL R' + (registerCount - 1) + ',R' + registerCount);
+		else if (operation == '||')
+			asm.push(' ORL R' + (registerCount - 1) + ',R' + registerCount);
 		else if (operation == '^')
 			asm.push(' XOR R' + (registerCount - 1) + ',R' + registerCount);
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
