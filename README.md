@@ -2,7 +2,7 @@
 
 Посмотреть в работе можно тут [https://corax89.github.io/esp8266Game/](https://corax89.github.io/esp8266Game/index.html)
 
-![test collision](/img/collision.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![pi](/img/pi.gif) ![rpg](/img/rpg.gif) ![tile](/img/tile.gif)
+![test collision](/img/collision.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![pi](/img/pi.gif) ![rpg](/img/rpg.gif) ![tile](/img/tile.gif) ![clicker](/img/clicker.gif) ![flappybird](/img/flappybird.gif)
 
 Попытка сделать игровое устройство, которое можно программировать прямо из браузера. Здесь находится компилятор подмножества си в байткод и виртуальная машина, написанные на js.
 VM имеет доступ к 65 534 байтам памяти, на самом устройстве доступно лишь 20 000 байт, т.к. остальная память уходит на буфер экрана и библиотеки.
