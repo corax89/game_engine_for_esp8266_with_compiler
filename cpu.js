@@ -549,7 +549,7 @@ function Cpu(){
 		tile.y = y0;
 		for(x = 0; x < tile.width; x++){
 			for(y = 0; y < tile.height; y++){
-				if(x0 + x * tile.imgwidth > 0 && x0 + x * tile.imgwidth < 128 && y0 + y * tile.imgheight > 0 && y0 + y * tile.imgheight < 128){
+				if(x0 + x * tile.imgwidth >= 0 && x0 + x * tile.imgwidth < 128 && y0 + y * tile.imgheight >= 0 && y0 + y * tile.imgheight < 128){
 					imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
 					if(imgadr > 0)
 						drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 
@@ -759,6 +759,10 @@ function Cpu(){
 		var rand = min - 0.5 + Math.random() * (max - min + 1)
 		rand = Math.round(rand);
 		return rand;
+	}
+	
+	function distancepp(x1, y1, x2, y2){
+		return Math.floor(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	}
 	
 	function step(){
@@ -1475,6 +1479,9 @@ function Cpu(){
 						else if((op2 & 0xf0) == 0x20)
 							//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
 							drawParticle(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						else if((op2 & 0xf0) == 0x50)
+							//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
+							reg[1] = distancepp(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 						break;
 					case 0xD8:
 						// SCROLL R,R		D8RR

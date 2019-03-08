@@ -21,6 +21,11 @@ input[type=file] {
 textarea:focus {
 	outline: none;
 }
+#lang {
+	position:fixed;
+	right:0;
+	top:0;
+}
 #container {
 	height: 42.5em;
 	overflow: hidden;
@@ -239,9 +244,24 @@ textarea:focus {
 }
 #pixelearea {
 	image-rendering: pixelated;
-	width: 20em;
-	margin-bottom: -0.8em;
-    margin-left: 0.5em;
+	width: 19em;
+	float: left;
+}
+#pixelpanel {
+	font-size: 180%;
+    text-align: center;
+}
+#pixelpanel>label {
+	border: 1px solid #516399;
+	display: block;
+    margin-bottom: 0.1em;
+}
+#pixelpanel>input[type="radio"] {
+	display: none;
+}
+#pixelpanel>input[type="radio"]:checked+label { 
+	background-color: #516399;
+	color: #ffffff;
 }
 #checkRle{
 	position: relative;

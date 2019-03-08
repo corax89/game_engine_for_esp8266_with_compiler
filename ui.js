@@ -23,6 +23,7 @@ var file = '';
 var isDebug = false;
 var tickCount = 0;
 var isRedraw = true;
+var language = 'eng';
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -100,8 +101,11 @@ function keyDownHandler(e) {
 		case 68:
 			globalJKey |= 8;
 			break;
-		case 32: //A - space
+		case 32: //B - space
 			globalJKey |= 32;
+			break;
+		case 90: //A - Z
+			globalJKey |= 16;
 			break;
 	}
 	globalKey = e.keyCode;
@@ -125,8 +129,11 @@ function keyUpHandler(e) {
 		case 68:
 			globalJKey &= ~8;
 			break;
-		case 32: //A - space
+		case 32: //B - space
 			globalJKey &= ~32;
+			break;
+		case 90: //A - Z
+			globalJKey &= ~16;
 			break;
 	}
 }

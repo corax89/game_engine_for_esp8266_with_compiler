@@ -604,6 +604,18 @@ function asm(s) {
 				out.push(0xD7); // DPART R 		D7 2R
 				out.push(0x20 + getRegister(a[i + 1]));
 				return;
+			case 'DISTSS':
+				out.push(0xD7); // DISTSS		D7 3R
+				out.push(0x30 + getRegister(a[i + 1]));
+				return;
+			case 'DISTSP':
+				out.push(0xD7); // DISTSP		D7 4R
+				out.push(0x40 + getRegister(a[i + 1]));
+				return;
+			case 'DISTPP':
+				out.push(0xD7); // DISTPP		D7 5R
+				out.push(0x50 + getRegister(a[i + 1]));
+				return;
 			case 'SCROLL':
 				out.push(0xD8); // SCROLL R,R		D8RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
@@ -695,8 +707,8 @@ function asm(s) {
 			}
 		}
 	}
-	info("размер программы " + out.length + " байт");
-	info("переменные занимают " + variableAdress + " байт");
+	info("program size "+ out.length +" bytes");
+	info("variables occupy "+ variableAdress +" bytes");
 	display.reset();
 	cpu.init();
 	cpu.load(out);
