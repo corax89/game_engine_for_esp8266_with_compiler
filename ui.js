@@ -4,6 +4,7 @@ var memoryArea = document.getElementById('ram');
 var alertArea =  document.getElementById("alert");
 var debugArea =  document.getElementById("debug");
 var debugVarArea =  document.getElementById("debugVariable");
+var debugSprArea =  document.getElementById("debugSprite");
 var memoryPage = 0;			//указывает на одну из 255 страниц памяти по 255 байт для отображения
 var cpuSpeed = 1600;			//количество операций, выполняемых процессором за 16 миллисекунд
 var cpuLostCycle = 0;		//сколько циклов должно быть потеряно из-за операций рисования
@@ -71,6 +72,15 @@ function motion_wind(obj_event) {
 	obj_wind.style.top = (delta_y + y) + "px";
 	obj_wind.style.left = (delta_x + x) + "px";
 	window.getSelection().removeAllRanges();
+}
+
+function viewDebug(id) {
+  var i;
+  var x = document.getElementsByClassName("debug");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none"; 
+  }
+  document.getElementById(id).style.display = "block"; 
 }
 
 function keyDownHandler(e) {
@@ -564,11 +574,8 @@ function Display() {
 function redraw() {
     setTimeout(function() {
         requestAnimationFrame(redraw);
-		//display.clearSprite();
-		//cpu.redrawSprite();
 		cpu.redrawParticle();
 		display.redraw();
-		//cpu.testSpriteCollision(isDebug);
 		cpu.setRedraw();
 		isRedraw = true;
     }, 48);

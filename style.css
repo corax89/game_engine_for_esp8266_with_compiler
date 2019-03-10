@@ -206,7 +206,7 @@ textarea:focus {
 	left: 23em;
 	display: none;
 }
-#disasm, #debugVariable {
+#disasm, #debugVariable, #debugSprite {
 	background-color: #eee;
 	border: 1px solid #516399;
 	color: #516399;
@@ -216,6 +216,13 @@ textarea:focus {
 	resize: none;
 	width: 21em;
 	tab-size: 16;
+}
+#debugVariable {
+	height: 27.7em;
+}
+#debugSprite {
+	height: 27.7em;
+	display:none;
 }
 #disasm:focus {
 	outline: 3px solid #516399;

@@ -135,7 +135,12 @@ void main(){
             </div>
         </div>
         <div class="content_wind">
-           <textarea id="debugVariable" disabled="disabled"></textarea>
+			<div class="bar">
+			  <button onclick="viewDebug('debugVariable')">variable</button>
+			  <button onclick="viewDebug('debugSprite')">sprites</button>
+			</div>
+           <textarea id="debugVariable" class="debug" disabled="disabled"></textarea>
+		   <textarea id="debugSprite" class="debug" disabled="disabled"></textarea>
         </div>
     </div>
 	<div id="div_wind4" class="div_wind" style="display:none">

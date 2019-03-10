@@ -1579,8 +1579,12 @@ function Cpu(){
 					sprites[reg[reg1] & 31].height = reg[reg3];
 				else if(reg[reg2] == 6)
 					sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
-				else if(reg[reg2] == 7)
-					sprites[reg[reg1] & 31].lives = reg[reg3];
+				else if(reg[reg2] == 7){
+					if(reg[reg3] > 128)
+						sprites[reg[reg1] & 31].lives = -(256 - (reg[reg3] & 0xff));
+					else
+						sprites[reg[reg1] & 31].lives = reg[reg3];
+				}
 				else if(reg[reg2] == 9)
 					sprites[reg[reg1] & 31].solid = reg[reg3];
 				else if(reg[reg2] == 10)
@@ -1611,6 +1615,20 @@ function Cpu(){
 			if(numberDebugString[i][2] == pc){
 				thisDebugString = numberDebugString[i][1];
 			}
+		d = '';
+		for(var i = 0; i < 32; i++){
+			d += '\nsprite ' + i + '\n';
+			d += 'S_ADDRESS \t' + toHex4(sprites[i].address) + '\n';
+			d += 'S_X \t' + sprites[i].x + '\n';
+			d += 'S_Y \t' + sprites[i].y + '\n';
+			d += 'S_SPEEDX \t' + sprites[i].speedx + '\n';
+			d += 'S_SPEEDY \t' + sprites[i].speedy + '\n';
+			d += 'S_WIDTH \t' + sprites[i].width + '\n';
+			d += 'S_HEIGHT \t' + sprites[i].height + '\n';
+			d += 'S_ANGLE \t' + sprites[i].angle + '\n';
+			d += 'S_LIVES \t' + sprites[i].lives + '\n';
+		}
+		debugSprArea.value = d;
 		highliteLine();
 		return s;
 	}
