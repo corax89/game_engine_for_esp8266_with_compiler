@@ -85,6 +85,10 @@ void nextCell(){
 		stack[stackpoint] = y;
 		stackpoint++;
 	}
+	if(n < 4){
+		drawtile(4 ,4);
+		delayredraw();
+	}
 }
 
 void main(){
@@ -104,8 +108,6 @@ while(1){
 	maze[x + y * 15] = wall2;
 	while(generate){
 		nextCell();
-		drawtile(4 ,4);
-		delayredraw();
 	}
 	for(x = 1; x < 14; x++){
 		for(y = 0; y < 14; y++){
