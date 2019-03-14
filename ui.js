@@ -384,9 +384,9 @@ function run(){
 		cpu.testSpriteCollision(isDebug);
 		cpu.setRedraw();
 		isRedraw = false;
+		//выводим отладочную информацию
+		document.getElementById('debug').value = cpu.debug();
 	}
-	//выводим отладочную информацию
-	document.getElementById('debug').value = cpu.debug();
 	clearTimeout(timerId);
 	timerId = setTimeout(function() { run() }, 16);
 }
