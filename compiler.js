@@ -156,6 +156,7 @@ function compile(t) {
 	var varTable = []; //таблица переменных
 	var localVarTable = []; //таблица локальных переменных
 	var functionTable = []; //таблица, содержащая имена функций и их исходный код на ассемблере
+	var thisFunction;
 	var isIntoFunction = false; //находимся ли мы в теле функции
 	var functionVarTable = []; //таблица переменных, указанных в объявлении текущей обрабатываемой функции
 	var lineCount = 0; //номер текущей строки
@@ -391,6 +392,7 @@ function compile(t) {
 	function addFunction(type) {
 		var name = thisToken;
 		var start = 0;
+		thisFunction = name;
 		localVarTable = [];
 		functionVarTable = [];
 		registerCount = 1;
@@ -460,6 +462,7 @@ function compile(t) {
 			localVarTable = [];
 			isIntoFunction = false;
 		}
+		thisFunction = '';
 	}
 	//вставка кода функции
 	function inlineFunction(func) {
@@ -589,6 +592,8 @@ function compile(t) {
 		if (longArg)
 			asm.push(' LDC R1,' + (operandsCount * 2));
 		//освобождаем место на стеке для переменных
+		if(func.varLength == 0 && thisFunction == func.name)
+			func.varLength = functionVarTable.length;
 		if (func.varLength > 0) {
 			if (func.varLength < 15)
 				asm.push(' DEC R0,' + func.varLength);
