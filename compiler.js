@@ -593,7 +593,7 @@ function compile(t) {
 			asm.push(' LDC R1,' + (operandsCount * 2));
 		//освобождаем место на стеке для переменных
 		if(func.varLength == 0 && thisFunction == func.name)
-			func.varLength = functionVarTable.length;
+			func.varLength = localVarTable.length;
 		if (func.varLength > 0) {
 			if (func.varLength < 15)
 				asm.push(' DEC R0,' + func.varLength);
@@ -1762,7 +1762,7 @@ function compile(t) {
 	dataAsm.push(' CMP R3,37 ;% \n JZ printf_get\n PUTC R3\n INC R2 \n LDC R3,(R2) \n JNZ next_printf_c');
 	dataAsm.push(' RET \nnext_printf_c_end:\n INC R2 \n LDC R3,(R2)\n JNZ next_printf_c \n RET\nprintf_get:');
 	dataAsm.push(' INC R2 \n LDC R3,(R2) \n CMP R3,37 ;%\n JZ printf_percent\n DEC R1,2 \n LDI R4,(R1+R0)');
-	dataAsm.push(' CMP R3,68 ;D\n JZ printf_d \n CMP R3,73 ;I\n JZ printf_d \n CMP R3,83 ;S\n JZ printf_s \n CMP R3,67 ;C\n JZ printf_c');
+	dataAsm.push(' CMP R3,100 ;d\n JZ printf_d \n CMP R3,105 ;i\n JZ printf_d \n CMP R3,115 ;s\n JZ printf_s \n CMP R3,99 ;c\n JZ printf_c');
 	dataAsm.push(' JMP next_printf_c \nprintf_percent:\n PUTC R3 \n JMP next_printf_c_end \nprintf_d: \n PUTN R4');
 	dataAsm.push(' JMP next_printf_c_end\nprintf_c: \n PUTC R4\n JMP next_printf_c_end\nprintf_s:\n PUTS R4 \n JMP next_printf_c_end');
 	registerFunction('printf', 'int', ['*char', 's', '...'], 1, dataAsm, false, 0);

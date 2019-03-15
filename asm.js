@@ -208,8 +208,10 @@ function asm(s) {
 	}
 
 	function compile(a) {
-		for (var i = 0; i < a.length; i++)
-			a[i] = a[i].toUpperCase();
+		for (var i = 0; i < a.length; i++){
+			if(a[i][0] != '"')
+				a[i] = a[i].toUpperCase();
+		}
 		for (var i = 0; i < a.length; i++) {
 			switch (a[i]) {
 			case ':':
