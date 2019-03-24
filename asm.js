@@ -229,6 +229,15 @@ function asm(s) {
 					variableAdress += 2;
 				}
 				return
+			case 'BYTE':
+				if (a[i + 2] && a[i + 2].toUpperCase() == 'DUP') {
+					variable.push(a[i - 1], variableAdress);
+					variableAdress += strToNum(a[i + 1]);
+				} else {
+					variable.push(a[i - 1], variableAdress);
+					variableAdress += 1;
+				}
+				return
 			case 'NOP':
 				out.push(0x00);
 				out.push(0x00);

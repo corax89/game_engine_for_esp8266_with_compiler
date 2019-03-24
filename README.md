@@ -2,7 +2,7 @@
 
 Посмотреть в работе можно тут [https://corax89.github.io/esp8266Game/](https://corax89.github.io/esp8266Game/index.html)
 
-![test collision](/img/collision.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![pi](/img/pi.gif) ![rpg](/img/rpg.gif) ![tile](/img/tile.gif)
+![columns](/img/columns.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![gameoflife](/img/gameoflife.gif) ![mars_attack](/img/mars_attack.gif) ![tile](/img/tile.gif)
  ![clicker](/img/clicker.gif) ![flappybird](/img/flappybird.gif) ![towerdefence](/img/towerdef.gif)
 
 Попытка сделать игровое устройство, которое можно программировать прямо из браузера. Здесь находится компилятор подмножества си в байткод и виртуальная машина, написанные на js.

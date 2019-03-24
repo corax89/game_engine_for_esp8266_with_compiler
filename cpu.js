@@ -678,7 +678,31 @@ function Cpu(){
 		}
 	}
 	
+	function drawFastVLine(x, y1, y2){
+		for(var i = y1; i <= y2; i++)
+			display.plot(color, x, i);
+	}
+	
+	function drawFastHLine(x1, x2, y){
+		for(var i = x1; i <= x2; i++)
+			display.plot(color, i, y);
+	}
+	
 	function drawLine(x1, y1, x2, y2) {
+		if(x1 == x2){
+			if(y1 > y2)
+				drawFastVLine(x1, y2, y1);
+			else
+				drawFastVLine(x1, y1, y2);
+			return;
+		}
+		else if(y1 == y2){
+			if(x1 > x2)
+				drawFastHLine(x2, x1, y1);
+			else
+				drawFastHLine(x1, x2, y1);
+			return;
+		}
 		var deltaX = Math.abs(x2 - x1);
 		var deltaY = Math.abs(y2 - y1);
 		var signX = x1 < x2 ? 1 : -1;
@@ -1134,9 +1158,13 @@ function Cpu(){
 						// DIV R,R		A5 RR
 						reg1 = (op2 & 0xf0) >> 4;
 						reg2 = op2 & 0xf;
+						if(reg[reg1] > 0x7fff)
+							reg[reg1] -= 0x10000;
+						if(reg[reg2] > 0x7fff)
+							reg[reg2] -= 0x10000;
 						n = reg[reg1] / reg[reg2];
 						n = setFlags(n);
-						reg[reg2] = reg[reg1] % reg[reg2];
+						reg[reg2] = Math.abs(reg[reg1] % reg[reg2]);
 						reg[reg1] = n;
 						break;
 					case 0xA6:
@@ -1485,10 +1513,11 @@ function Cpu(){
 						break;
 					case 0xD8:
 						// SCROLL R,R		D8RR
-						reg1 = (op2 & 0xf0) >> 4;//шаг
+						reg1 = (op2 & 0xf0) >> 4;//шаг, доделать
 						reg2 = op2 & 0xf;//направление
-						for(var i = 0; i < reg[reg1] + reg[reg1] % 2; i++)
-							scrollScreen(reg[reg1], reg[reg2]);
+						scrollScreen(1, reg[reg2]);
+						if(reg[reg2] == 0 || reg[reg2] == 2)
+							scrollScreen(1, reg[reg2]);
 						break;
 					case 0xD9:
 						// GETPIX R,R		D9RR
@@ -1557,10 +1586,18 @@ function Cpu(){
 				reg1 = (op1 & 0xf);//номер спрайта
 				reg2 = (op2 & 0xf0) >> 4;//type
 				reg3 = op2 & 0xf;//value
-				if(reg[reg2] == 0)
-					sprites[reg[reg1] & 31].x = reg[reg3];
-				else if(reg[reg2] == 1)
-					sprites[reg[reg1] & 31].y = reg[reg3];
+				if(reg[reg2] == 0){
+					if(reg[reg3] > 0x7fff)
+						sprites[reg[reg1] & 31].x = reg[reg3] - 0x10000;
+					else
+						sprites[reg[reg1] & 31].x = reg[reg3];
+				}
+				else if(reg[reg2] == 1){
+					if(reg[reg3] > 0x7fff)
+						sprites[reg[reg1] & 31].y = reg[reg3] - 0x10000;
+					else
+						sprites[reg[reg1] & 31].y = reg[reg3];
+				}
 				else if(reg[reg2] == 2){
 					if(reg[reg3] > 128)
 						sprites[reg[reg1] & 31].speedx = -(256 - (reg[reg3] & 0xff));

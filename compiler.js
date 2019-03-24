@@ -28,7 +28,6 @@ function tokenize(s) {
 
 	s = define(s);
 	s = s.replace(/#include[^\n]*/g, ''); //удаление инклюдов, дабы не мешали
-	//s = s.replace(/(\w*\d*)\s*([\/\*\+\-])\s*=([^;]*)/g, '$1=$1$2($3)'); //замена сокращенной записи операции с переменной
 	l = s.length;
 	tokens[0] = '';
 	for (var i = 0; i < l; i++) {
@@ -834,7 +833,6 @@ function compile(t) {
 			//массив уже заполнен, считаем количество элементов
 			else if (thisToken == '{') {
 				while (thisToken && thisToken != '}') {
-					
 					getToken();
 					removeNewLine();
 					if (!thisToken)
@@ -866,7 +864,10 @@ function compile(t) {
 		//количество элементов указано
 		else if (isNumber(thisToken)) {
 			length = thisToken * 1;
-			dataAsm.push(' _' + name + ' word ' + length + ' dup(?)');
+			if (type == 'char')
+				dataAsm.push(' _' + name + ' byte ' + length + ' dup(?)');
+			else
+				dataAsm.push(' _' + name + ' word ' + length + ' dup(?)');
 			varTable.push({
 				name: name,
 				type: type,
@@ -1733,7 +1734,7 @@ function compile(t) {
 	registerFunction('spritesetvalue', 'void', ['int', 'n', 'int', 'type', 'int', 'value'], 1, 'SSPRTV R%3,R%2,R%1', true, 0);
 	registerFunction('setimagesize', 'void', ['int', 's'], 1, 'ISIZE R%1', true, 0);
 	registerFunction('drawtile', 'void', ['int', 'x', 'int', 'y'], 1, 'DRTILE R%2,R%1', true, 0);
-	registerFunction('scroll', 'void', ['char', 'step', 'char', 'direction'], 1, 'SCROLL R%2,R%1', true, 0);
+	registerFunction('scroll', 'void', ['char', 'direction'], 1, 'SCROLL R%1,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
 	registerFunction('spritespeed', 'void', ['int', 'n', 'int', 'speed', 'int', 'dir'], 1, '_spritespeed: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SPRSDS R1 \n RET', false, 0);
