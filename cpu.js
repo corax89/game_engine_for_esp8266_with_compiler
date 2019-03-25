@@ -143,7 +143,7 @@ function Cpu(){
 				display.plot(bufPixel, x, 127);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].y++;
+				sprites[n].y--;
 		}
 		else if(direction == 0){
 			for(var y = 0; y < 128; y++){
@@ -163,7 +163,7 @@ function Cpu(){
 				display.plot(bufPixel, x, 0);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].y--;
+				sprites[n].y++;
 		}
 		if(tile.adr > 0)
 			tileDrawLine(step, direction);

@@ -382,7 +382,6 @@ function run(){
 		display.clearSprite();
 		cpu.redrawSprite();
 		cpu.testSpriteCollision(isDebug);
-		cpu.setRedraw();
 		isRedraw = false;
 		//выводим отладочную информацию
 		document.getElementById('debug').value = cpu.debug();
