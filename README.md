@@ -3,7 +3,8 @@
 Посмотреть в работе можно тут [https://corax89.github.io/esp8266Game/](https://corax89.github.io/esp8266Game/index.html)
 
 ![columns](/img/columns.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![gameoflife](/img/gameoflife.gif) ![mars_attack](/img/mars_attack.gif) ![tile](/img/tile.gif)
- ![clicker](/img/clicker.gif) ![flappybird](/img/flappybird.gif) ![towerdefence](/img/towerdef.gif)
+ ![clicker](/img/clicker.gif) ![flappybird](/img/flappybird.gif) ![towerdefence](/img/towerdef.gif) ![cityrunner](/img/cityrunner.gif)
+ ![galaxies](/img/galaxies.gif) ![memories](/img/memories.gif)
 
 Gaming device that can be programmed directly from the browser. Here is the compiler of the subset C into bytecode and the virtual machine written in js. 
 VM has access to 65,534 bytes of memory, only 20,000 bytes are available on the device itself, since the remaining memory goes to the screen  buffer and library. 

@@ -864,10 +864,11 @@ function compile(t) {
 		//количество элементов указано
 		else if (isNumber(thisToken)) {
 			length = thisToken * 1;
+			var newArr = '';
 			if (type == 'char')
-				dataAsm.push(' _' + name + ' byte ' + length + ' dup(?)');
+				newArr = (' _' + name + ' byte ' + length + ' dup(?)');
 			else
-				dataAsm.push(' _' + name + ' word ' + length + ' dup(?)');
+				newArr = (' _' + name + ' word ' + length + ' dup(?)');
 			varTable.push({
 				name: name,
 				type: type,
@@ -877,6 +878,44 @@ function compile(t) {
 			if (thisToken != ']')
 				putError(lineCount, 11, '');
 				//info("" + lineCount + " неправильное объявление массива");
+			getToken();
+			if(thisToken == '='){
+				getToken();
+				if (thisToken != '{')
+					putError(lineCount, 11, '');
+				while (thisToken && thisToken != '}') {
+					getToken();
+					removeNewLine();
+					if (!thisToken)
+						return;
+					if(isNumber(parseInt(thisToken)))
+						buf += parseInt(thisToken) + ',';
+					else if(isVar(thisToken))
+						buf += '_' + thisToken + ',';
+					else
+						buf += '0,';
+					length++;
+					getToken();
+					removeNewLine();
+					if (!(thisToken == '}' || thisToken == ','))
+						putError(lineCount, 11, '');
+						//info("" + lineCount + " неправильное объявление массива");
+				}
+				if (type == 'int')
+					newArr = ('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
+				else if (type == 'char')
+					newArr = ('_' + name + ': \n DB ' + buf.substring(0, buf.length - 1));
+				if(buf.length < length){
+					for(var i = buf.length; i < length; i++)
+						newArr += ',0';
+				}
+				varTable.push({
+					name: name,
+					type: type,
+					length: length
+				});
+			}
+			dataAsm.push(newArr);
 		} else
 			putError(lineCount, 11, '');
 			//info("" + lineCount + " неправильное объявление массива");
