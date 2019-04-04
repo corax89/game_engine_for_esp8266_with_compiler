@@ -231,7 +231,7 @@ function compile(t) {
 				case 20:
 					er = "неизвестный токен " + par;
 					break;
-				case 20:
+				case 21:
 					er = "не найдена точка входа в функцию main";
 					break;
 			}
@@ -299,7 +299,7 @@ function compile(t) {
 				case 20:
 					er = "unknown token " + par;
 					break;
-				case 20:
+				case 21:
 					er = "main function entry point not found";
 					break;
 			}			
@@ -956,17 +956,24 @@ function compile(t) {
 		var v = getVar(thisToken);
 		var point = false;
 		var op;
+		var thisLine = lineCount;
 		if(lastToken == '*' && registerCount == 1)
 			point = true;
 		getToken();
 		//если переменная является массивом
 		if (thisToken == '[') {
 			//вычисление номера ячейки массива
+			getToken();
 			while (thisToken != ']') {
-				getToken();
-				if (!thisToken)
+				if (!thisToken){
+					putError(thisLine, 18, '');
 					return;
+				}
 				execut();
+				if (getRangOperation(thisToken) == 0){
+					getToken();
+					execut();
+				}
 			}
 			getToken();
 			//загрузка ячейки массива
@@ -1651,7 +1658,13 @@ function compile(t) {
 				return;
 			execut();
 		}
-		removeNewLine();
+		getToken();
+		if(thisToken === '\n') {
+			lineCount++;
+			lastEndString = thisTokenNumber;
+			getToken();
+		}
+		previousToken();
 		registerCount = 1;
 	}
 	//определение типа токена и необходимой операции
