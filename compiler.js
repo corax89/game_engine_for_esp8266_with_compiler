@@ -883,6 +883,7 @@ function compile(t) {
 				getToken();
 				if (thisToken != '{')
 					putError(lineCount, 11, '');
+				var nlength = 1;
 				while (thisToken && thisToken != '}') {
 					getToken();
 					removeNewLine();
@@ -894,7 +895,7 @@ function compile(t) {
 						buf += '_' + thisToken + ',';
 					else
 						buf += '0,';
-					length++;
+					nlength++;
 					getToken();
 					removeNewLine();
 					if (!(thisToken == '}' || thisToken == ','))
@@ -905,10 +906,12 @@ function compile(t) {
 					newArr = ('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
 				else if (type == 'char')
 					newArr = ('_' + name + ': \n DB ' + buf.substring(0, buf.length - 1));
-				if(buf.length < length){
-					for(var i = buf.length; i < length; i++)
+				if(nlength < length){
+					console.log(nlength);
+					for(var i = nlength; i <= length; i++)
 						newArr += ',0';
 				}
+				else length = nlength;
 				varTable.push({
 					name: name,
 					type: type,
