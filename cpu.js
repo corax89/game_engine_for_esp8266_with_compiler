@@ -737,9 +737,9 @@ function Cpu(){
 	
 	function printc(c, fc, bc){
 		if(c == '\n'){
-			for(var i = regx; i <= 21; i++){
+			for(var i = regx; i <= 20; i++){
 				display.char(' ' , i * 6, regy * 8, fc, bc);
-				charArray[i + regy * 21] = ' ';
+				charArray[i + regy * 20] = ' ';
 			}
 			regy++;
 			regx = 0;
@@ -751,9 +751,9 @@ function Cpu(){
 		else if(c == '\t'){
 			for(var i = 0; i <= regx % 5; i++){
 				display.char(' ' , regx * 6, regy * 8, fc, bc);
-				charArray[regx + regy * 21] = ' ';
+				charArray[regx + regy * 20] = ' ';
 				regx++;
-				if(regx > 21){
+				if(regx > 20){
 					i = 99;
 					regy++;
 					regx = 0;
@@ -766,9 +766,9 @@ function Cpu(){
 		}
 		else{
 			display.char(c , regx * 6, regy * 8, fc, bc);
-			charArray[regx + regy * 21] = c;
+			charArray[regx + regy * 20] = c;
 			regx++;
-			if(regx > 21){
+			if(regx > 20){
 				regy++;
 				regx = 0;
 				if(regy > 19){
