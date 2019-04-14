@@ -591,6 +591,10 @@ function asm(s) {
 				out.push(0xD4); // SPRSDS R*2			D4 9R
 				out.push(0x90 + getRegister(a[i + 1]));
 				return;
+			case 'DRWBIT':
+				out.push(0xD4); // DRWBIT R	D4AR
+				out.push(0xA0 + getRegister(a[i + 1]));
+				return;
 			case 'DRTILE':
 				out.push(0xDA); // DRTILE R,R		DA RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));

@@ -42,7 +42,7 @@ function Cpu(){
 		for(var i = 0; i < 32; i++){
 			sprites[i]  = {
 				address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, 
-				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0
+				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0, isscrolled: 1
 			};	
 		}
 		for(var i = 0; i < maxParticles; i++){
@@ -133,7 +133,8 @@ function Cpu(){
 				display.plot(bufPixel, 127, y);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].x--;
+				if(sprites[n].isscrolled != 0)
+					sprites[n].x--;
 		}
 		else if(direction == 1){
 			for(var x = 0; x < 128; x++){
@@ -143,7 +144,8 @@ function Cpu(){
 				display.plot(bufPixel, x, 127);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].y--;
+				if(sprites[n].isscrolled != 0)
+					sprites[n].y--;
 		}
 		else if(direction == 0){
 			for(var y = 0; y < 128; y++){
@@ -153,7 +155,8 @@ function Cpu(){
 				display.plot(bufPixel, 0, y);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].x++;
+				if(sprites[n].isscrolled != 0)
+					sprites[n].x++;
 		}
 		else {
 			for(var x = 0; x < 128; x++){
@@ -163,7 +166,8 @@ function Cpu(){
 				display.plot(bufPixel, x, 0);
 			}
 			for(n = 0; n < 32; n++)
-				sprites[n].y++;
+				if(sprites[n].isscrolled != 0)
+					sprites[n].y++;
 		}
 		if(tile.adr > 0)
 			tileDrawLine(step, direction);
@@ -614,6 +618,25 @@ function Cpu(){
 			}
 		}
 	}
+	//рисование однобитной картинки
+	function drawImage1bit(adr, x1, y1, w, h){
+		var size = w * h / 8;
+		var i = 0;
+		var bit;
+		for(var y = 0; y < h; y++)
+			for(var x = 0; x < w; x++){
+				if(i % 8 == 0){
+					bit = readMem(adr);
+					adr++;
+				}
+				if(bit & 0x80)
+					display.plot(color, x1 + x, y1 + y);
+				else
+					display.plot(bgcolor, x1 + x, y1 + y);
+				bit = bit << 1;
+				i++;
+			}
+	}
 	//функция рисования картинки, если ее размер отличается от 1
 	function drawImageS(adr, x1, y1, w, h){
 		var color,jx,jy;
@@ -676,6 +699,32 @@ function Cpu(){
 				color2 = readMem(adr) & 0xf
 			}
 		}
+	}
+	
+	function drawImage1bitS(adr, x1, y1, w, h){
+		var size = w * h / 8;
+		var i = 0;
+		var bit,jx,jy;
+		var s = imageSize;
+		for(var y = 0; y < h; y++)
+			for(var x = 0; x < w; x++){
+				if(i % 8 == 0){
+					bit = readMem(adr);
+					adr++;
+				}
+				if(bit & 0x80){
+					for(jx = 0; jx < s; jx++)
+						for(jy = 0; jy < s; jy++)
+							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
+				}
+				else{
+					for(jx = 0; jx < s; jx++)
+						for(jy = 0; jy < s; jy++)
+							display.plot(bgcolor, x1 + x * s + jx, y1 + y * s + jy);
+				}
+				bit = bit << 1;
+				i++;
+			}
 	}
 	
 	function drawFastVLine(x, y1, y2){
@@ -1480,6 +1529,15 @@ function Cpu(){
 								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
 								spriteSetDirectionAndSpeed(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 								break;
+							case 0xA0:
+								// DRW1BIT R	D4AR
+								reg1 = op2 & 0xf;
+								reg2 = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+								if(imageSize > 1)
+									drawImage1bitS(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								else
+									drawImage1bit(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+								break;
 						}
 						break;
 					case 0xD5:
@@ -1630,6 +1688,8 @@ function Cpu(){
 					sprites[reg[reg1] & 31].oncollision = reg[reg3];
 				else if(reg[reg2] == 12)
 					sprites[reg[reg1] & 31].onexitscreen = reg[reg3];
+				else if(reg[reg2] == 13)
+					sprites[reg[reg1] & 31].isscrolled = reg[reg3];
 				break;
 		}
 	}

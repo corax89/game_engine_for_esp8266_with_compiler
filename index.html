@@ -169,7 +169,7 @@ void main(){
 				 S_SPEEDY, S_WIDTH, S_HEIGHT,
 				 S_ANGLE, S_LIVES, S_COLLISION,
 				 S_SOLID, S_GRAVITY, S_ON_COLLISION,
-				 S_ON_EXIT_SCREEN*/
+				 S_ON_EXIT_SCREEN, S_IS_SCROLLED*/
 				int angbetweenspr(int n1, int n2);
 				int gettimer(int n);
 				void settimer(int n, int time);
@@ -186,6 +186,8 @@ void main(){
 				void gotoxy(int x, int y);
 				void line(int x, int y, int x1, int y1);
 				void putimage(int address, int x,
+				 int y, int w, int h);
+				void putimage1bit(int address, int x,
 				 int y, int w, int h);
 				void putimagerle(int address, int x,
 				 int y, int w, int h);
