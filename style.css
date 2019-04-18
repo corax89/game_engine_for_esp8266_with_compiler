@@ -91,7 +91,7 @@ textarea:focus {
 	font-family: monospace;
 	overflow: hidden;
 	resize: none;
-	tab-size: 1em;
+	tab-size: 4;
 	width: 100%;
 }
 #line-count {

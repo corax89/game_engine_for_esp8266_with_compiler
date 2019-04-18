@@ -770,11 +770,14 @@ function compile(t) {
 				asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
 			}
+			else
+				previousToken();
 			//---------
 			if (type == 'char')
 				asm.push(' STC (' + l + '+R0),R' + registerCount + ' ;' + token);
 			else
 				asm.push(' STI (' + l + '+R0),R' + registerCount + ' ;' + token);
+			
 		}
 	}
 	//преобразование строки в формат, понятный ассемблеру, с заменой спецсимволов на их числовой код
@@ -1371,16 +1374,21 @@ function compile(t) {
 		removeNewLine();
 		if (thisToken == '{') {
 			skipBrace();
-			getToken();
-		} else {
+		}
+		else {
 			execut();
 			if(isVar(thisToken)){
 				getToken();
 				execut();
 			}
+			if(thisToken == ')')
+				getToken();
 		}
+		registerCount = 1;
+		getToken();
+		removeNewLine();
 		asm.push(' JMP start_while_' + labe + ' \nend_while_' + labe + ':');
-		//removeNewLine();
+		previousToken();
 	}
 
 	function forToken() {
@@ -1640,7 +1648,7 @@ function compile(t) {
 	}
 	//выполняем блок скобок
 	function skipBracket() {
-		while (thisToken != ')') {
+		while (thisToken && thisToken != ')') {
 			if (getRangOperation(thisToken) == 0)
 				getToken();
 			if (!thisToken)
@@ -1658,13 +1666,7 @@ function compile(t) {
 				return;
 			execut();
 		}
-		getToken();
-		if(thisToken === '\n') {
-			lineCount++;
-			lastEndString = thisTokenNumber;
-			getToken();
-		}
-		previousToken();
+		removeNewLine();
 		registerCount = 1;
 	}
 	//определение типа токена и необходимой операции

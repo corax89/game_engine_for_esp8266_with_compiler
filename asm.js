@@ -724,6 +724,7 @@ function asm(s) {
 	}
 	info("program size "+ out.length +" bytes");
 	info("variables occupy "+ variableAdress +" bytes");
+	info("total occupied memory " + (out.length + variableAdress) +" bytes");
 	display.reset();
 	cpu.init();
 	cpu.load(out);

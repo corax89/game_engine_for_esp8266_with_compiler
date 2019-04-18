@@ -29,7 +29,27 @@ var language = 'eng';
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 setup_mouse("div_wind1", "drag_wind1");
-input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = inputOnKey;
+input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut = input.onpaste = inputOnKey;
+
+(function () {
+    var url = window.location.href.toString();
+    if(url.indexOf('?src=') > -1){
+        input.value = 'loading data from gist, please wait';
+        var src = url.split('?src=');
+        fetch('https://api.github.com/gists/' + src[1])
+          .then(function(results) {
+            return results.json();
+           })
+          .then(function(data) {
+            var file = '';
+                    for (var i in data.files) {
+                        file = data.files[i].content;
+                        break;
+                    }
+                    input.value = file;
+          });
+    }
+})();
 
 function setup_mouse(id_div_wind, id_div_drag) {
 	if(obj_wind)
@@ -283,10 +303,83 @@ function inputOnKey(e){
 			start = this.selectionStart,
 			end = this.selectionEnd;
 		// установим значение textarea в: текст до каретки + tab + текст после каретки
-		this.value = val.substring(0, start) + '\t' + val.substring(end);
-		// переместим каретку
-		this.selectionStart = this.selectionEnd = start + 1;
+		var txt = val.substring(start, end);
+		if(e.shiftKey){
+			txt = txt.replace(/\n\s/g, '\n');
+			if(txt[0] == '\t' || txt[0] == ' ')
+				txt = txt.substring(1);
+			this.value = val.substring(0, start) + txt + val.substring(end);
+			this.selectionStart = start;
+			this.selectionEnd = start + txt.length;
+		}
+		else{
+			if(txt.length == 0){
+				this.value = val.substring(0, start) + '\t' + val.substring(end);
+				// переместим каретку
+				this.selectionStart = start + 1;
+				this.selectionEnd = start + 1;
+			}
+			else{
+				txt = txt.replace(/[\n]/g, '\n\t');
+				this.value = val.substring(0, start) + '\t' + txt + val.substring(end);
+				this.selectionStart = start;
+				this.selectionEnd = start + txt.length + 1;
+			}
+			
+		}
+		setTimeout(lineCount, 300);
 		// предотвратим потерю фокуса
+		return false;
+	}
+	else if (e.keyCode === 13){
+		if(e.type == 'keyup')
+			return false;
+		// получим позицию каретки
+		var val = this.value,
+			start = this.selectionStart,
+			end = this.selectionEnd;
+		var spc = 0;
+		var tb = 0;
+		this.value = val.substring(0, start) + '\n' + val.substring(end);
+		if(end < val.length && val[end] == '\t')
+			end++;
+		for(var i = start; i >= 0; i--){
+			if(val[i] == '\n'){
+				if(spc > 0 || tb > 0)
+					break;
+			}
+			else if(val[i] == '\t')
+				tb++;
+			else if(val[i] == ' ')
+				spc++;
+			else if(val[i] == '{'){
+				tb++;
+			}
+			spc++;
+		}
+		var txt = '';
+		for(var i = 0; i < tb; i++)
+			txt += '\t';
+		// переместим каретку
+		this.value = val.substring(0, start) + '\n' + txt + val.substring(end);
+		this.selectionStart = start + txt.length + 1;
+		this.selectionEnd = start + txt.length + 1;
+		setTimeout(lineCount, 300);
+		return false;
+	}
+	else if (e.keyCode === 125){
+		if(e.type == 'keyup')
+			return false;
+		// получим позицию каретки
+		var val = this.value,
+			start = this.selectionStart,
+			end = this.selectionEnd;
+		if(start > 0 && val[start - 1] == '\t')
+			start--;
+		this.value = val.substring(0, start) + '}' + val.substring(end);
+		this.selectionStart = start + 1;
+		this.selectionEnd = start  + 1;
+		setTimeout(lineCount, 300);
 		return false;
 	}
 	setTimeout(lineCount, 300);
@@ -435,6 +528,10 @@ function Display() {
 			canvasArray2[i] = 0;
 		}
 		cpuLostCycle += 2000;
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, (128 + 16) * pixelSize , pixelSize * 128, pixelSize * 16);
+		ctx.fillStyle = "white";
+		ctx.fillText("KEY_A - space, KEY_B - z", 1, (128 + 17) * pixelSize);
     }
 	
 	function clearScreen(color){
@@ -493,8 +590,10 @@ function Display() {
     }
 	
 	function plot(color, x, y) {
-		drawPixel(color, x, y);
-		displayArray[x * 128 + y] = color & 0x0f;
+		if(x >= 0 && x < 128 && y >= 0 && y < 128){
+			drawPixel(color, x, y);
+			displayArray[x * 128 + y] = color & 0x0f;
+		}
     }
 	
 	function largeplot(color, x, y, s) {

@@ -275,8 +275,7 @@ function SpriteEditor(){
 	}
 
 	function clear(){
-		pixelareabgcolor = thiscolor;
-		pixelareactx.fillStyle = palette[pixelareabgcolor];
+		pixelareactx.fillStyle = palette[0];
 		pixelareactx.fillRect(0, 0, 16, 17);
 		document.getElementById("selectColor").style.background = palette[thiscolor];
 		for(var i = 0; i<17; i++){
@@ -284,7 +283,7 @@ function SpriteEditor(){
 			pixelareactx.fillRect(i, 16, 1, 1);
 			sprite[i] = [];
 			for(var j = 0; j<17; j++){
-				sprite[i][j] = pixelareabgcolor;
+				sprite[i][j] = 0;
 			}
 		}
 		pixelareactx.fillStyle = palette[pixelareabgcolor];	
