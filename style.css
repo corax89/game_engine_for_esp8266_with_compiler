@@ -21,11 +21,6 @@ input[type=file] {
 textarea:focus {
 	outline: none;
 }
-#lang {
-	position:fixed;
-	right:0;
-	top:0;
-}
 #container {
 	height: 42.5em;
 	overflow: hidden;

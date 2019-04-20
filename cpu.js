@@ -553,7 +553,7 @@ function Cpu(){
 		tile.y = y0;
 		for(x = 0; x < tile.width; x++){
 			for(y = 0; y < tile.height; y++){
-				if(x0 + x * tile.imgwidth >= 0 && x0 + x * tile.imgwidth < 128 && y0 + y * tile.imgheight >= 0 && y0 + y * tile.imgheight < 128){
+				if(x0 + x * tile.imgwidth >= -tile.imgwidth && x0 + x * tile.imgwidth < 128 && y0 + y * tile.imgheight >= -tile.imgheight && y0 + y * tile.imgheight < 128){
 					imgadr = readInt(tile.adr + (x + y * tile.width) * 2);
 					if(imgadr > 0)
 						drawImage(imgadr, x0 + x * tile.imgwidth, y0 + y * tile.imgheight, tile.imgwidth, tile.imgheight); 

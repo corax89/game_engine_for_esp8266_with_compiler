@@ -579,7 +579,7 @@ function Display() {
     }
 	
 	function drawPixel(color, x, y) {
-		cpuLostCycle += 2;
+		cpuLostCycle += 1;
 		if(x >= 0 && x < 128 && y >= 0 && y < 128)
 			canvasArray[x * 128 + y] = color;
     }

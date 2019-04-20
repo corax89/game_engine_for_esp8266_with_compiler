@@ -1720,9 +1720,6 @@ function compile(t) {
 		} else if (thisToken == '=' || thisToken == '+=' || thisToken == '-=' || thisToken == '*=' || thisToken == '/=') {
 			assigment();
 		} else if (thisToken == ';') {
-			//после точки с запятой данные, оставшиеся в регистрах, больше не нужны, указатель регистра обнуляется
-			if (registerCount != 1)
-				registerCount == 1;
 			return;
 		} else if (thisToken == '{') {
 			skipBrace();
