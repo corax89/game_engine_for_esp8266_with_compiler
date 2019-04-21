@@ -47,6 +47,7 @@ input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut
                         break;
                     }
                     input.value = file;
+					setTimeout(lineCount, 300);
           });
     }
 })();

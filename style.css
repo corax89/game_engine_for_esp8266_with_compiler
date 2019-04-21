@@ -229,7 +229,7 @@ textarea:focus {
 	height: 1.5em;
 	position: absolute;
 	line-height: 1.5;
-	margin-left: 17.6em;
+	right: 0em;
 	margin-top: -2em;
 	text-align: center;
 	width: 3em;

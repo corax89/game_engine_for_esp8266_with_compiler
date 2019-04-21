@@ -256,8 +256,14 @@ function Cpu(){
 	}
 	
 	function drawSprite(n, x1, y1){
-		sprites[n].x = x1;
-		sprites[n].y = y1;
+		if(x1 > 0x7fff)
+			sprites[n].x = x1 - 0x10000;
+		else
+			sprites[n].x = x1;
+		if(y1 > 0x7fff)
+			sprites[n].y = y1 - 0x10000;
+		else
+			sprites[n].y = y1;
 	}
 
 	function setParticle(gravity, count, time){
