@@ -23,6 +23,8 @@ function Cpu(){
 	var color = 1;			//цвет рисования
 	var charArray = [];		//массив символов, выводимых на экран
 	var interruptBuffer = [];
+	var keyPosition = 0;
+	var keyArray = "qwertyuiop[]{}()=789\basdfghjkl:;\"/#$@0456\nzxcvbnm<>?.,!%+*-123 ";
 	
 	function init(){
 		for(var i = 0; i < 0xffff; i++)
@@ -426,6 +428,20 @@ function Cpu(){
 		}
 	}
 	
+	function getSpriteInXY(x,y){
+		if(x > 0x7fff)
+			x -= 0xffff;
+		if(y > 0x7fff)
+			y -= 0xffff;
+		for(var n = 0; n < 32; n++){
+			if(sprites[n].lives > 0)
+				if(sprites[n].x < x && sprites[n].x + sprites[n].width > x &&
+					sprites[n].y < y  && sprites[n].y + sprites[n].height > y)
+						return n;
+		}
+		return - 1;
+	}
+	
 	function testSpriteCollision(debug){
 		var n, i, x0, y0, x1, y1, newspeed, adr;
 		for(n = 0; n < 32; n++)
@@ -487,7 +503,7 @@ function Cpu(){
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 - 1));
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 + 1));
 						}
-						if(getTail(x0, y0) != 0){
+						if(getTile(x0, y0) != 0){
 							if(sprites[n].speedx != 0){
 								if(sprites[n].speedx > 0){
 									sprites[n].x = tile.x + x0 * tile.imgwidth - sprites[n].width ;
@@ -512,25 +528,25 @@ function Cpu(){
 							y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
 						}
 						else{
-							if(sprites[n].speedy > 0 && getTail(x0, y0 + 1) != 0){
+							if(sprites[n].speedy > 0 && getTile(x0, y0 + 1) != 0){
 								if((tile.y + (y0 + 1) * tile.imgheight - sprites[n].height) - sprites[n].y < sprites[n].speedy){
 									sprites[n].y = tile.y + (y0 + 1) * tile.imgheight - sprites[n].height;	
 									sprites[n].speedy = 0;
 								}
 							}
-							else if(sprites[n].speedy < 0 && getTail(x0, y0 - 1) != 0){
+							else if(sprites[n].speedy < 0 && getTile(x0, y0 - 1) != 0){
 								if(sprites[n].y - (tile.y + y0 * tile.imgheight) < sprites[n].speedy){
 									sprites[n].y = tile.y + y0 * tile.imgheight;	
 									sprites[n].speedy = 0;
 								}
 							}
-							if(sprites[n].speedx > 0  && getTail(x0 + 1, y0) != 0){
+							if(sprites[n].speedx > 0  && getTile(x0 + 1, y0) != 0){
 								if((tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width) - sprites[n].x < sprites[n].speedx){
 									sprites[n].x = tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width;	
 									sprites[n].speedx = 0;
 								}
 							}
-							else if(sprites[n].speedx < 0 && getTail(x0 - 1, y0) != 0){
+							else if(sprites[n].speedx < 0 && getTile(x0 - 1, y0) != 0){
 								if(sprites[n].x - (tile.x + x0 * tile.imgwidth) < sprites[n].speedx){
 									sprites[n].x = tile.x + x0 * tile.imgwidth;	
 									sprites[n].speedx = 0;
@@ -543,7 +559,19 @@ function Cpu(){
 		}
 	}
 	
-	function getTail(x, y){
+	function getTileInXY(x,y){
+		if(x > 0x7fff)
+			x -= 0xffff;
+		if(y > 0x7fff)
+			y -= 0xffff;
+		if(x < tile.x || y < tile.y || x > tile.x + tile.imgwidth * tile.width || tile.y > tile.imgheight * tile.height)
+			return 0;
+		var p = (Math.floor((x - tile.x) / tile.imgwidth) + Math.floor((y - tile.y) / tile.imgheight) * tile.width);
+		var t = readInt(tile.adr + p * 2);
+		return t;
+	}
+	
+	function getTile(x, y){
 		if(x < 0 || x >= tile.width || y < 0 || y >= tile.height)
 			return 0;
 		return readInt(tile.adr + (x + y * tile.width) * 2);
@@ -1403,8 +1431,14 @@ function Cpu(){
 				switch(op1){ 
 					case 0xD0:
 						//CLS		D000
-						display.clearScreen(bgcolor);
-						//pc--;
+						if((op2 & 0xff) == 0)
+							display.clearScreen(bgcolor);
+						else{
+							//GSPRXY R,R
+							reg1 = (op2 & 0xf0) >> 4;
+							reg2 = op2 & 0xf;
+							reg[reg1] = getSpriteInXY(reg[reg1], reg[reg2]);
+						}
 						break;
 					case 0xD1:
 						switch(op2 & 0xf0){
@@ -1453,6 +1487,18 @@ function Cpu(){
 							case 0x00:
 								// GETK R			D20R
 								reg1 = (op2 & 0xf);
+								display.viewKeyboard(keyPosition);
+								if(globalJKey == 1 && keyPosition > 21)
+									keyPosition -= 21;
+								if(globalJKey == 2 && keyPosition < 42)
+									keyPosition += 21;
+								if(globalJKey == 4 && keyPosition > 0)
+									keyPosition--;
+								if(globalJKey == 8 && keyPosition < 62)
+									keyPosition++;
+								if(globalJKey >= 16)
+									globalKey = keyArray.charCodeAt(keyPosition) & 0xff;
+								globalJKey = 0;
 								if(globalKey != 0)
 									reg[reg1] = globalKey;
 								else
@@ -1633,6 +1679,12 @@ function Cpu(){
 						reg1 = (op2 & 0xf0) >> 4;//n1
 						reg2 = op2 & 0xf;//n2
 						reg[reg1] = angleBetweenSprites(reg[reg1], reg[reg2]);
+						break;
+					case 0xDF:
+						// GTILEXY R,R			DF RR
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						reg[reg1] = getTileInXY(reg[reg1], reg[reg2]);
 						break;
 				}
 				break;

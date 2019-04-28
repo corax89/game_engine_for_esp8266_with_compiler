@@ -519,6 +519,10 @@ function asm(s) {
 				out.push(0xD0); // CLS				D000
 				out.push(0x00);
 				return;
+			case 'GSPRXY':
+				out.push(0xD0); // GSPRXY R,R		D0 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'PUTC':
 				out.push(0xD1); // PUTC R			D10R
 				out.push(getRegister(a[i + 1]));
@@ -647,6 +651,10 @@ function asm(s) {
 				out.push(0xDE); // AGBSPR R,R		DE RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
+			case 'GTILEXY':
+				out.push(0xDF); // GTILEXY R,R		DF RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'DRSPRT':
 				out.push(0xE0 + getRegister(a[i + 1])); // DRSPRT R,R,R	ERRR
 				out.push((getRegister(a[i + 3]) << 4) + (getRegister(a[i + 5])));
@@ -675,10 +683,6 @@ function asm(s) {
 			case 'GTIMER':
 				out.push(0x52); // GTIMER R		520R
 				out.push(getRegister(a[i + 1]));
-				return;
-			case 'SPALET':
-				out.push(0xF0 + getRegister(a[i + 1])); // SPALET R,R,R	FR RR
-				out.push((getRegister(a[i + 3]) << 4) + (getRegister(a[i + 5])));
 				return;
 			case 'DB':
 				dbparse(a.join(''));

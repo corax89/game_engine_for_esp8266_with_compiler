@@ -1781,6 +1781,8 @@ function compile(t) {
 	registerFunction('getpixel', 'int', ['int', 'x', 'int', 'y'], 1, 'GETPIX R%2,R%1', true, 0);
 	registerFunction('getsprite', 'void', ['int', 'n', 'int', 'a'], 1, 'LDSPRT R%2,R%1', true, 0);
 	registerFunction('putsprite', 'void', ['int', 'n', 'int', 'x', 'int', 'y'], 1, 'DRSPRT R%3,R%2,R%1', true, 0);
+	registerFunction('getspriteinxy', 'int', ['int', 'x', 'int', 'y'], 1, 'GSPRXY R%2,R%1', true, 0);
+	registerFunction('gettileinxy', 'int', ['int', 'x', 'int', 'y'], 1, 'GTILEXY R%2,R%1', true, 0);
 	registerFunction('angbetweenspr', 'int', ['int', 'n1', 'int', 'n2'], 1, 'AGBSPR R%2,R%1', true, 0);
 	registerFunction('spritespeedx', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,2 \n SSPRTV R%2,R15,R%1', true, 0);
 	registerFunction('spritespeedy', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,3 \n SSPRTV R%2,R15,R%1', true, 0);
