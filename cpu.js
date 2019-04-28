@@ -348,7 +348,6 @@ function Cpu(){
 			speed -= 0xffff;
 		if(direction > 0x7fff){
 			direction = 360 + direction % 360;
-			
 		}
 		var nx = speed * Math.cos(direction / 57);
 		var ny = speed * Math.sin(direction / 57);
@@ -359,8 +358,6 @@ function Cpu(){
 	function drawRotateSprPixel(color, x1, y1, x, y, w, h, a){
 		var x0 = w/2;
 		var y0 = h/2;
-		//var nx = x * Math.cos(a) - y * Math.sin(a);
-		//var ny = y * Math.cos(a) + x * Math.sin(a);
 		var nx = x0 + (x - x0) * Math.cos(a) - (y - y0) * Math.sin(a);
 		var ny = y0 + (y - y0) * Math.cos(a) + (x - x0) * Math.sin(a);
 		display.drawSpritePixel(color, x1 + Math.floor(nx), y1 + Math.floor(ny));
@@ -377,12 +374,10 @@ function Cpu(){
 					for(var x = 0; x < sprites[n].width; x++){
 						color = (readMem(adr) & 0xf0) >> 4;
 						if(color > 0)
-							//display.drawSpritePixel(color, x1 + x, y1 + y);
 							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 						x++;
 						color = (readMem(adr) & 0xf);
 						if(color > 0)
-							//display.drawSpritePixel(color, x1 + x, y1 + y);
 							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 						adr++;
 					}
@@ -1731,7 +1726,10 @@ function Cpu(){
 				else if(reg[reg2] == 5)
 					sprites[reg[reg1] & 31].height = reg[reg3];
 				else if(reg[reg2] == 6)
-					sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
+					if(reg[reg3] > 0x7fff)
+						sprites[reg[reg1] & 31].angle = (reg[reg3] - 0x10000) % 360;
+					else
+						sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
 				else if(reg[reg2] == 7){
 					if(reg[reg3] > 128)
 						sprites[reg[reg1] & 31].lives = -(256 - (reg[reg3] & 0xff));
