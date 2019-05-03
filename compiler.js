@@ -8,7 +8,7 @@ function tokenize(s) {
 	var tokenReplace = [
 		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5, 
 		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
-		'S_ON_COLLISION', 11, 'S_ON_EXIT_SCREEN', 12, 'S_IS_SCROLLED', 13,
+		'S_ON_COLLISION', 11, 'S_ON_EXIT_SCREEN', 12, 'S_IS_SCROLLED', 13, 'S_IS_ONEBIT', 14,
 		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8, 'KEY_A', 16, 'KEY_B', 32
 		];
 	//упрощенный вариант #define, лишь замена

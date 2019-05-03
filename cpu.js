@@ -43,7 +43,7 @@ function Cpu(){
 		//задаем начальные координаты спрайтов вне границ экрана
 		for(var i = 0; i < 32; i++){
 			sprites[i]  = {
-				address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, 
+				address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, isonebit: 0,
 				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0, isscrolled: 1
 			};	
 		}
@@ -364,23 +364,40 @@ function Cpu(){
 	}
 	
 	function redrawSprite(){
-		var color, n, i;
+		var clr, n, i;
 		for(n = 0; n < 32; n++){
 			if(sprites[n].lives > 0){
 				var adr = sprites[n].address;
 				var x1 = sprites[n].x;
 				var y1 = sprites[n].y;
-				for(var y = 0; y < sprites[n].height; y++)
-					for(var x = 0; x < sprites[n].width; x++){
-						color = (readMem(adr) & 0xf0) >> 4;
-						if(color > 0)
+				if(sprites[n].isonebit == 0){
+					for(var y = 0; y < sprites[n].height; y++)
+						for(var x = 0; x < sprites[n].width; x++){
+							clr = (readMem(adr) & 0xf0) >> 4;
+							if(clr > 0)
+								drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							x++;
+							clr = (readMem(adr) & 0xf);
+							if(clr > 0)
+								drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							adr++;
+						}
+				}
+				else{
+					i = 0;
+					var ibit;
+					for(var y = 0; y < sprites[n].height; y++)
+						for(var x = 0; x < sprites[n].width; x++){
+						  if(i % 8 == 0){
+							ibit = readMem(adr);
+							adr++;
+						  }
+						  if(ibit & 0x80)
 							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
-						x++;
-						color = (readMem(adr) & 0xf);
-						if(color > 0)
-							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
-						adr++;
-					}
+						  ibit = ibit << 1;
+						  i++;
+						}
+				}
 				sprites[n].speedy += sprites[n].gravity;
 				sprites[n].x += sprites[n].speedx;
 				sprites[n].y += sprites[n].speedy;
@@ -1746,6 +1763,8 @@ function Cpu(){
 					sprites[reg[reg1] & 31].onexitscreen = reg[reg3];
 				else if(reg[reg2] == 13)
 					sprites[reg[reg1] & 31].isscrolled = reg[reg3];
+				else if(reg[reg2] == 14)
+					sprites[reg[reg1] & 31].isonebit = reg[reg3];
 				break;
 		}
 	}
