@@ -1666,6 +1666,9 @@ function compile(t) {
 				return;
 			execut();
 		}
+		getToken();
+		if(thisToken != ';')
+			previousToken();
 		removeNewLine();
 		registerCount = 1;
 	}
