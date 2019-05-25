@@ -5,6 +5,7 @@ var mousedown;
 function SpriteEditor(){
 	var data = [];
 	var isRLE = false;
+	var is1bit = false;
 	var palette = [
 	  "#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
 	  "#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
@@ -30,39 +31,39 @@ function SpriteEditor(){
 		var bufPixel;
 		data = [];
 		if(direction == 2){
-			for(var y = 0; y < 16; y++){
+			for(var y = 0; y < 32; y++){
 				bufPixel = sprite[0][ y];
-				for(var x = 1; x < 16; x++)
+				for(var x = 1; x < 32; x++)
 					sprite[x - 1][ y] = sprite[x][ y];
-				sprite[15][ y] = bufPixel;
+				sprite[31][ y] = bufPixel;
 			}
 		}
 		else if(direction == 1){
-			for(var x = 0; x < 16; x++){
+			for(var x = 0; x < 32; x++){
 				bufPixel = sprite[x][ 0];
-				for(var y = 1; y < 16; y++)
+				for(var y = 1; y < 32; y++)
 					sprite[x][ y - 1] = sprite[x][ y];
-				sprite[x][ 15] = bufPixel;
+				sprite[x][31] = bufPixel;
 			}
 		}
 		else if(direction == 0){
-			for(var y = 0; y < 16; y++){
-				bufPixel = sprite[15][ y];
-				for(var x = 15; x > 0; x--)
-					sprite[x][ y] = sprite[x - 1][ y];
-				sprite[0][ y] = bufPixel;
+			for(var y = 0; y < 32; y++){
+				bufPixel = sprite[31][ y];
+				for(var x = 31; x > 0; x--)
+					sprite[x][y] = sprite[x - 1][ y];
+				sprite[0][y] = bufPixel;
 			}
 		}
 		else {
-			for(var x = 0; x < 16; x++){
-				bufPixel = sprite[x][ 15];
-				for(var y = 15; y > 0; y--)
+			for(var x = 0; x < 32; x++){
+				bufPixel = sprite[x][31];
+				for(var y = 31; y > 0; y--)
 					sprite[x][ y] = sprite[x][ y - 1];
-				sprite[x][ 0] = bufPixel;
+				sprite[x][0] = bufPixel;
 			}
 		}
-		for(var i = 0; i <= 15; i++)
-			for(var j = 0; j <= 15; j++){
+		for(var i = 0; i <= 31; i++)
+			for(var j = 0; j <= 31; j++){
 				pixelareactx.fillStyle = palette[sprite[i][j]];
 				pixelareactx.fillRect(i, j, 1, 1);					
 			}
@@ -74,18 +75,25 @@ function SpriteEditor(){
 		updateText();
 	}
 	
+	function set1bit(b){
+		is1bit = b;
+		document.getElementById('checkRle').disabled = b;
+		updateText();
+	}
+	
 	function init(){
 		pixelareactx.fillStyle = "#000000";
-		pixelareactx.fillRect(0, 0, 16, 17);	
+		pixelareactx.fillRect(0, 0, 32, 34);	
 		thiscolor = 0;
 		document.getElementById("selectColor").style.background = palette[thiscolor];
 		for(var i = 0; i<17; i++){
 			pixelareactx.fillStyle = palette[i];
-			pixelareactx.fillRect(i, 16, 1, 1);
+			pixelareactx.fillRect(i * 2, 32, 2, 2);
+		}
+		for(var i = 0; i < 32; i++){
 			sprite[i] = [];
-			for(var j = 0; j<17; j++){
+			for(var j = 0; j < 32; j++)
 				sprite[i][j] = 0;
-			}
 		}
 		pixelareactx.fillStyle = "#000000";
 		pixelarea.addEventListener('mousedown', function (e) {
@@ -105,14 +113,14 @@ function SpriteEditor(){
 	
 	function setPixel(e){
 		var rect = pixelarea.getBoundingClientRect();
-		var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/16));
-		var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/17));
-		if(mousedown){
+		var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/32));
+		var y = Math.floor((e.offsetY==undefined?e.layerY:e.offsetY)/(rect.height/34));
+		if(mousedown && x < 32 && y < 34 && x >= 0 && y >= 0){
 			data = [];
-			if(y == 16){
-				thiscolor = x;
-				pixelareactx.fillStyle = palette[x];
-				document.getElementById("selectColor").style.background = palette[x];
+			if(y > 31){
+				thiscolor = Math.floor(x / 2);
+				pixelareactx.fillStyle = palette[thiscolor];
+				document.getElementById("selectColor").style.background = palette[thiscolor];
 			}
 			else{
 				if(type == 0){
@@ -128,8 +136,8 @@ function SpriteEditor(){
 			}
 			var spritewidth = 0;
 			var spriteheight = 0; 
-			for(var i = 0; i < 16; i++){
-				for(var j = 0; j < 16; j++){
+			for(var i = 0; i < 32; i++){
+				for(var j = 0; j < 32; j++){
 					if(sprite[i][j] != pixelareabgcolor){
 						if(i > spritewidth)
 							spritewidth = i;
@@ -145,9 +153,9 @@ function SpriteEditor(){
 			updateText();
 			spriteheight++;
 			spritewidth++;
-			document.getElementById("spriteInfo").innerHTML = spritewidth + 'x' + spriteheight;
+			document.getElementById("spriteInfo").innerHTML = (spritewidth + spritewidth % 2) + 'x' + spriteheight;
 		}
-		if(x >=0 && x < 16 && y >=0 && y < 16){	
+		if(x >=0 && x < 32 && y >=0 && y < 32){	
 			if(x != lastx || y != lasty){
 				pixelareactx.fillStyle = palette[sprite[lastx][lasty]];
 				pixelareactx.fillRect(lastx, lasty, 1, 1);
@@ -164,25 +172,52 @@ function SpriteEditor(){
 	}
 	
 	function fillPixels(x, y, color, changecolor){
-		if(x >=0 && x < 16 && y >=0 && y < 16){
+		if(x >=0 && x < 32 && y >=0 && y < 32){
 			pixelareactx.fillRect(x, y, 1, 1);
 			sprite[x][y] = changecolor;
 			if(x > 0 && sprite[x - 1][y] == color)
 				fillPixels(x - 1, y, color, changecolor);
-			if(x < 15 && sprite[x + 1][y] == color)
+			if(x < 31 && sprite[x + 1][y] == color)
 				fillPixels(x + 1, y, color, changecolor);
 			if(y > 0 && sprite[x][y - 1] == color)
 				fillPixels(x, y - 1, color, changecolor);
-			if(y < 15 && sprite[x][y + 1] == color)
+			if(y < 31 && sprite[x][y + 1] == color)
 				fillPixels(x, y + 1, color, changecolor);
 		}
 	}
 	
 	function updateText(){
-		var i;
+		var i,j,bit;
 		var datarle = [];
 		var spr = '{';
-		if(isRLE){
+		if(is1bit){
+			bit = 0;
+			j = 0;
+			for(i = 0; i < data.length; i++){
+				//bit = bit << 1;
+				if((data[i] & 0xf0) > 0)
+					bit += 1 << (7 - j);
+				//bit = bit << 1;
+				j++;
+				if((data[i] & 0x0f) > 0)
+					bit += 1 << (7 - j);
+				j++;
+				if(j > 7){
+					spr +='0x' + bit.toString(16) + ',';
+					j = 0;
+					bit = 0;
+				}
+			}
+			if(j > 0){
+				spr +='0x' + bit.toString(16) + ',';
+				j = 0;
+				bit = 0;
+			}
+			spr = spr.substring(0, spr.length - 1)
+			spr += '};';
+			document.getElementById("checkRleLabel").innerHTML = 'RLE 100%';
+		}
+		else if(isRLE){
 			if( data.length > 1)
 				datarle = RLE(data);
 			else
@@ -220,11 +255,16 @@ function SpriteEditor(){
 			if(repeat){
 				if(d[i] == c){
 					l++;
-					if( i == d.length - 1){
+					if(i == d.length - 1){
 						out.push(l);
 						out.push(c);
 						l = 1;
 						c = d[i];
+					}
+					else if(l > 126){
+						out.push(l - 1);
+						out.push(c);
+						l = 1;
 					}
 				}
 				else{
@@ -276,15 +316,16 @@ function SpriteEditor(){
 
 	function clear(){
 		pixelareactx.fillStyle = palette[0];
-		pixelareactx.fillRect(0, 0, 16, 17);
+		pixelareactx.fillRect(0, 0, 32, 34);
 		document.getElementById("selectColor").style.background = palette[thiscolor];
 		for(var i = 0; i<17; i++){
 			pixelareactx.fillStyle = palette[i];
-			pixelareactx.fillRect(i, 16, 1, 1);
+			pixelareactx.fillRect(i * 2, 32, 2, 2);
+		}
+		for(var i = 0; i<32; i++){
 			sprite[i] = [];
-			for(var j = 0; j<17; j++){
+			for(var j = 0; j<32; j++)
 				sprite[i][j] = 0;
-			}
 		}
 		pixelareactx.fillStyle = palette[pixelareabgcolor];	
 	}
@@ -292,6 +333,7 @@ function SpriteEditor(){
 	return {
 		setType:setType,
 		setRle:setRle,
+		set1bit:set1bit,
 		init:init,
 		edit:edit,
 		clear:clear,

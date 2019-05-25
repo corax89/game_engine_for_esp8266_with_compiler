@@ -237,16 +237,16 @@ textarea:focus {
 #spriteEditior, #tutorial {
 	background-color: #eee;
 	border: 1px solid #516399;
-	height: 30em;
+	height: 31em;
 	overflow: hidden;
 	padding: 0.5em;
 	resize: none;
 	top: 10em;
-	width: 21em;
+	width: 24em;
 }
 #pixelearea {
 	image-rendering: pixelated;
-	width: 19em;
+	width: 22em;
 	float: left;
 }
 #pixelpanel {
@@ -265,25 +265,26 @@ textarea:focus {
 	background-color: #516399;
 	color: #ffffff;
 }
-#checkRle{
+#checkRle,#check1bit{
 	position: relative;
     top: 0.5em;
+	margin: 0;
 }
-#checkRleLabel{
+#checkRleLabel,#check1bitLabel{
 	display: inline-block;
     width: 2em;
     font-size: 0.9em;
     position: relative;
     top: 0.5em;
 	left: -0.4em;
-    width: 1.8em;
+    width: 1.5em;
 }
 #spriteArea {
 	color: #516399;
-	height: 6.8em;
+	height: 4.9em;
 	margin-top: 0.2em;
 	resize: none;
-	width: 21em;
+	width: 24em;
 }
 .header {
 	border: 1px solid #516399;

@@ -1482,8 +1482,8 @@ function compile(t) {
 		}
 		asm.push('end_switch_' + labe + ':');
 		switchStack.pop();
-		//getToken();
-		//removeNewLine();
+		getToken();
+		removeNewLine();
 	}
 
 	function caseToken() {

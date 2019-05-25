@@ -113,7 +113,7 @@ void main(){
         </div>
         <div class="content_wind">
            <div id="spriteEditior">
-			<canvas id="pixelearea" width="16" height="17" ondrop="pAreaOnDrop(event)" ondragover="pAreaAllowDrop(event)"></canvas>	
+			<canvas id="pixelearea" width="32" height="34" ondrop="pAreaOnDrop(event)" ondragover="pAreaAllowDrop(event)"></canvas>	
 			<div id="pixelpanel">
 				<input name="pixeled" type="radio" value="1" onchange="spriteEditor.setType(0)" checked id="check1"><label for="check1">&#128393;</label>
 				<input name="pixeled" type="radio" value="2" onchange="spriteEditor.setType(1)" id="check2"><label for="check2">&#127778;</label>
@@ -123,6 +123,8 @@ void main(){
 			<button onclick = "spriteEditor.scroll(1);" style = "width: 1.8em;">&#8593</button> 
 			<button onclick = "spriteEditor.scroll(2);" style = "width: 1.8em;">&#8592</button>
 			<button onclick = "spriteEditor.scroll(3);" style = "width: 1.8em;">&#8595</button>
+			<input type="checkbox" id="check1bit" onclick="spriteEditor.set1bit(this.checked)">
+			<label for="check1bit" id="check1bitLabel">1 BIT</label>
 			<input type="checkbox" id="checkRle" onclick="spriteEditor.setRle(this.checked)">
 			<label for="checkRle" id="checkRleLabel">RLE 100%</label>
 			<b id="selectColor">[]</b>
