@@ -119,7 +119,7 @@ void main(){
 		for(i = 2; i < 9; i++){
 			putsprite(i, 56 + getx(y + i), y + i * 20 - 160);
 		}
-		spritesetvalue(0,S_ANGLE,getx(y % 20) / 2);
+		spritesetvalue(0,S_ANGLE,getx(y % 50) / 2);
 		if(y < 1)
 			y = 260;
 		settimer(4, 16);

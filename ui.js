@@ -626,7 +626,9 @@ function Display() {
     }
 	
 	function getPixel(x, y){
-		return displayArray[x * 128 + y];
+		if(x >= 0 && x <= 127 && y >=0 && y <= 127)
+			return displayArray[x * 128 + y];
+		return 0;
 	}
 	
 	function viewKeyboard(pos){
