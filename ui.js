@@ -6,7 +6,7 @@ var debugArea =  document.getElementById("debug");
 var debugVarArea =  document.getElementById("debugVariable");
 var debugSprArea =  document.getElementById("debugSprite");
 var memoryPage = 0;			//указывает на одну из 255 страниц памяти по 255 байт для отображения
-var cpuSpeed = 1600;			//количество операций, выполняемых процессором за 16 миллисекунд
+var cpuSpeed = 8000;			//количество операций, выполняемых процессором за 16 миллисекунд
 var cpuLostCycle = 0;		//сколько циклов должно быть потеряно из-за операций рисования
 var timerId;				//таймер для вызова выполнения процессора
 var asmSource;				//код, полученный при компиляции

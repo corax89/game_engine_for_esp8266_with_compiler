@@ -889,6 +889,14 @@ function Cpu(){
 	}
 	
 	function distancepp(x1, y1, x2, y2){
+		if(x1 > 0x7fff)
+			x1 = x1 - 0x10000;
+		if(y1 > 0x7fff)
+			y1 = y1 - 0x10000;
+		if(x2 > 0x7fff)
+			x2 = x2 - 0x10000;
+		if(y2 > 0x7fff)
+			y2 = y2 - 0x10000;
 		return Math.floor(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	}
 	

@@ -40,9 +40,9 @@
 				<br>
 				cpu speed,Hz
 				<select id="cpuSpeed" name="cpuSpeed" onchange="cpuSpeed=this.value">
-					<option value="8000">500 000</option>
+					<option selected value="8000">500 000</option>
 					<option value="3200">200 000</option>
-					<option selected value="1600">100 000</option>
+					<option value="1600">100 000</option>
 					<option value="800">50 000</option>
 					<option value="400">25 000</option>
 					<option value="160">10 000</option>
@@ -175,6 +175,12 @@ void main(){
 				 S_ON_EXIT_SCREEN, S_IS_SCROLLED*/
 				int angbetweenspr(int n1, int n2);
 				int gettimer(int n);
+				int getspriteinxy(int x,
+				 int y);
+				int gettileinxy(int x,
+				 int y);
+				int distance(int x1, int y1, int x2, 
+				 int y2);
 				void settimer(int n, int time);
 				void delayredraw();
 				void clearscreen();
@@ -186,8 +192,8 @@ void main(){
 				void putsprite(int n, int x, int y);
 				void spritesetvalue(int n, int type,
 				 int value);
-				int getspriteinxygettileinxy(int x,
-				 int y);
+				void spritespeed(int n, int speed,
+				 int direction);
 				void setimagesize(int size);
 				void gotoxy(int x, int y);
 				void line(int x, int y, int x1, int y1);
