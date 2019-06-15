@@ -22,6 +22,7 @@ var delta_x = 0;
 var delta_y = 0;
 var file = '';
 var isDebug = false;
+var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
 var language = 'eng';
@@ -473,7 +474,11 @@ function run(){
 		cpu.testSpriteCollision(isDebug);
 		isRedraw = false;
 		//выводим отладочную информацию
-		document.getElementById('debug').value = cpu.debug();
+		debugCallCount++;
+		if(debugCallCount >= 10){
+			document.getElementById('debug').value = cpu.debug();
+			debugCallCount = 0;
+		}
 	}
 	clearTimeout(timerId);
 	timerId = setTimeout(function() { run() }, 16);

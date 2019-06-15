@@ -1785,6 +1785,10 @@ function Cpu(){
 		}
 	}
 	
+	function clearStringFast(str) {
+		return str.length < 12 ? str : (' ' + str).slice(1);
+	}
+	
 	function debug(){
 		var d = '';
 		var s = 'pc:' + toHex4(pc) + '\t';
@@ -1797,6 +1801,7 @@ function Cpu(){
 			d += toHex4(debugVar[i].adress) + '   ';
 			d += readInt(debugVar[i].adress) + '\n';
 		}
+		d = clearStringFast(d);
 		debugVarArea.value = d;
 		viewMemory();
 		for(var i = 0; i < numberDebugString.length; i++)
@@ -1816,6 +1821,7 @@ function Cpu(){
 			d += 'S_ANGLE \t' + sprites[i].angle + '\n';
 			d += 'S_LIVES \t' + sprites[i].lives + '\n';
 		}
+		d = clearStringFast(d);
 		debugSprArea.value = d;
 		highliteLine();
 		return s;

@@ -13,6 +13,7 @@ button,input,select {
 	font: normal 13px Verdana, Geneva, sans-serif;
 	font-style: normal;
 	height: 1.8em;
+	padding-left: 5px;
 }
 input[type=file] {
 	height: 1.6em;
@@ -40,7 +41,6 @@ textarea:focus {
 #monitor {
 	border: 1px solid #516399;
 	background-color: rgb(235, 235, 228);
-	display: inline-block;
 	width: 53em;
 	height: 23.2em;
 }
@@ -137,7 +137,12 @@ textarea:focus {
 }
 #screen {
 	float: left;
-	image-rendering: pixelated;
+	image-rendering: optimizeSpeed;             /* Older versions of FF          */
+	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+	image-rendering: -webkit-optimize-contrast; /* Safari                        */
+	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;                 /* Awesome future-browsers       */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 	height: 100%;
 }
 #codePreviev {
@@ -245,7 +250,12 @@ textarea:focus {
 	width: 24em;
 }
 #pixelearea {
-	image-rendering: pixelated;
+	image-rendering: optimizeSpeed;             /* Older versions of FF          */
+	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+	image-rendering: -webkit-optimize-contrast; /* Safari                        */
+	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;                 /* Awesome future-browsers       */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 	width: 22em;
 	float: left;
 }
@@ -319,7 +329,12 @@ textarea:focus {
 @media screen and (max-width: 60em) {
 	#menu {
 		height: 4em;
-		width: 100%;
+		width: 70%;
+	}
+	#ram {
+		height:2em;
+		width:30em;
+		margin-right: 5em;
 	}
 	#container {
 		overflow: auto;
@@ -328,5 +343,14 @@ textarea:focus {
 		height: 41em;
 		margin-left: 0;
 		padding: 2px;
+	}
+	#wrap-left {
+		height: 54em;
+	}
+	#monitor {
+		width:30em;
+	}
+	#memoryPreviev {
+		float:none;
 	}
 }
