@@ -454,8 +454,69 @@ function Cpu(){
 		return - 1;
 	}
 	
+	function resolveCollision(n, i){
+		var startx,starty,startix,startiy;
+		startx = sprites[n].x;
+		starty = sprites[n].y;
+		startix = sprites[i].x;
+		startiy = sprites[i].y;
+		sprites[n].x = sprites[n].x - sprites[n].speedx;
+		sprites[n].y = sprites[n].y - sprites[n].speedy;
+		sprites[i].x = sprites[i].x - sprites[i].speedx;
+		sprites[i].y = sprites[i].y - sprites[i].speedy;
+		if((sprites[n].speedy >= 0 && sprites[i].speedy <= 0) || (sprites[n].speedy <= 0 && sprites[i].speedy >= 0)){
+			if(sprites[n].y > sprites[i].y){
+				if(sprites[i].gravity > 0){
+					sprites[i].y = sprites[n].y - sprites[i].height;
+				}
+			}
+			else{
+				if(sprites[n].gravity > 0){
+					sprites[n].y = sprites[i].y - sprites[n].height;
+				}
+			}
+		}
+		if(sprites[n].x < sprites[i].x + sprites[i].width && 
+			sprites[n].x + sprites[n].width > sprites[i].x &&
+			sprites[n].y < sprites[i].y + sprites[i].height && 
+			sprites[n].y + sprites[n].height > sprites[i].y){
+				if(sprites[n].x > sprites[i].x){
+					sprites[n].x++;
+					sprites[i].x--;
+				}
+				else{
+					sprites[n].x--;
+					sprites[i].x++;
+				}
+				if(sprites[n].y > sprites[i].y){
+					sprites[n].y++;
+					sprites[i].y--;
+				}
+				else{
+					sprites[n].y--;
+					sprites[i].y++;
+				}
+			}
+		if(sprites[n].gravity != 0){
+			sprites[n].speedx = Math.floor((sprites[n].x - startx)/4);
+			sprites[n].speedy = Math.floor((sprites[n].y - starty)/4);
+		}
+		else{
+			sprites[n].speedx = Math.floor((sprites[n].x - startx));
+			sprites[n].speedy = Math.floor((sprites[n].y - starty));
+		}
+		if(sprites[i].gravity != 0){	
+			sprites[i].speedx = Math.floor((sprites[i].x - startix)/4);
+			sprites[i].speedy = Math.floor((sprites[i].y - startiy)/4);
+		}
+		else{
+			sprites[i].speedx = Math.floor((sprites[i].x - startix));
+			sprites[i].speedy = Math.floor((sprites[i].y - startiy));
+		}
+	}
+	
 	function testSpriteCollision(debug){
-		var n, i, x0, y0, x1, y1, newspeed, adr;
+		var n, i, x0, y0, adr;
 		for(n = 0; n < 32; n++)
 			sprites[n].collision = (-1) & 0xffff;
 		for(n = 0; n < 32; n++){
@@ -477,30 +538,7 @@ function Cpu(){
 								display.drawTestRect(sprites[i].x, sprites[i].y, sprites[i].width, sprites[i].height, sprites[i].solid);
 							}
 							if(sprites[n].solid != 0 && sprites[i].solid != 0){
-								if((sprites[n].speedx >= 0 && sprites[i].speedx <= 0) || (sprites[n].speedx <= 0 && sprites[i].speedx >= 0)){
-									newspeed = Math.floor((Math.abs(sprites[n].speedx) + Math.abs(sprites[i].speedx)) / 2);
-									if(sprites[n].x > sprites[i].x){
-										sprites[n].speedx = newspeed;
-										sprites[i].speedx = -newspeed;
-									}
-									else{
-										sprites[n].speedx = -newspeed;
-										sprites[i].speedx = newspeed;
-									}
-									sprites[n].x -= 2;
-								}
-								if((sprites[n].speedy >= 0 && sprites[i].speedy <= 0) || (sprites[n].speedy <= 0 && sprites[i].speedy >= 0)){
-									newspeed = Math.floor((Math.abs(sprites[n].speedy) + Math.abs(sprites[i].speedy)) / 2);
-									if(sprites[n].y > sprites[i].y){
-										sprites[n].speedy = newspeed;
-										sprites[i].speedy = -newspeed;
-									}
-									else{
-										sprites[n].speedy = -newspeed;
-										sprites[i].speedy = newspeed;
-									}
-									sprites[n].y -=  2;
-								}
+								resolveCollision(n,i);
 							}
 						}	
 				}
@@ -509,62 +547,30 @@ function Cpu(){
 					y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
 					if(x0 >= -1 && x0 <= tile.width && y0 >= -1 && y0 <= tile.height){
 						if(debug){
-							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0));
-							display.drawTestRect(tile.x + (x0 - 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0 - 1,y0));
-							display.drawTestRect(tile.x + (x0 + 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0 + 1,y0));
-							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 - 1));
-							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTail(x0,y0 + 1));
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0));
+							display.drawTestRect(tile.x + (x0 - 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0 - 1,y0));
+							display.drawTestRect(tile.x + (x0 + 1) * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0 + 1,y0));
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0 - 1));
+							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0 + 1));
 						}
-						if(getTile(x0, y0) != 0){
-							if(sprites[n].speedx != 0){
-								if(sprites[n].speedx > 0){
-									sprites[n].x = tile.x + x0 * tile.imgwidth - sprites[n].width ;
-									sprites[n].speedx /= 2;
-								}
-								else{
-									sprites[n].x = tile.x + (x0 + 1) * tile.imgwidth;
-									sprites[n].speedx /= 2;
-								}
+						if(getTileInXY(sprites[n].x, sprites[n].y) 
+							|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y)
+							|| getTileInXY(sprites[n].x , sprites[n].y + sprites[n].height)
+							|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+								sprites[n].y = sprites[n].y - sprites[n].speedy;
+								if(getTileInXY(sprites[n].x, sprites[n].y) 
+									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y)
+									|| getTileInXY(sprites[n].x, sprites[n].y + sprites[n].height)
+									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+										sprites[n].x = sprites[n].x - sprites[n].speedx;
+										sprites[n].speedx = Math.floor((sprites[n].x - (sprites[n].x - sprites[n].speedx)) / 2);
+									}
+								sprites[n].speedy = Math.floor(sprites[n].speedy / 2) - sprites[n].gravity;
+								if(getTileInXY(sprites[n].x, sprites[n].y + sprites[n].height)
+									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+										sprites[n].y--;
+									}
 							}
-							if(sprites[n].speedy != 0){
-								if(sprites[n].speedy > 0){
-									sprites[n].y = tile.y + y0 * tile.imgheight - sprites[n].height ;
-									sprites[n].speedy /= 2;
-								}
-								else{
-									sprites[n].y = tile.y + (y0 + 1) * tile.imgheight;
-									sprites[n].speedy /= 2;
-								}
-							}
-							x0 = Math.floor((sprites[n].x + sprites[n].width / 2 - tile.x) / tile.imgwidth);
-							y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
-						}
-						else{
-							if(sprites[n].speedy > 0 && getTile(x0, y0 + 1) != 0){
-								if((tile.y + (y0 + 1) * tile.imgheight - sprites[n].height) - sprites[n].y < sprites[n].speedy){
-									sprites[n].y = tile.y + (y0 + 1) * tile.imgheight - sprites[n].height;	
-									sprites[n].speedy = 0;
-								}
-							}
-							else if(sprites[n].speedy < 0 && getTile(x0, y0 - 1) != 0){
-								if(sprites[n].y - (tile.y + y0 * tile.imgheight) < sprites[n].speedy){
-									sprites[n].y = tile.y + y0 * tile.imgheight;	
-									sprites[n].speedy = 0;
-								}
-							}
-							if(sprites[n].speedx > 0  && getTile(x0 + 1, y0) != 0){
-								if((tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width) - sprites[n].x < sprites[n].speedx){
-									sprites[n].x = tile.x + (x0 + 1) * tile.imgwidth - sprites[n].width;	
-									sprites[n].speedx = 0;
-								}
-							}
-							else if(sprites[n].speedx < 0 && getTile(x0 - 1, y0) != 0){
-								if(sprites[n].x - (tile.x + x0 * tile.imgwidth) < sprites[n].speedx){
-									sprites[n].x = tile.x + x0 * tile.imgwidth;	
-									sprites[n].speedx = 0;
-								}
-							}
-						}
 					}
 				}
 			}
@@ -576,7 +582,7 @@ function Cpu(){
 			x -= 0xffff;
 		if(y > 0x7fff)
 			y -= 0xffff;
-		if(x < tile.x || y < tile.y || x > tile.x + tile.imgwidth * tile.width || tile.y > tile.imgheight * tile.height)
+		if(x < tile.x || y < tile.y || x > tile.x + tile.imgwidth * tile.width || y > tile.y + tile.imgheight * tile.height)
 			return 0;
 		var p = (Math.floor((x - tile.x) / tile.imgwidth) + Math.floor((y - tile.y) / tile.imgheight) * tile.width);
 		var t = readInt(tile.adr + p * 2);
@@ -1075,6 +1081,42 @@ function Cpu(){
 						reg1 = op2 & 0xf;
 						reg[reg1] = timers[reg[reg1] & 0x7];
 						setFlags(reg[reg1]);
+						break;
+					case 0x53:
+						// SETLED R		530R
+						reg1 = op2 & 0xf;
+						console.log('New pixel color: ' + reg[reg1]);
+						break;
+					case 0x54:
+						// LOADRT		540R
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						rtttl.address = reg[reg1];
+						rtttl.loop = reg[reg2];
+						loadRtttl();
+						break;
+					case 0x55:
+						switch(op2){
+							// PLAYRT		5500
+							case 0x00:
+								rtttl.play = 1;
+								break;
+							// PAUSERT		5501
+							case 0x01:
+								rtttl.play = 0;
+								break;
+							// STOPRT		5502
+							case 0x02:
+								rtttl.play = 0;
+								rtttl.position = 0;
+								break;
+						}
+						break;
+					case 0x56:
+						// LOADRT		540R
+						reg1 = (op2 & 0xf0) >> 4;
+						reg2 = op2 & 0xf;
+						addTone(reg[reg1], reg[reg2]);
 						break;
 				}
 				break;

@@ -17,6 +17,8 @@ var thisDebugString = 0;	//строка, которая в данный моме
 var globalJKey = 0;			//массив кнопок геймпада
 var globalKey = 0;			//текущая нажатая на клавиатуре кнопка
 var obj_wind;				//переменные, используемые для перемещения окон
+var soundTimer = 100;		//время проигрывания ноты
+var timerCount = 0;				//время с прошлого вызова
 var obj_drag_wind;
 var delta_x = 0;
 var delta_y = 0;
@@ -461,6 +463,10 @@ function run(){
 		if(timers[i] <= 0)
 			timers[i] = 0;
 	}
+	soundTimer -= (new Date()).getTime() - timerCount;
+	if(soundTimer <= 40)
+		soundTimer = playRtttl();
+	timerCount =  (new Date()).getTime();
 	//обрабатываем команды процессора
 	for(var i=0;i<cpuSpeed;i++){
 		cpu.step();

@@ -973,7 +973,7 @@ function compile(t) {
 					return;
 				}
 				execut();
-				if (getRangOperation(thisToken) == 0){
+				if (getRangOperation(thisToken) == 0 && thisToken != ']'){
 					getToken();
 					execut();
 				}
@@ -1724,6 +1724,8 @@ function compile(t) {
 			assigment();
 		} else if (thisToken == ';') {
 			return;
+		} else if (thisToken == ':') {
+			return;
 		} else if (thisToken == '{') {
 			skipBrace();
 			getToken();
@@ -1792,6 +1794,12 @@ function compile(t) {
 	registerFunction('spritegetvalue', 'int', ['int', 'n', 'int', 'type'], 1, 'SPRGET R%2,R%1', true, 0);
 	registerFunction('spritesetvalue', 'void', ['int', 'n', 'int', 'type', 'int', 'value'], 1, 'SSPRTV R%3,R%2,R%1', true, 0);
 	registerFunction('setimagesize', 'void', ['int', 's'], 1, 'ISIZE R%1', true, 0);
+	registerFunction('setledcolor', 'void', ['int', 'c'], 1, 'SETLED R%1', true, 0);
+	registerFunction('tone', 'void', ['int', 'freq','int','time'], 1, 'PLAYTN R%2,R%1', true, 0);
+	registerFunction('loadrtttl', 'void', ['int', 'adr','int','loop'], 1, 'LOADRT R%2,R%1', true, 0);
+	registerFunction('playrtttl', 'int', [], 1, 'PLAYRT', true, 0);
+	registerFunction('pausertttl', 'int', [], 1, 'PAUSERT', true, 0);
+	registerFunction('stoprtttl', 'int', [], 1, 'STOPRT', true, 0);
 	registerFunction('drawtile', 'void', ['int', 'x', 'int', 'y'], 1, 'DRTILE R%2,R%1', true, 0);
 	registerFunction('scroll', 'void', ['char', 'direction'], 1, 'SCROLL R%1,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);

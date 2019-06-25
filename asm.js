@@ -684,6 +684,30 @@ function asm(s) {
 				out.push(0x52); // GTIMER R		520R
 				out.push(getRegister(a[i + 1]));
 				return;
+			case 'SETLED':
+				out.push(0x53); // SETLED R		530R
+				out.push(getRegister(a[i + 1]));
+				return;
+			case 'LOADRT':
+				out.push(0x54); // LOADRT R,R		54RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'PLAYRT':
+				out.push(0x55); // PLAYRT		5500
+				out.push(0x00);
+				return;
+			case 'PAUSERT':
+				out.push(0x55);// PAUSERT		5501
+				out.push(0x01);
+				return;
+			case 'STOPRT':
+				out.push(0x55);// STOPRT		5502
+				out.push(0x02);
+				return;
+			case 'PLAYTN':
+				out.push(0x56); // PLAYTN R,R		56RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'DB':
 				dbparse(a.join(''));
 				return;
