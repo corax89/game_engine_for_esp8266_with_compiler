@@ -110,9 +110,9 @@ void changePosition(){
 		setcolor(0);
 		for(i = 0; i < 5; i++)
 			line(jointsx[i],jointsy[i],jointsx[i+1],jointsy[i+1]);
-		spritespeedx(1, 1);
-		spritespeedy(1, -5);
-		spritesetvalue(1, S_GRAVITY, 1);
+		spritespeedx(1, 4);
+		spritespeedy(1, -20);
+		spritesetvalue(1, S_GRAVITY, 3);
 	}
 	else{
 		dist = 128;
@@ -227,15 +227,15 @@ void update(){
 		settimer(0, 5000);
 		putsprite(12, 126, 12 + random(64));
 		spritesetvalue(12, S_ANGLE, 0);
-		spritespeedx(12, -4);
-		spritespeedy(12, -8);
-		spritesetvalue(12, S_GRAVITY, 1);
+		spritespeedx(12, -16);
+		spritespeedy(12, -32);
+		spritesetvalue(12, S_GRAVITY, 4);
 	}
 	if(gettimer(1) == 0){
 		settimer(1, 12000 + random(6000));
 		putsprite(11, -7, random(64));
 		spritesetvalue(11, S_ANGLE, 0);
-		spritespeedx(11, 3);
+		spritespeedx(11, 12);
 		spritespeedy(11, 0);
 	}
 	if(gettimer(2) == 0){
@@ -318,7 +318,7 @@ void init(){
 	getsprite(13,kick1);
 	spritesetvalue(13,S_WIDTH,8);
 	spritesetvalue(13,S_HEIGHT,14);
-	spritesetvalue(13,S_SPEEDY,2);
+	spritesetvalue(13,S_SPEEDY,8);
 	for(i = 0; i < 5; i++){
 		getsprite(16 + i,grass);
 		spritesetvalue(16 + i,S_WIDTH,32);

@@ -19,6 +19,9 @@ input[type=file] {
 	height: 1.6em;
 	width: 18em;
 }
+input[type=range] {
+	width: 3.7em;
+}
 textarea:focus {
 	outline: none;
 }
@@ -242,7 +245,7 @@ textarea:focus {
 #spriteEditior, #tutorial {
 	background-color: #eee;
 	border: 1px solid #516399;
-	height: 31em;
+	height: 33em;
 	overflow: hidden;
 	padding: 0.5em;
 	resize: none;
@@ -291,7 +294,7 @@ textarea:focus {
 }
 #spriteArea {
 	color: #516399;
-	height: 4.9em;
+	height: 4.2em;
 	margin-top: 0.2em;
 	resize: none;
 	width: 24em;

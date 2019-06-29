@@ -46,7 +46,7 @@ void init(){
 	spritesetvalue(1, S_WIDTH, 16);
 	spritesetvalue(1, S_HEIGHT, 12);
 	spritesetvalue(1, S_SOLID, 1);
-	spritesetvalue(1, S_GRAVITY, 1);
+	spritesetvalue(1, S_GRAVITY, 3);
 	spritesetvalue(1, S_SPEEDY, -1);
 	spritesetvalue(1, S_SPEEDX, 0);
 	spritesetvalue(1, S_ON_EXIT_SCREEN, onexit);
@@ -60,7 +60,7 @@ void init(){
 		getsprite(i, tube);
 		spritesetvalue(i, S_WIDTH, 8);
 		spritesetvalue(i, S_HEIGHT, 32);
-		spritesetvalue(i, S_SPEEDX, -3);
+		spritesetvalue(i, S_SPEEDX, -6);
 		spritesetvalue(i, S_SPEEDY, 0);
 		spritesetvalue(i, S_SOLID, 1);
 		spritesetvalue(i, S_ON_EXIT_SCREEN, tubeOnexit);
@@ -70,19 +70,17 @@ void init(){
 	putsprite(3, 128, 80);
 }
 
-
-
 void main(){
 while(1){
 	init();
 	while(game){
-		if(getkey() == KEY_B)
-			spritesetvalue(1, S_SPEEDY, -8);
-		spritesetvalue(1,S_ANGLE,spritegetvalue(1,S_SPEEDY)*4);
+		spritesetvalue(1, S_ANGLE, spritegetvalue(1, S_SPEEDY));
+		if(getkey())
+			spritesetvalue(1, S_SPEEDY, -20);
 		delayredraw();
 	}
 	for(i = 0; i < 20; i++)
 		delayredraw();
+	while(getkey() == 0){}
 }
 }
-							

@@ -18,7 +18,6 @@ var globalJKey = 0;			//массив кнопок геймпада
 var globalKey = 0;			//текущая нажатая на клавиатуре кнопка
 var obj_wind;				//переменные, используемые для перемещения окон
 var soundTimer = 100;		//время проигрывания ноты
-var timerCount = 0;				//время с прошлого вызова
 var obj_drag_wind;
 var delta_x = 0;
 var delta_y = 0;
@@ -28,6 +27,8 @@ var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
 var language = 'eng';
+var timerstart = new Date().getTime(),
+    timertime = 0;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -457,16 +458,19 @@ function setMemoryPage(n){
 }
 
 function run(){
+	//звук инициализируется только при нажатии на кнопку
+	initAudio();
 	//уменьшаем значение таймеров
 	for(var i = 0; i < 8; i++){
 		timers[i] -= 16;
 		if(timers[i] <= 0)
 			timers[i] = 0;
 	}
-	soundTimer -= (new Date()).getTime() - timerCount;
-	if(soundTimer <= 40)
+	soundTimer -= 16;
+	if(soundTimer <= 30)
 		soundTimer = playRtttl();
-	timerCount =  (new Date()).getTime();
+	if(soundTimer > 2000)
+		soundTimer = 2000;
 	//обрабатываем команды процессора
 	for(var i=0;i<cpuSpeed;i++){
 		cpu.step();
@@ -486,8 +490,10 @@ function run(){
 			debugCallCount = 0;
 		}
 	}
+	timertime += 16;
+    var diff = (new Date().getTime() - timerstart) - timertime;
 	clearTimeout(timerId);
-	timerId = setTimeout(function() { run() }, 16);
+	timerId = setTimeout(function() { run() }, 16 - diff);
 }
 //функция вывода на экран
 function Display() {
@@ -580,6 +586,15 @@ function Display() {
 		}
 	}
 
+	function drawLed(color){
+		var r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+		var g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+		var b = (((color & 0x1F) * 527) + 23) >> 6;
+		ctx.fillStyle = fullColorHex(r, g, b);
+		ctx.fillRect(0, 0 , pixelSize * 128, pixelSize * 16);
+		ctx.fillRect(0, (128 + 16) * pixelSize , pixelSize * 128, pixelSize * 16);
+	}
+	
 	function char(chr, x, y, color, bgcolor){
 		var c = chr.charCodeAt(0);
 		for(var i=0; i<5; i++ ) { // Char bitmap = 5 columns
@@ -727,6 +742,7 @@ function Display() {
       init: init,
       reset: reset,
 	  clearScreen:clearScreen,
+	  drawLed:drawLed,
 	  char:char,
 	  updatePixel: updatePixel,
 	  drawPixel: drawPixel,

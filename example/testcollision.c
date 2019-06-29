@@ -22,8 +22,8 @@ void main(){
 		spritesetvalue(j,S_WIDTH,8);
 		spritesetvalue(j,S_HEIGHT,8);
 		spritesetvalue(j,S_SOLID,1);
-		spritesetvalue(j,S_SPEEDX,random(2) - 1);
-		spritesetvalue(j,S_SPEEDY,random(2) - 1);
+		spritesetvalue(j,S_SPEEDX,random(32) - 16);
+		spritesetvalue(j,S_SPEEDY,random(32) - 16);
 		spritesetvalue(j,S_GRAVITY,1);
 	}
 	while(1){

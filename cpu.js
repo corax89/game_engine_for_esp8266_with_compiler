@@ -44,7 +44,8 @@ function Cpu(){
 		for(var i = 0; i < 32; i++){
 			sprites[i]  = {
 				address: 0, x: 255, y: 255, speedx: 0, speedy: 0, height: 8, width: 8, angle: 0, isonebit: 0,
-				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0, isscrolled: 1
+				lives: 0, collision: -1, solid: 0, gravity: 0, oncollision: 0, onexitscreen: 0, isscrolled: 1,
+				fliphorisontal: 0
 			};	
 		}
 		for(var i = 0; i < maxParticles; i++){
@@ -136,7 +137,7 @@ function Cpu(){
 			}
 			for(n = 0; n < 32; n++)
 				if(sprites[n].isscrolled != 0)
-					sprites[n].x--;
+					sprites[n].x -= 4;
 		}
 		else if(direction == 1){
 			for(var x = 0; x < 128; x++){
@@ -147,7 +148,7 @@ function Cpu(){
 			}
 			for(n = 0; n < 32; n++)
 				if(sprites[n].isscrolled != 0)
-					sprites[n].y--;
+					sprites[n].y -= 4;
 		}
 		else if(direction == 0){
 			for(var y = 0; y < 128; y++){
@@ -158,7 +159,7 @@ function Cpu(){
 			}
 			for(n = 0; n < 32; n++)
 				if(sprites[n].isscrolled != 0)
-					sprites[n].x++;
+					sprites[n].x += 4;
 		}
 		else {
 			for(var x = 0; x < 128; x++){
@@ -169,7 +170,7 @@ function Cpu(){
 			}
 			for(n = 0; n < 32; n++)
 				if(sprites[n].isscrolled != 0)
-					sprites[n].y++;
+					sprites[n].y += 4;
 		}
 		if(tile.adr > 0)
 			tileDrawLine(step, direction);
@@ -259,13 +260,13 @@ function Cpu(){
 	
 	function drawSprite(n, x1, y1){
 		if(x1 > 0x7fff)
-			sprites[n].x = x1 - 0x10000;
+			sprites[n].x = Math.floor((x1 - 0x10000) << 2);
 		else
-			sprites[n].x = x1;
+			sprites[n].x = Math.floor(x1 << 2);
 		if(y1 > 0x7fff)
-			sprites[n].y = y1 - 0x10000;
+			sprites[n].y = Math.floor((y1 - 0x10000) << 2);
 		else
-			sprites[n].y = y1;
+			sprites[n].y = Math.floor(y1 << 2);
 	}
 
 	function setParticle(gravity, count, time){
@@ -368,18 +369,25 @@ function Cpu(){
 		for(n = 0; n < 32; n++){
 			if(sprites[n].lives > 0){
 				var adr = sprites[n].address;
-				var x1 = sprites[n].x;
-				var y1 = sprites[n].y;
+				var x1 = Math.floor(sprites[n].x >> 2);
+				var y1 = Math.floor(sprites[n].y >> 2);
 				if(sprites[n].isonebit == 0){
 					for(var y = 0; y < sprites[n].height; y++)
 						for(var x = 0; x < sprites[n].width; x++){
 							clr = (readMem(adr) & 0xf0) >> 4;
-							if(clr > 0)
-								drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							if(clr > 0){
+								if(sprites[n].fliphorisontal)
+									drawRotateSprPixel(clr, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								else
+									drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							}
 							x++;
 							clr = (readMem(adr) & 0xf);
 							if(clr > 0)
-								drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								if(sprites[n].fliphorisontal)
+									drawRotateSprPixel(clr, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								else
+									drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 							adr++;
 						}
 				}
@@ -393,7 +401,10 @@ function Cpu(){
 							adr++;
 						  }
 						  if(ibit & 0x80)
-							drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							if(sprites[n].fliphorisontal)
+								drawRotateSprPixel(color, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+							else
+								drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
 						  ibit = ibit << 1;
 						  i++;
 						}
@@ -402,8 +413,9 @@ function Cpu(){
 				sprites[n].x += sprites[n].speedx;
 				sprites[n].y += sprites[n].speedy;
 				if(sprites[n].onexitscreen > 0){
-					if(sprites[n].x + sprites[n].width < 0 || sprites[n].x > 127 || sprites[n].y + sprites[n].height < 0 || sprites[n].y > 127)
-						setinterrupt(sprites[n].onexitscreen, n);
+					if((sprites[n].x >> 2) + sprites[n].width < 0 || (sprites[n].x >> 2) > 127 
+						|| (sprites[n].y >> 2) + sprites[n].height < 0 || (sprites[n].y >> 2) > 127)
+							setinterrupt(sprites[n].onexitscreen, n);
 				}
 			}
 		}	
@@ -445,6 +457,8 @@ function Cpu(){
 			x -= 0xffff;
 		if(y > 0x7fff)
 			y -= 0xffff;
+		x = Math.floor(x >> 2);
+		y = Math.floor(y >> 2);
 		for(var n = 0; n < 32; n++){
 			if(sprites[n].lives > 0)
 				if(sprites[n].x < x && sprites[n].x + sprites[n].width > x &&
@@ -467,19 +481,19 @@ function Cpu(){
 		if((sprites[n].speedy >= 0 && sprites[i].speedy <= 0) || (sprites[n].speedy <= 0 && sprites[i].speedy >= 0)){
 			if(sprites[n].y > sprites[i].y){
 				if(sprites[i].gravity > 0){
-					sprites[i].y = sprites[n].y - sprites[i].height;
+					sprites[i].y = sprites[n].y - (sprites[i].height << 2);
 				}
 			}
 			else{
 				if(sprites[n].gravity > 0){
-					sprites[n].y = sprites[i].y - sprites[n].height;
+					sprites[n].y = sprites[i].y - (sprites[n].height << 2);
 				}
 			}
 		}
-		if(sprites[n].x < sprites[i].x + sprites[i].width && 
-			sprites[n].x + sprites[n].width > sprites[i].x &&
-			sprites[n].y < sprites[i].y + sprites[i].height && 
-			sprites[n].y + sprites[n].height > sprites[i].y){
+		if(sprites[n].x < sprites[i].x + (sprites[i].width << 2) && 
+			sprites[n].x + (sprites[n].width << 2) > sprites[i].x &&
+			sprites[n].y < sprites[i].y + (sprites[i].height << 2) && 
+			sprites[n].y + (sprites[n].height << 2) > sprites[i].y){
 				if(sprites[n].x > sprites[i].x){
 					sprites[n].x++;
 					sprites[i].x--;
@@ -523,10 +537,10 @@ function Cpu(){
 			if(sprites[n].lives > 0){
 				for(i = 0; i < n; i++){
 					if(sprites[i].lives > 0)
-						if(sprites[n].x < sprites[i].x + sprites[i].width && 
-						sprites[n].x + sprites[n].width > sprites[i].x &&
-						sprites[n].y < sprites[i].y + sprites[i].height && 
-						sprites[n].y + sprites[n].height > sprites[i].y){
+						if(sprites[n].x < sprites[i].x + (sprites[i].width << 2) && 
+						sprites[n].x + (sprites[n].width << 2) > sprites[i].x &&
+						sprites[n].y < sprites[i].y + (sprites[i].height << 2) && 
+						sprites[n].y + (sprites[n].height << 2) > sprites[i].y){
 							sprites[n].collision = i;
 							sprites[i].collision = n;
 							if(sprites[n].oncollision > 0)
@@ -534,8 +548,8 @@ function Cpu(){
 							if(sprites[i].oncollision > 0)
 								setinterrupt(sprites[i].oncollision, i);
 							if(debug){
-								display.drawTestRect(sprites[n].x, sprites[n].y, sprites[n].width, sprites[n].height, sprites[n].solid);
-								display.drawTestRect(sprites[i].x, sprites[i].y, sprites[i].width, sprites[i].height, sprites[i].solid);
+								display.drawTestRect(sprites[n].x >> 2, sprites[n].y, sprites[n].width >> 2, sprites[n].height, sprites[n].solid);
+								display.drawTestRect(sprites[i].x >> 2, sprites[i].y, sprites[i].width >> 2, sprites[i].height, sprites[i].solid);
 							}
 							if(sprites[n].solid != 0 && sprites[i].solid != 0){
 								resolveCollision(n,i);
@@ -543,8 +557,8 @@ function Cpu(){
 						}	
 				}
 				if(sprites[n].solid != 0){
-					x0 = Math.floor((sprites[n].x + sprites[n].width / 2 - tile.x) / tile.imgwidth);
-					y0 = Math.floor((sprites[n].y + sprites[n].height / 2 - tile.y) / tile.imgheight);
+					x0 = Math.floor((Math.floor(sprites[n].x >> 2) + sprites[n].width / 2 - tile.x) / tile.imgwidth);
+					y0 = Math.floor((Math.floor(sprites[n].y >> 2) + sprites[n].height / 2 - tile.y) / tile.imgheight);
 					if(x0 >= -1 && x0 <= tile.width && y0 >= -1 && y0 <= tile.height){
 						if(debug){
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0));
@@ -553,21 +567,24 @@ function Cpu(){
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0 - 1));
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0,y0 + 1));
 						}
-						if(getTileInXY(sprites[n].x, sprites[n].y) 
-							|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y)
-							|| getTileInXY(sprites[n].x , sprites[n].y + sprites[n].height)
-							|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+						x0 = Math.floor(sprites[n].x >> 2);
+						y0 = Math.floor(sprites[n].y >> 2);
+						if(getTileInXY(x0, y0) || getTileInXY(x0 + sprites[n].width, y0)
+							|| getTileInXY(x0 , y0 + sprites[n].height) || getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)){
 								sprites[n].y = sprites[n].y - sprites[n].speedy;
-								if(getTileInXY(sprites[n].x, sprites[n].y) 
-									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y)
-									|| getTileInXY(sprites[n].x, sprites[n].y + sprites[n].height)
-									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+								y0 = Math.floor(sprites[n].y >> 2);
+								if(getTileInXY(x0, y0) || getTileInXY(x0 + sprites[n].width, y0)
+									|| getTileInXY(x0, y0 + sprites[n].height)
+									|| getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)){
 										sprites[n].x = sprites[n].x - sprites[n].speedx;
-										sprites[n].speedx = Math.floor((sprites[n].x - (sprites[n].x - sprites[n].speedx)) / 2);
+										//sprites[n].speedx = Math.floor((sprites[n].x - (sprites[n].x - sprites[n].speedx)) / 2);
 									}
-								sprites[n].speedy = Math.floor(sprites[n].speedy / 2) - sprites[n].gravity;
-								if(getTileInXY(sprites[n].x, sprites[n].y + sprites[n].height)
-									|| getTileInXY(sprites[n].x + sprites[n].width, sprites[n].y + sprites[n].height)){
+								sprites[n].speedy = Math.floor(sprites[n].speedy / 2 - sprites[n].gravity );
+								sprites[n].speedx = Math.floor(sprites[n].speedx / 2);
+								x0 = Math.floor(sprites[n].x >> 2);
+								y0 = Math.floor(sprites[n].y >> 2);
+								if(getTileInXY(x0, y0 + sprites[n].height)
+									|| getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)){
 										sprites[n].y--;
 									}
 							}
@@ -1085,7 +1102,8 @@ function Cpu(){
 					case 0x53:
 						// SETLED R		530R
 						reg1 = op2 & 0xf;
-						console.log('New pixel color: ' + reg[reg1]);
+						display.drawLed(reg[reg1]);
+						//console.log('New pixel color: ' + reg[reg1]);
 						break;
 					case 0x54:
 						// LOADRT		540R
@@ -1722,9 +1740,9 @@ function Cpu(){
 						reg1 = (op2 & 0xf0) >> 4;//num
 						reg2 = op2 & 0xf;//type
 						if(reg[reg2] == 0)
-							reg[reg1] = sprites[reg[reg1] & 31].x;
+							reg[reg1] = Math.floor(sprites[reg[reg1] & 31].x >> 2);
 						else if(reg[reg2] == 1)
-							reg[reg1] = sprites[reg[reg1] & 31].y;
+							reg[reg1] = Math.floor(sprites[reg[reg1] & 31].y >> 2);
 						else if(reg[reg2] == 2)
 							reg[reg1] = sprites[reg[reg1] & 31].speedx;
 						else if(reg[reg2] == 3)
@@ -1774,15 +1792,15 @@ function Cpu(){
 				reg3 = op2 & 0xf;//value
 				if(reg[reg2] == 0){
 					if(reg[reg3] > 0x7fff)
-						sprites[reg[reg1] & 31].x = reg[reg3] - 0x10000;
+						sprites[reg[reg1] & 31].x = (reg[reg3] - 0x10000) << 2;
 					else
-						sprites[reg[reg1] & 31].x = reg[reg3];
+						sprites[reg[reg1] & 31].x = reg[reg3] << 2;
 				}
 				else if(reg[reg2] == 1){
 					if(reg[reg3] > 0x7fff)
-						sprites[reg[reg1] & 31].y = reg[reg3] - 0x10000;
+						sprites[reg[reg1] & 31].y = (reg[reg3] - 0x10000) << 2;
 					else
-						sprites[reg[reg1] & 31].y = reg[reg3];
+						sprites[reg[reg1] & 31].y = reg[reg3] << 2;
 				}
 				else if(reg[reg2] == 2){
 					if(reg[reg3] > 128)
@@ -1823,6 +1841,8 @@ function Cpu(){
 					sprites[reg[reg1] & 31].isscrolled = reg[reg3];
 				else if(reg[reg2] == 14)
 					sprites[reg[reg1] & 31].isonebit = reg[reg3];
+				else if(reg[reg2] == 15)
+					sprites[reg[reg1] & 31].fliphorisontal = reg[reg3];
 				break;
 		}
 	}

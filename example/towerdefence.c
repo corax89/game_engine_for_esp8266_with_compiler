@@ -158,7 +158,7 @@ void step(){
 	int l;
 	if(gettimer(1) == 0){
 		if(addmonster > 0){
-			spritesetvalue(addmonster, S_SPEEDX, 1);
+			spritesetvalue(addmonster, S_SPEEDX, 3);
 			spritesetvalue(addmonster, S_SPEEDY, 0);
 			putsprite(addmonster, 1, 18);
 			spritesetvalue(addmonster, S_LIVES, monsterlives);
@@ -216,27 +216,27 @@ void step(){
 		if(spritegetvalue(i, S_LIVES)){
 			if(nextstep[i] == 0 && spritegetvalue(i, S_X) >= point[0]){
 				spritesetvalue(i, S_SPEEDX, 0);
-				spritesetvalue(i, S_SPEEDY, 1);
+				spritesetvalue(i, S_SPEEDY, 3);
 				nextstep[i]+=1;
 			}
 			else if(nextstep[i] == 1 && spritegetvalue(i, S_Y) >= point[1]){
-				spritesetvalue(i, S_SPEEDX, -1);
+				spritesetvalue(i, S_SPEEDX, -3);
 				spritesetvalue(i, S_SPEEDY, 0);
 				nextstep[i]+=1;
 			}
 			else if(nextstep[i] == 2 && spritegetvalue(i, S_X) <= point[2]){
 				spritesetvalue(i, S_SPEEDX, 0);
-				spritesetvalue(i, S_SPEEDY, 1);
+				spritesetvalue(i, S_SPEEDY, 3);
 				nextstep[i]+=1;
 			}
 			else if(nextstep[i] == 3 && spritegetvalue(i, S_Y) >= point[3]){
-				spritesetvalue(i, S_SPEEDX, 1);
+				spritesetvalue(i, S_SPEEDX, 3);
 				spritesetvalue(i, S_SPEEDY, 0);
 				nextstep[i]+=1;
 			}
 			else if(nextstep[i] == 4 && spritegetvalue(i, S_X) >= point[4]){
 				spritesetvalue(i, S_SPEEDX, 0);
-				spritesetvalue(i, S_SPEEDY, 1);
+				spritesetvalue(i, S_SPEEDY, 3);
 				nextstep[i]+=1;
 			}
 			else if(nextstep[i] == 5 && spritegetvalue(i, S_Y) >= 102){

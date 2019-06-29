@@ -31,7 +31,7 @@ void init(){
 	getsprite(1, spr2);
 	spritesetvalue(1, S_WIDTH, 6);
 	spritesetvalue(1, S_SOLID, 1);
-	spritesetvalue(1, S_GRAVITY, 1);
+	spritesetvalue(1, S_GRAVITY, 4);
 	spritesetvalue(1, S_ON_EXIT_SCREEN, exitscreen);
 }
 
@@ -83,7 +83,7 @@ void nextLevel(){
 	putsprite(1, 48, 86);
 	spritesetvalue(1, S_SPEEDX, 0);
 	while(getkey() == 0){}
-	spritesetvalue(1, S_SPEEDX, 2);
+	spritesetvalue(1, S_SPEEDX, 8);
 	spritesetvalue(1, S_SPEEDY, 0);
 	putsprite(1, 48, 86);
 }
@@ -98,7 +98,7 @@ while(1){
 		distance++;
 		setbgcolor(6);
 		gotoxy(1, 1);
-		spritesetvalue(1, S_SPEEDX, 2);
+		spritesetvalue(1, S_SPEEDX, 8);
 		printf(" distance %d    ", distance);
 		if(p > 1900)
 			nextLevel();
@@ -109,9 +109,9 @@ while(1){
 				cadr = 0;
 		}
 		key = getkey();
-		if((spritegetvalue(1, S_Y) == 88	|| spritegetvalue(1, S_Y) == 72) && spritegetvalue(1, S_SPEEDY) == 0){
+		if((spritegetvalue(1, S_Y) < 90	&& spritegetvalue(1, S_Y) > 70) && spritegetvalue(1, S_SPEEDY) <= 1){
 			if(key == KEY_A || key == KEY_B)
-				spritesetvalue(1, S_SPEEDY, -7);
+				spritesetvalue(1, S_SPEEDY, -25);
 			getsprite(1, spr[cadr]);
 		}
 		else

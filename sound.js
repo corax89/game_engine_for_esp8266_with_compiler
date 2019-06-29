@@ -1,4 +1,4 @@
-var audio = new AudioContext();
+var audio;
 
 var play_tone = {
 	"freq" : 0, 
@@ -23,6 +23,11 @@ var  notes = [
 	2794, 2960, 3136, 3322, 3520, 3729, 3951 
 ];
 
+function initAudio(){
+	if(!audio)
+		audio = new (window.AudioContext || window.webkitAudioContext)();
+}
+
 function isdigit(str){
 	return /^\d+$/.test(str);
 }
@@ -39,6 +44,7 @@ function tone(freq, delay) {
 	gain.gain.setValueAtTime(0, audio.currentTime);
 	gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
 	gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
+	gain.gain.value = 0.3;
 	osc.frequency.value = freq;
 	osc.type = "square";
 	osc.connect(gain);
@@ -119,6 +125,14 @@ function loadRtttl(){
 	return 1;
 }
 
+function testEndRtttl(){
+	if(rtttl.startposition + rtttl.position >= rtttl.str.length){
+		if(!rtttl.loop)
+		  rtttl.play = 0;
+		rtttl.position = 0;
+	}
+}
+
 function playRtttl(){
 	var n,duration,note,scale,c;
 	//play single tone
@@ -133,13 +147,8 @@ function playRtttl(){
 		return 100;
 	//first, get note duration, if available
 	n = 0;
+	testEndRtttl();
 	c = rtttl.str[rtttl.startposition + rtttl.position];
-	if(!c){
-		if(!rtttl.loop)
-		  rtttl.play = 0;
-		rtttl.position = 0;
-		c = rtttl.str[rtttl.startposition + rtttl.position];
-	}
 	n = '';
 	while(isdigit(rtttl.str[rtttl.startposition + rtttl.position])) {
 		n += rtttl.str[rtttl.startposition + rtttl.position];

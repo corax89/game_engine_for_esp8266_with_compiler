@@ -54,7 +54,7 @@ void laserCollision(){
 void init(){
 	gotoxy(1,1);
 	game = 1;
-	printf("level %d   ", speed);
+	printf("level %d   ", speed - 2);
 	count = 28;
 	for(i = 0; i < 60; i++)
 		map[i] = 0;
@@ -79,7 +79,7 @@ void init(){
 	getsprite(30, laser);
 	spritesetvalue(30,S_WIDTH,2);
 	spritesetvalue(30,S_HEIGHT,11);
-	spritesetvalue(30,S_SPEEDY,5);
+	spritesetvalue(30,S_SPEEDY,21);
 	spritesetvalue(30,S_ON_EXIT_SCREEN,laserExit);
 	spritesetvalue(30,S_ON_COLLISION,laserCollision);
 	getsprite(31, ufo[0]);
@@ -104,7 +104,7 @@ void nextcadr(){
 void main(){
 	setbgcolor(3);
 	clearscreen();
-	speed = 1;
+	speed = 3;
 	setparticle(2, 10, 500);
 	setemitter(100, 310, 230, 8);
 	for(i = 0; i < 16; i++)

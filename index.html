@@ -35,7 +35,7 @@
 				</div>
 				<canvas id="screen" width="256" height="320"></canvas>
 				<button onclick="cpu.step();document.getElementById('debug').value = cpu.debug();clearTimeout(timerId);">step</button>
-				<button onclick="run()">run</button>
+				<button onclick="timerstart = new Date().getTime();timertime = 0;soundTimer = 0;run();">run</button>
 				<button onclick="clearTimeout(timerId);document.getElementById('debug').value = cpu.debug();">stop</button>
 				<br>
 				cpu speed,Hz
@@ -129,6 +129,11 @@ void main(){
 			<label for="checkRle" id="checkRleLabel">RLE 100%</label>
 			<b id="selectColor">[]</b>
 			<b id="spriteInfo"></b>
+			<input style="width:5em" id="r5g6b5HEXinput">
+			<input type="range" min="0" max="31" step="1" value="1" id="r5g6b5Rinput" onchange="spriteEditor.changePaletteColor()"> 
+			<input type="range" min="0" max="63" step="1" value="1" id="r5g6b5Ginput" onchange="spriteEditor.changePaletteColor()"> 
+			<input type="range" min="0" max="31" step="1" value="1" id="r5g6b5Binput" onchange="spriteEditor.changePaletteColor()"> 
+			<button onclick = "spriteEditor.backColor()" style = "width: 1.8em;">&#8617</button>
 			<textarea id="spriteArea" onclick = "spriteEditor.selectAll();">{0,0,0}</textarea>
 		</div>
         </div>
@@ -173,7 +178,8 @@ void main(){
 				 S_WIDTH, S_HEIGHT, S_IS_ONEBIT,
 				 S_ANGLE, S_LIVES, S_COLLISION,
 				 S_SOLID, S_GRAVITY, S_ON_COLLISION,
-				 S_ON_EXIT_SCREEN, S_IS_SCROLLED*/
+				 S_ON_EXIT_SCREEN, S_IS_SCROLLED,
+				 S_FLIP_HORIZONTAL*/
 				int angbetweenspr(int n1, int n2);
 				int gettimer(int n);
 				int getspriteinxy(int x,

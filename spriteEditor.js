@@ -6,6 +6,12 @@ function SpriteEditor(){
 	var data = [];
 	var isRLE = false;
 	var is1bit = false;
+	var reservePalette = [
+	  "#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
+	  "#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
+	  "#B48D6C", "#42595A", "#C0624D", "#333333",
+	  "#777777", "#8FAB62", "#3ABFD1", "#bbbbbb"
+	];
 	var palette = [
 	  "#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
 	  "#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
@@ -111,6 +117,64 @@ function SpriteEditor(){
 		});
 	}
 	
+	function redraw(){
+		for(var x = 0; x <= 31; x++)
+			for(var y = 0; y <= 31; y++){
+				pixelareactx.fillStyle = palette[sprite[x][y]];
+				pixelareactx.fillRect(x, y, 1, 1);
+			}
+		for(var i = 0; i<17; i++){
+			pixelareactx.fillStyle = palette[i];
+			pixelareactx.fillRect(i * 2, 32, 2, 2);
+		}
+		
+	}
+	
+	function hexToRgb(hex) {
+	  var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	  hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+		return r + r + g + g + b + b;
+	  });
+
+	  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	  return result ? {
+		r: parseInt(result[1], 16),
+		g: parseInt(result[2], 16),
+		b: parseInt(result[3], 16)
+	  } : null;
+	}
+	
+	function loadRGBtoInput(c){
+		var color = hexToRgb(palette[c]);
+		var r5 = Math.floor(color.r * 31.0 / 255.0 + 0.5);
+		var g6 = Math.floor(color.g * 63.0 / 255.0 + 0.5);
+		var b5 = Math.floor(color.b * 31.0 / 255.0 + 0.5);
+		document.getElementById("r5g6b5HEXinput").value = '0x' + Number((r5 << 11) + (g6 << 5) + b5).toString(16);
+		document.getElementById("r5g6b5Rinput").value = r5;
+		document.getElementById("r5g6b5Ginput").value = g6;
+		document.getElementById("r5g6b5Binput").value = b5;
+	}
+	
+	function changePaletteColor(){
+		var r5 = document.getElementById("r5g6b5Rinput").value * 1;
+		var g6 = document.getElementById("r5g6b5Ginput").value * 1;
+		var b5 = document.getElementById("r5g6b5Binput").value * 1;
+		var r8 = Math.floor(r5 * 255.0 / 31.0 + 0.5);
+		var g8 = Math.floor(g6 * 255.0 / 63.0 + 0.5);
+		var b8 = Math.floor(b5 * 255.0 / 31.0 + 0.5);
+		document.getElementById("r5g6b5HEXinput").value = '0x' + Number((r5 << 11) + (g6 << 5) + b5).toString(16);
+		palette[thiscolor] = "#" + ((1 << 24) + (r8 << 16) + (g8 << 8) + b8).toString(16).slice(1);
+		document.getElementById("selectColor").style.background = palette[thiscolor];
+		redraw();
+	}
+	
+	function backColor(){
+		palette[thiscolor] = reservePalette[thiscolor];
+		redraw();
+		loadRGBtoInput(thiscolor);
+		document.getElementById("selectColor").style.background = palette[thiscolor];
+	}
+	
 	function setPixel(e){
 		var rect = pixelarea.getBoundingClientRect();
 		var	x = Math.floor((e.offsetX==undefined?e.layerX:e.offsetX)/(rect.width/32));
@@ -121,6 +185,7 @@ function SpriteEditor(){
 				thiscolor = Math.floor(x / 2);
 				pixelareactx.fillStyle = palette[thiscolor];
 				document.getElementById("selectColor").style.background = palette[thiscolor];
+				loadRGBtoInput(thiscolor);
 			}
 			else{
 				if(type == 0){
@@ -335,6 +400,8 @@ function SpriteEditor(){
 		setRle:setRle,
 		set1bit:set1bit,
 		init:init,
+		changePaletteColor:changePaletteColor,
+		backColor:backColor,
 		edit:edit,
 		clear:clear,
 		fillPixels:fillPixels,

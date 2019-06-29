@@ -49,7 +49,7 @@ void nextLevel(){
 	for(i = 0; i < 32; i++)
 		spritesetvalue(i, S_LIVES, 0);
 	level++;
-	speed = level / 2;
+	speed = level - 1;
 	gotoxy(7,7);
 	setcolor(1);
 	printf("level %d", level);
@@ -65,7 +65,8 @@ void nextLevel(){
 		for(x = 0; x < 10; x++){
 			getsprite(i, alien11);
 			spritesetvalue(i,S_SPEEDX,speed);
-			spritesetvalue(i,S_SPEEDY,-1);
+			spritesetvalue(i,S_SPEEDY,0);
+			spritesetvalue(i,S_IS_SCROLLED,0);
 			spritesetvalue(i,S_ON_EXIT_SCREEN,onExit);
 			putsprite(i, 8 + x * 10, 8 + y * 20);
 			i++;
@@ -94,7 +95,7 @@ void init(){
 	spritesetvalue(31,S_ON_COLLISION,shipOnCollision);
 	getsprite(30, laser);
 	spritesetvalue(30,S_WIDTH,2);
-	spritesetvalue(30,S_SPEEDY,-6);
+	spritesetvalue(30,S_SPEEDY,-24);
 	spritesetvalue(30,S_ON_EXIT_SCREEN,laserExit);
 	spritesetvalue(30,S_ON_COLLISION,laserCollision);
 	nextLevel();
@@ -136,9 +137,9 @@ void main(){
 				if(spritegetvalue(r,S_LIVES) != 0){
 					spritesetvalue(r,S_LIVES, 0);
 					if(spritegetvalue(r,S_X) < 60)
-						spritesetvalue(29,S_SPEEDX,1);
+						spritesetvalue(29,S_SPEEDX,3);
 					else
-						spritesetvalue(29,S_SPEEDX,-1);
+						spritesetvalue(29,S_SPEEDX,-3);
 					putsprite(29, spritegetvalue(r,S_X), spritegetvalue(r,S_Y));
 					putsprite(28, spritegetvalue(r,S_X) + 2, spritegetvalue(r,S_Y) + 8);
 				}
