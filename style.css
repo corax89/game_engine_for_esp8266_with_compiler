@@ -25,6 +25,15 @@ input[type=range] {
 textarea:focus {
 	outline: none;
 }
+#gamelist{
+	background: #516399;
+	border: 1px solid #bbb;
+	color: #ffffff;
+	font: normal 13px Verdana, Geneva, sans-serif;
+	font-style: normal;
+	height: 1.8em;
+	padding: 2.5px;
+}
 #container {
 	height: 42.5em;
 	overflow: hidden;
