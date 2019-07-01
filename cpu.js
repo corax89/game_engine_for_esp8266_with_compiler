@@ -276,6 +276,7 @@ function Cpu(){
 	}
 
 	function setEmitter(time, dir, dir1, speed){
+		speed = speed;
 		emitter.time = time;
 		emitter.speedx = Math.round(speed * Math.cos(dir / 57));
 		emitter.speedy = Math.round(speed * Math.sin(dir / 57));
@@ -284,8 +285,8 @@ function Cpu(){
 	}
 	
 	function drawParticle(x, y, color){
-		emitter.x = x;
-		emitter.y = y;
+		emitter.x = x << 1;
+		emitter.y = y << 1;
 		emitter.color = color;
 		emitter.timer = emitter.time;
 	}
@@ -320,7 +321,7 @@ function Cpu(){
 		}
 		for(n = 0; n < maxParticles; n++)
 			if(particles[n].time > 0){
-				display.drawSpritePixel(particles[n].color, particles[n].x, particles[n].y);
+				display.drawSpritePixel(particles[n].color, Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1));
 				particles[n].time -= 50;		
 				if(randomD(0,1) == 1){
 					particles[n].x += particles[n].speedx;
@@ -331,7 +332,7 @@ function Cpu(){
 					particles[n].x += Math.floor(particles[n].speedx/2);
 					particles[n].y += Math.floor(particles[n].speedy/2);
 				}
-				if(particles[n].x < 0 || particles[n].x > 128 || particles[n].y < 0 || particles[n].y > 128)
+				if(particles[n].x < 0 || particles[n].x > 256 || particles[n].y < 0 || particles[n].y > 256)
 					particles[n].time = 0;
 			}
 	}
