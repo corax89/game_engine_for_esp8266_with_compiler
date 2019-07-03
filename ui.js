@@ -245,6 +245,7 @@ function onlyAsm(){
 }
 //компиляция си кода из поля ввода
 function main(){
+	rtttl.play = 0;
 	document.getElementById("alert").innerHTML = '';
 	var src = document.getElementById('input').value;
 	var t = tokenize(src);

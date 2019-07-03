@@ -138,6 +138,12 @@ textarea:focus {
 	resize: none;
 	width: 53em;
 }
+#soundCheckbox{
+	display: inline-block;
+    height: 1em;
+    margin: 0;
+    padding: 0;
+}
 #debug {
 	font-size: 83%;
 	height: 22em;

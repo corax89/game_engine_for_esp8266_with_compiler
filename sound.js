@@ -14,7 +14,8 @@ var rtttl = {
 	"default_oct" : 0,
 	"bpm" : 0,
 	"wholenote" : 0,
-	"str" : ''
+	"str" : '',
+	"globalSound" : 1
 }
 
 var  notes = [ 
@@ -37,23 +38,25 @@ function isNumber(value) {
 }
 
 function tone(freq, delay) {
-	var attack = 10,
-	gain = audio.createGain(),
-	osc = audio.createOscillator();
-	gain.connect(audio.destination);
-	gain.gain.setValueAtTime(0, audio.currentTime);
-	gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
-	gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
-	gain.gain.value = 0.3;
-	osc.frequency.value = freq;
-	osc.type = "square";
-	osc.connect(gain);
-	osc.start(0);
-	setTimeout(function() {
-		osc.stop(0);
-		osc.disconnect(gain);
-		gain.disconnect(audio.destination);
-	}, delay);
+	if(rtttl.globalSound){
+		var attack = 10,
+		gain = audio.createGain(),
+		osc = audio.createOscillator();
+		gain.connect(audio.destination);
+		gain.gain.setValueAtTime(0, audio.currentTime);
+		gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
+		gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
+		gain.gain.value = 0.3;
+		osc.frequency.value = freq;
+		osc.type = "square";
+		osc.connect(gain);
+		osc.start(0);
+		setTimeout(function() {
+			osc.stop(0);
+			osc.disconnect(gain);
+			gain.disconnect(audio.destination);
+		}, delay);
+	}
 }
 
 function addTone(f,t){

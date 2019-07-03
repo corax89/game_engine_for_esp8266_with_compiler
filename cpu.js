@@ -634,6 +634,10 @@ function Cpu(){
 	
 	function drawImage(adr, x1, y1, w, h){
 		var color;
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		for(var y = 0; y < h; y++)
 			for(var x = 0; x < w; x++){
 				color = (readMem(adr) & 0xf0) >> 4;
@@ -653,6 +657,10 @@ function Cpu(){
 		adr++;
 		var color1 = (readMem(adr) & 0xf0) >> 4;
 		var color2 = readMem(adr) & 0xf
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		while(i < w * h){
 			if(repeat > 0x81){
 				if(color1 > 0)
@@ -693,6 +701,10 @@ function Cpu(){
 		var size = w * h / 8;
 		var i = 0;
 		var bit;
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		for(var y = 0; y < h; y++)
 			for(var x = 0; x < w; x++){
 				if(i % 8 == 0){
@@ -711,6 +723,10 @@ function Cpu(){
 	function drawImageS(adr, x1, y1, w, h){
 		var color,jx,jy;
 		var s = imageSize;
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		for(var y = 0; y < h; y++)
 			for(var x = 0; x < w; x++){
 				color = (readMem(adr) & 0xf0) >> 4;
@@ -735,6 +751,10 @@ function Cpu(){
 		adr++;
 		var color1 = (readMem(adr) & 0xf0) >> 4;
 		var color2 = readMem(adr) & 0xf
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		while(i < w * h){
 			if(repeat > 0x81){
 				if(color1 > 0)
@@ -776,6 +796,10 @@ function Cpu(){
 		var i = 0;
 		var bit,jx,jy;
 		var s = imageSize;
+		if(x1 > 0x7fff)
+			x1 -= 0xffff;
+		if(y1 > 0x7fff)
+			y1 -= 0xffff;
 		for(var y = 0; y < h; y++)
 			for(var x = 0; x < w; x++){
 				if(i % 8 == 0){
