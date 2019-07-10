@@ -144,9 +144,9 @@ function asm(s) {
 				for (i; i < s.length; i++) {
 					if (s[i] != '"') {
 						c = s.charCodeAt(i);
-						if(c > 127)
+						if (c > 127)
 							c = c - 848;
-						if(c < 255)
+						if (c < 255)
 							out.push(c);
 					} else
 						break;
@@ -208,8 +208,8 @@ function asm(s) {
 	}
 
 	function compile(a) {
-		for (var i = 0; i < a.length; i++){
-			if(a[i][0] != '"')
+		for (var i = 0; i < a.length; i++) {
+			if (a[i][0] != '"')
 				a[i] = a[i].toUpperCase();
 		}
 		for (var i = 0; i < a.length; i++) {
@@ -616,7 +616,7 @@ function asm(s) {
 				out.push(0x00 + getRegister(a[i + 1]));
 				return;
 			case 'SEMIT':
-				out.push(0xD7); // SEMIT R		D7 1R 
+				out.push(0xD7); // SEMIT R		D7 1R
 				out.push(0x10 + getRegister(a[i + 1]));
 				return;
 			case 'DPART':
@@ -697,11 +697,11 @@ function asm(s) {
 				out.push(0x00);
 				return;
 			case 'PAUSERT':
-				out.push(0x55);// PAUSERT		5501
+				out.push(0x55); // PAUSERT		5501
 				out.push(0x01);
 				return;
 			case 'STOPRT':
-				out.push(0x55);// STOPRT		5502
+				out.push(0x55); // STOPRT		5502
 				out.push(0x02);
 				return;
 			case 'PLAYTN':
@@ -731,7 +731,7 @@ function asm(s) {
 		addDebugInformation(i);
 		parse(arr[i]);
 	}
-	variable.push('#END', variableAdress);//переменная указывает на конец используемой глобальными переменными памяти
+	variable.push('#END', variableAdress); //переменная указывает на конец используемой глобальными переменными памяти
 	debugVarStart = out.length;
 	for (var i = 0; i < out.length; i++) {
 		if (typeof out[i] === 'string') {
@@ -750,9 +750,9 @@ function asm(s) {
 			}
 		}
 	}
-	info("program size "+ out.length +" bytes");
-	info("variables occupy "+ variableAdress +" bytes");
-	info("total occupied memory " + (out.length + variableAdress) +" bytes");
+	info("program size " + out.length + " bytes");
+	info("variables occupy " + variableAdress + " bytes");
+	info("total occupied memory " + (out.length + variableAdress) + " bytes");
 	display.reset();
 	cpu.init();
 	cpu.load(out);
