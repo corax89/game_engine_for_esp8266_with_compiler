@@ -146,7 +146,7 @@ function asm(s) {
 						c = s.charCodeAt(i);
 						if (c > 127)
 							c = c - 848;
-						if (c < 255)
+						if (c <= 255)
 							out.push(c);
 					} else
 						break;
