@@ -1,6 +1,6 @@
 # game engine for esp8266 game console with compiler
 
-Firmware for gaming console on esp8266 [https://github.com/corax89/game_engine_for_esp8266_with_compiler](https://github.com/corax89/game_engine_for_esp8266_with_compiler)
+Firmware for gaming console on esp8266 [https://github.com/corax89/esp8266_game_engine](https://github.com/corax89/esp8266_game_engine)
 
 ![columns](/img/columns.gif) ![snake](/img/snake.gif) ![race](/img/race.gif) ![gameoflife](/img/gameoflife.gif) ![mars_attack](/img/mars_attack.gif) ![tile](/img/tile.gif)
  ![clicker](/img/clicker.gif) ![flappybird](/img/flappybird.gif) ![towerdefence](/img/towerdef.gif) ![cityrunner](/img/cityrunner.gif)
