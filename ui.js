@@ -27,6 +27,10 @@ var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
 var language = 'eng';
+var fileType = 'lge';
+var fileName = '';
+var fileAuthor = '';
+var fileIco = '';
 var timerstart = new Date().getTime(),
 timertime = 0;
 
@@ -55,6 +59,73 @@ input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut
 		});
 	}
 })();
+
+function saveIco(a){
+	var i = 0;
+	var out = [];
+	var c = document.getElementById("icon").getContext('2d');
+	var palette = [
+		"#000000", "#EDE3C7", "#BE3746", "#7FB8B5",
+		"#4A3E4F", "#6EA76C", "#273F68", "#DEBB59",
+		"#B48D6C", "#42595A", "#C0624D", "#333333",
+		"#777777", "#8FAB62", "#3ABFD1", "#bbbbbb"
+	];
+	a = a.replace(/[{}]/g, '');
+	a = a.split(',');
+	for(var y = 0; y < 16; y++){
+		for(var x = 0; x < 24; x++){
+			out.push(parseInt(a[i]) & 0xff);
+			c.fillStyle = palette[(parseInt(a[i]) & 0xf0) >> 4];
+			c.fillRect(x, y, 1, 1);
+			x++;
+			c.fillStyle = palette[parseInt(a[i]) & 0xf];
+			c.fillRect(x, y, 1, 1);
+			i++;
+			if(i >= a.length)
+				return out;
+		}
+	}
+	return out;	
+}
+
+function saveSettings(){
+	var s = sourceArea.value;
+	fileName = document.getElementById("fileName").value;
+	fileAuthor = document.getElementById("fileAuthor").value;
+	fileIco = saveIco(document.getElementById("fileIco").value);
+	if (document.getElementById('fileTypeChoice2').checked)
+		fileType = 'lge';
+	else
+		fileType = 'bin';
+	var settings = {};
+	settings.name = fileName;
+	settings.author = fileAuthor;
+	settings.image = fileIco;
+	var sourceSettings = JSON.stringify(settings);
+	if(s.search( /\/\*settings\*([\s\S]*?)\*\//i ) > -1){
+		sourceArea.value = s.replace( /\/\*settings\*([\s\S]*?)\*\//i, '/*settings*' + sourceSettings + '*/');
+	}
+	else
+		sourceArea.value = '/*settings*' + sourceSettings + '*/\n' + s;
+}
+
+function loadSettings(){
+	var s = sourceArea.value;
+	var fs = s.match( /\/\*settings\*([\s\S]*?)\*\//i );
+	if(fs){
+		var sourceSettings = fs[1];
+		if(sourceSettings.length > 5){
+			var settings = JSON.parse(sourceSettings);
+			fileType = settings.filetype;
+			fileName = settings.name;
+			fileAuthor = settings.author;
+			fileIco = saveIco(settings.image.join(','));
+			document.getElementById("fileName").value = fileName;
+			document.getElementById("fileAuthor").value = fileAuthor;
+			document.getElementById("fileIco").value = fileIco;
+		}
+	}
+}
 
 function setup_mouse(id_div_wind, id_div_drag) {
 	if (obj_wind)
@@ -285,6 +356,7 @@ function main() {
 	var c = compile(t);
 	asmSource = '\n' + c.join('\n') + '\n';
 	file = asm(asmSource);
+	compress(file);
 	document.getElementById('disasm').innerHTML = highliteasm(asmSource);
 	document.getElementById('ram').value = toHexA(file);
 }
@@ -435,7 +507,7 @@ function listing() {
 function debugVars() {
 	var d = document.getElementById("div_wind3");
 	d.style.display = "block";
-	d.style.left = window.innerWidth / 4 * 2 + 'px';
+	d.style.left = window.innerWidth / 5 * 2 + 'px';
 	d.style.top = "3em";
 	isDebug = true;
 }
@@ -443,8 +515,16 @@ function debugVars() {
 function viewHelp() {
 	var d = document.getElementById("div_wind4");
 	d.style.display = "block";
-	d.style.left = window.innerWidth / 4 * 3 + 'px';
+	d.style.left = window.innerWidth / 5 * 3 + 'px';
 	d.style.top = "3em";
+}
+
+function viewSettings() {
+	var d = document.getElementById("div_wind5");
+	d.style.display = "block";
+	d.style.left = window.innerWidth / 5 * 4 + 'px';
+	d.style.top = "3em";
+	loadSettings();
 }
 
 function closewindow(id) {
@@ -806,16 +886,144 @@ function redraw() {
 
 function savebin() {
 	var newByteArr = [];
-	if (file.length > 1) {
-		for (var i = 0; i < file.length; i++) {
-			newByteArr.push(file[i] & 0xFF);
+	if (fileType == 'lge'){
+		if (file.length > 1) {
+			var cfile = compress(file);
+			if(cfile == false){
+				cfile = file;
+				newByteArr = [0x6C,0x67,0x65,0x0,0x5];
+			}
+			else
+				newByteArr = [0x6C,0x67,0x65,0x1,0x5];
+			if(fileIco && fileIco.length > 0){
+				newByteArr[3] += 2;
+				newByteArr[4] += 192;
+				for(var i = 0; i < 192; i++){
+					if(i < fileIco.length)
+						newByteArr.push(fileIco[i] & 0xFF);
+					else
+						newByteArr.push(0);
+				}
+			}
+			if(fileAuthor && fileAuthor.length > 0){
+				newByteArr[3] += 4;
+				newByteArr[4] += fileAuthor.length;
+				for(var i = 0; i < fileAuthor.length; i++)
+					newByteArr.push(fileAuthor[i] & 0xFF);
+			}
+			for (var i = 0; i < cfile.length; i++) {
+				newByteArr.push(cfile[i] & 0xFF);
+			}
+			var newFile = new Uint8Array(newByteArr);
+			var blob = new Blob([newFile], {
+					type: "charset=iso-8859-1"
+				});
+			if(fileName.length > 0)
+				saveAs(blob, fileName + '.lge');
+			else
+				saveAs(blob, 'rom.lge');
 		}
-		var newFile = new Uint8Array(newByteArr);
-		var blob = new Blob([newFile], {
-				type: "charset=iso-8859-1"
-			});
-		saveAs(blob, "rom.bin");
 	}
+	else{
+		if (file.length > 1) {
+			for (var i = 0; i < file.length; i++) {
+				newByteArr.push(file[i] & 0xFF);
+			}
+			var newFile = new Uint8Array(newByteArr);
+			var blob = new Blob([newFile], {
+					type: "charset=iso-8859-1"
+				});
+			saveAs(blob, "rom.bin");
+		}
+	}
+}
+
+function compress(file){
+	var fpos = 0, epos = 0, lopos = 0, len = 0;
+	var out = [];
+	var find = function(array, pos) {
+		for (var j = Math.max(0, pos - 511); j < pos; j++) {
+		  if ((array[j] === array[pos]) && (array[j + 1] === array[pos + 1]) && (array[j + 2] === array[pos + 2]) && (array[j + 3] === array[pos + 3]))
+			  return j;
+		}
+	return -1;
+	}
+	
+	out = file.slice(0, 3);
+	out.splice(0,0,0,3);
+	lopos = 0;
+	for(var i = 3; i < file.length; i++){
+		fpos = find(file, i);
+		epos = i;
+		if(fpos > -1){
+			while(i < file.length && file[fpos + len] === file[i] && len < 63){
+				len++;
+				i++;
+			}
+			out.push(128 + (len << 1) + ((epos - fpos) >> 8));
+			out.push((epos - fpos) & 0xff);
+			lopos = out.length;
+			out.push(0);
+			out.push(0);
+			len = 0;
+			i--;
+		}
+		else{
+		  out.push(file[i]);
+		  out[lopos + 1]++;
+			  if(out[lopos + 1] > 255){
+				  out[lopos + 1] = 0;
+				  out[lopos]++;
+			  }
+		}
+	}
+	console.log("compress rate " + Math.round(100 - out.length / file.length * 100) + "%");
+	if(!compressTest(file, decompress(out))){
+		console.log("error compress");
+		console.log(out);
+		console.log(file);
+		console.log(decompress(out));
+		return false;
+	}
+	return out;
+}
+
+function decompress(file){
+	var out = [];
+	var i = 0, length, position, point;
+	while(i < file.length){
+		if((file[i] & 128) == 0){
+			length = ((file[i] & 127) << 8) + file[i + 1];
+			i += 2;
+			for( var j = 0; j < length; j ++){
+				out.push(file[i]);
+				i++;
+			}
+		}
+		else{
+			length = (file[i] & 127) >> 1;
+			position = (((file[i] & 1) << 8) + file[i + 1]);
+			i += 2;
+			point = out.length - position;
+			for( var j = 0; j < length; j ++){
+				out.push(out[point + j]);
+			}
+		}
+	}
+	return out;
+}
+
+function compressTest(f1, f2){
+	if(f1.length != f2.length){
+		return false;
+	}
+	for(var i = 0; i < f1.length; i++){
+		if(f1[i] != f2[i]){
+			console.log(i, f1[i], f2[i]);
+			return false;
+		}
+	}
+	return true;
 }
 
 var display = new Display();

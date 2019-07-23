@@ -25,6 +25,33 @@ input[type=range] {
 textarea:focus {
 	outline: none;
 }
+.checkbox{
+	display: none;
+}
+.checkbox:checked + label{
+	background-color: #516399;
+    color: #fff;
+}
+.settingslabel{
+	display: inline-block;
+	width: 4.5em;
+	margin-top: 0.5em;
+	padding-left: 1em;
+    line-height: 1.95em;
+    vertical-align: bottom;
+    border: solid 1px;   
+}
+#icon{
+	border: 1px solid;
+    margin-top: 0.7em;
+    width: 10em;
+	image-rendering: optimizeSpeed;             /* Older versions of FF          */
+	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+	image-rendering: -webkit-optimize-contrast; /* Safari                        */
+	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;                 /* Awesome future-browsers       */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+}
 #gamelist{
 	background: #516399;
 	border: 1px solid #bbb;
@@ -224,7 +251,12 @@ textarea:focus {
 	left: 23em;
 	display: none;
 }
-#disasm, #debugVariable, #debugSprite {
+#div_wind5 {
+	top: 3em;
+	left: 43em;
+	display: none;
+}
+#disasm, #debugVariable, #debugSprite, #settings {
 	background-color: #eee;
 	border: 1px solid #516399;
 	color: #516399;
@@ -257,7 +289,7 @@ textarea:focus {
 	text-align: center;
 	width: 3em;
 }
-#spriteEditior, #tutorial {
+#spriteEditior {
 	background-color: #eee;
 	border: 1px solid #516399;
 	height: 33em;

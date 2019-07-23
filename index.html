@@ -15,6 +15,7 @@
 		<button onclick="spriteEditor.edit()">sprite</button>
 		<button onclick="listing();">listing</button>
 		<button onclick="debugVars();">debug</button>
+		<button onclick="viewSettings();">settings</button>
 		<button onclick="viewHelp();">help</button>
 		<select id="lang" onchange="language=this.value">
 		  <option value="eng">ENG</option>
@@ -230,6 +231,43 @@ void main(){
 				void drawtile(int x, int y);
 				 int gettileinxy(int x, int y);
 			</pre>
+        </div>
+    </div>
+	<div id="div_wind5" class="div_wind">
+        <div id="drag_wind5" class="div_drag_wind" onmouseover="setup_mouse('div_wind5', 'drag_wind5');">
+            <div>
+               settings<div class="close" onclick="closewindow('div_wind5')">X</div>
+            </div>
+        </div>
+        <div class="content_wind">
+			<div id="settings">
+				Save format <br>
+				<input type="radio" id="fileTypeChoice1"
+				 name="filetype" value=".bin" class="checkbox">
+				<label class="settingslabel" for="fileTypeChoice1">.bin</label>
+
+				<input type="radio" id="fileTypeChoice2" checked
+				 name="filetype" value=".lge" class="checkbox">
+				<label class="settingslabel" for="fileTypeChoice2">.lge</label>
+				<br><br>
+				Properties <br>
+				<label class="settingslabel" for="fileName">Name</label>
+				<input id="fileName">
+				<br>
+				<label class="settingslabel" for="fileAuthor">Author</label>
+				<input id="fileAuthor">
+				
+				<br>
+				<label class="settingslabel" for="fileIco">Image</label>
+				<input id="fileIco">
+				<br>
+				
+				<canvas id="icon"  width="24" height="16"></canvas>
+				<br>
+				24x16
+			</div>
+			<button style="position:absolute;bottom:1em;right:1em;width:3.5em;height:2.5em" 
+				onclick="saveSettings()">ok</button>
         </div>
     </div>
 	<a href="https://github.com/corax89/game_engine_for_esp8266_with_compiler" class="github-corner" aria-label="View source on GitHub">
