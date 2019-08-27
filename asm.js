@@ -708,6 +708,18 @@ function asm(s) {
 				out.push(0x56); // PLAYTN R,R		56RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
+			case 'LDATA':
+				out.push(0x57); // LDATA R,R			57 0R
+				out.push((getRegister(a[i + 1])));
+				return;
+			case 'NDATA':
+				out.push(0x57); // NDATA R,R			57 1R
+				out.push(0x10 + (getRegister(a[i + 1])));
+				return;
+			case 'SDATA':
+				out.push(0x58); // SDATA R,R			58 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'DB':
 				dbparse(a.join(''));
 				return;

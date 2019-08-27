@@ -693,8 +693,6 @@ function compile(t) {
 					//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 				} else {
 					if (type == '*int' && !point) {
-						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						//asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
 					} else
@@ -721,8 +719,6 @@ function compile(t) {
 					}
 				} else {
 					if (type == '*int' && !point) {
-						//asm.push(' LDC R15,2 \n MUL R' + (registerCount - 1) + ',R15');
-						//asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
@@ -864,7 +860,7 @@ function compile(t) {
 		}
 		//количество элементов указано
 		else if (isNumber(thisToken)) {
-			length = thisToken * 1;
+			length = thisToken * 1 + 1;
 			var newArr = '';
 			if (type == 'char')
 				newArr = (' _' + name + ' byte ' + length + ' dup(?)');
@@ -1748,7 +1744,7 @@ function compile(t) {
 			//info("" + lineCount + " неизвестный токен " + thisToken);
 		}
 	}
-
+	
 	numberDebugString = [];
 	console.time("compile");
 	//регистрируем некоторые стандартные функции
@@ -1783,6 +1779,8 @@ function compile(t) {
 	registerFunction('playrtttl', 'int', [], 1, 'PLAYRT', true, 0);
 	registerFunction('pausertttl', 'int', [], 1, 'PAUSERT', true, 0);
 	registerFunction('stoprtttl', 'int', [], 1, 'STOPRT', true, 0);
+	registerFunction('savedata', 'int', ['int', 'name', 'int', 'array', 'int', 'count'], 1, 'NDATA R%3 \n SDATA R%2,R%1 \n MOV R%3,R%2', true, 0);
+	registerFunction('loaddata', 'int', ['int', 'name', 'int', 'array'], 1, 'NDATA R%2 \n LDATA R%1 \n MOV R%2,R%1', true, 0);
 	registerFunction('drawtile', 'void', ['int', 'x', 'int', 'y'], 1, 'DRTILE R%2,R%1', true, 0);
 	registerFunction('scroll', 'void', ['char', 'direction'], 1, 'SCROLL R%1,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
@@ -1871,6 +1869,6 @@ function compile(t) {
 	//объеденяем код с данными
 	asm = asm.concat(dataAsm);
 	console.timeEnd("compile");
-
+	
 	return asm;
 }

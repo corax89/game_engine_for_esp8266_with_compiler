@@ -116,7 +116,6 @@ function loadSettings(){
 		var sourceSettings = fs[1];
 		if(sourceSettings.length > 5){
 			var settings = JSON.parse(sourceSettings);
-			fileType = settings.filetype;
 			fileName = settings.name;
 			fileAuthor = settings.author;
 			fileIco = saveIco(settings.image.join(','));
@@ -886,6 +885,7 @@ function redraw() {
 
 function savebin() {
 	var newByteArr = [];
+	loadSettings();
 	if (fileType == 'lge'){
 		if (file.length > 1) {
 			var cfile = compress(file);

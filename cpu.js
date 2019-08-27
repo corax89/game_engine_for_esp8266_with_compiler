@@ -25,6 +25,7 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var keyArray = "qwertyuiop[]{}()=789\basdfghjkl:;\"/#$@0456\nzxcvbnm<>?.,!%+*-123 ";
+	var dataName = 0;
 
 	function init() {
 		for (var i = 0; i < 0xffff; i++)
@@ -982,6 +983,49 @@ function Cpu() {
 			y2 = y2 - 0x10000;
 		return Math.floor(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	}
+	
+	function setDataName(address){
+		dataName = address;
+	}
+	
+	function saveData(arrayAddress, count){
+		var name, array, i;
+		if(dataName > 0){
+			name = '';
+			i = 0;
+			while(i < 12 && mem[dataName + i] != 0){
+				name += String.fromCharCode(mem[dataName + i]);
+				i++;
+			}
+		}
+		else
+			name = 'default';
+		array = [];
+		if(count > 242)
+			count = 242;
+		for(i = 0; i < count; i++)
+			array[i] = mem[arrayAddress + i];
+		localStorage[name] = array;
+		return count;
+	}
+	
+	function loadData(arrayAddress){
+		var name, array, i;
+		if(dataName > 0){
+			name = '';
+			i = 0;
+			while(i < 12 && mem[dataName + i] != 0){
+				name += String.fromCharCode(mem[dataName + i]);
+				i++;
+			}
+		}
+		else
+			name = 'default';
+		array = localStorage[name].split(',');
+		for(i = 0; i < array.length; i++)
+			mem[arrayAddress + i] = parseInt(array[i], 10) & 0xff;
+		return i;
+	}
 
 	function step() {
 		//все команды двухбайтные, за некоторыми следуют два байта данных
@@ -1192,6 +1236,24 @@ function Cpu() {
 				reg1 = (op2 & 0xf0) >> 4;
 				reg2 = op2 & 0xf;
 				addTone(reg[reg1], reg[reg2]);
+				break;
+			case 0x57:
+				if (op2 < 0x10){
+					// LDATA R			57 0R
+					reg2 = op2 & 0xf;
+					reg[reg2] = loadData(reg[reg2]);
+				}
+				else if (op2 < 0x20){
+					// NDATA R			57 1R
+					reg2 = op2 & 0xf;
+					setDataName(reg[reg2]);
+				}
+				break;
+			case 0x58:
+				// SDATA R,R			58 RR
+				reg1 = (op2 & 0xf0) >> 4;
+				reg2 = op2 & 0xf;
+				reg[reg1] = saveData(reg[reg1], reg[reg2]);
 				break;
 			}
 			break;
