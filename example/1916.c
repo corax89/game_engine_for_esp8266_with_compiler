@@ -202,8 +202,8 @@ void init(){
 		getsprite(i,bullet2);
 		spritesetvalue(i,S_SPEEDY,20);
 	}
-	setparticle(0, 4, 20000);
-	setemitter(250, 260, 290, 8);
+	setparticle(0, 4, 2000);
+	setemitter(250, 210, 20, 10);
 	stoprtttl();
 }
 

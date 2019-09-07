@@ -107,6 +107,7 @@ function tokenize(s) {
 		case '[':
 		case ']':
 		case ';':
+		case '?':
 		case ':':
 		case ',':
 		case '\n':
@@ -341,17 +342,21 @@ function compile(t) {
 		case '!=':
 		case '<=':
 		case '>=':
+		case '?':
+		case ':':
+			return 1;
 		case '|':
 		case '&':
 		case '^':
 			return 1;
 		case '+':
 		case '-':
-			return 2;
+			return 3;
 		case '*':
 		case '/':
 		case '%':
-			return 3;
+			return 4;
+		
 		}
 		return 0;
 	}
@@ -666,7 +671,6 @@ function compile(t) {
 			l = localStackLength * 2 + number + 1; //позиция переменной относительно указателя на стек
 		} else {
 			type = functionVarTable[number - 1];
-			//number += localVarTable.length;
 			l = localStackLength * 2 + functionVarTable.length + localVarTable.length - number + 1;
 		}
 		var token = thisToken;
@@ -1193,7 +1197,7 @@ function compile(t) {
 				if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
 					getToken();
 			//если следующая операция выше рангом, то выполняем сразу ее
-			if (getRangOperation(thisToken) > 2)
+			if (getRangOperation(thisToken) > 3)
 				execut();
 			registerCount--;
 			if (operation == '+')
@@ -1210,10 +1214,10 @@ function compile(t) {
 		getToken();
 		execut();
 		if (getRangOperation(thisToken) == 0)
-			if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
+			if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
 				getToken();
 		//если следующая операция выше рангом, то выполняем сразу ее
-		if (getRangOperation(thisToken) > 3)
+		if (getRangOperation(thisToken) > 4)
 			execut();
 		registerCount--;
 		if (operation == '*')
@@ -1222,7 +1226,7 @@ function compile(t) {
 			asm.push(' DIV R' + (registerCount - 1) + ',R' + registerCount);
 		else if (operation == '%')
 			asm.push(' DIV R' + (registerCount - 1) + ',R' + registerCount + ' \n MOV R' + (registerCount - 1) + ',R' + registerCount);
-		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
+		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
 			execut();
 	}
 	// & | ^
@@ -1238,7 +1242,7 @@ function compile(t) {
 			if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
 				getToken();
 		//если следующая операция выше рангом, то выполняем сразу ее
-		if (getRangOperation(thisToken) > 1)
+		if (getRangOperation(thisToken) > 2)
 			execut();
 		if (operation.length > 1)
 			execut();
@@ -1435,7 +1439,28 @@ function compile(t) {
 		asm.push(' JMP start_for_' + labe + ' \nend_for_' + labe + ':');
 		registerCount = 1;
 	}
-
+	
+	function ternaryToken(){
+		var labe = labelNumber;
+		var saveRegCount;
+		labelNumber += 2;
+		registerCount--;
+		asm.push(' CMP R' + registerCount + ',0 \n JZ end_ternary_' + labe);
+		saveRegCount = registerCount;
+		while (thisToken != ':') {
+			getToken();
+			if (!thisToken)
+				return;
+			execut();
+		}
+		asm.push(' JMP end_ternary_' + (labe + 1) + ':');
+		asm.push('end_ternary_' + labe + ':');
+		registerCount = saveRegCount;
+		getToken();
+		execut();
+		asm.push('end_ternary_' + (labe + 1) + ':');
+	}
+	
 	function switchToken() {
 		var labe = labelNumber;
 		labelNumber++;
@@ -1690,6 +1715,10 @@ function compile(t) {
 				divMul();
 			else if (thisToken == '&' || thisToken == '|' || thisToken == '^')
 				andOrXor();
+			else if (thisToken == '?')
+				ternaryToken();
+			else if (thisToken == ':')
+				return;
 			else
 				compare();
 			return;
@@ -1702,8 +1731,6 @@ function compile(t) {
 		} else if (thisToken == '=' || thisToken == '+=' || thisToken == '-=' || thisToken == '*=' || thisToken == '/=') {
 			assigment();
 		} else if (thisToken == ';') {
-			return;
-		} else if (thisToken == ':') {
 			return;
 		} else if (thisToken == '{') {
 			skipBrace();
