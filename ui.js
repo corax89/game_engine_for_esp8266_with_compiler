@@ -677,7 +677,7 @@ function Display() {
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, (128 + 16) * pixelSize, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "white";
-		ctx.fillText("KEY_A - space, KEY_B - z", 1, (128 + 17) * pixelSize);
+		ctx.fillText("KEY_A - z, KEY_B - space", 1, (128 + 17) * pixelSize);
 		for (var i = 0; i < 16; i++) {
 			palette[i] = bpalette[i];
 			sprtpalette[i] = bpalette[i];

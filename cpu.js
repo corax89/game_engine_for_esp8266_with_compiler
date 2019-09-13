@@ -1021,10 +1021,13 @@ function Cpu() {
 		}
 		else
 			name = 'default';
-		array = localStorage[name].split(',');
-		for(i = 0; i < array.length; i++)
-			mem[arrayAddress + i] = parseInt(array[i], 10) & 0xff;
-		return i;
+		if(localStorage[name]){
+			array = localStorage[name].split(',');
+			for(i = 0; i < array.length; i++)
+				mem[arrayAddress + i] = parseInt(array[i], 10) & 0xff;
+			return i;
+		}
+		return 0;
 	}
 
 	function step() {
