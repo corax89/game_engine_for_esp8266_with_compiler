@@ -1609,7 +1609,7 @@ function compile(t) {
 		} else if (thisToken == '*') {
 			getToken();
 			if (functionVarTable.indexOf(thisToken) > 0) {
-				asm.push(' LDI R' + registerCount + ',(' + localStackLength * 2 + functionVarTable.length - functionVarTable.indexOf(thisToken) + 1 + '+R0) ;' + thisToken);
+				asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + functionVarTable.length + localVarTable.length - functionVarTable.indexOf(thisToken) + 1) + '+R0) ;' + thisToken);
 				asm.push(' LDI R' + registerCount + ',(R' + registerCount + ')');
 				registerCount++;
 			} else if (isVar(thisToken)) {

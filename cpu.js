@@ -1982,8 +1982,8 @@ function Cpu() {
 		for (var i = 0; i < 32; i++) {
 			d += '\nsprite ' + i + '\n';
 			d += 'S_ADDRESS \t' + toHex4(sprites[i].address) + '\n';
-			d += 'S_X \t' + sprites[i].x + '\n';
-			d += 'S_Y \t' + sprites[i].y + '\n';
+			d += 'S_X \t' + sprites[i].x / 4 + '\n';
+			d += 'S_Y \t' + sprites[i].y / 4 + '\n';
 			d += 'S_SPEEDX \t' + sprites[i].speedx + '\n';
 			d += 'S_SPEEDY \t' + sprites[i].speedy + '\n';
 			d += 'S_WIDTH \t' + sprites[i].width + '\n';
