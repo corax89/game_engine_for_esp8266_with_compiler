@@ -43,9 +43,9 @@ function tone(freq, delay) {
 		gain = audio.createGain(),
 		osc = audio.createOscillator();
 		gain.connect(audio.destination);
-		gain.gain.setValueAtTime(0, audio.currentTime);
-		gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
-		gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
+		//gain.gain.setValueAtTime(0, audio.currentTime);
+		//gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
+		//gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
 		gain.gain.value = 0.1;
 		osc.frequency.value = freq;
 		osc.type = "square";

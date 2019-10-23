@@ -60,6 +60,17 @@ input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut
 	}
 })();
 
+window.addEventListener("unload", function() {
+  localStorage.setItem('save_source_code', sourceArea.value);
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+	var s = localStorage.getItem('save_source_code');
+    if(s && s.length > 2)
+		sourceArea.value = s;
+	setTimeout(lineCount, 300);
+});
+
 function saveIco(a){
 	var i = 0;
 	var out = [];
@@ -215,7 +226,6 @@ function keyDownHandler(e) {
 		globalJKey |= 16;
 		break;
 	}
-	//globalKey = e.keyCode;
 }
 
 function keyUpHandler(e) {
@@ -491,6 +501,7 @@ function inputOnKey(e) {
 		return false;
 	}
 	setTimeout(lineCount, 300);
+	e.stopPropagation();
 }
 
 function listing() {

@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>RTTTL creator</title>
+    <style type="text/css">
+		#divTable {width: 100%;overflow: auto;}
+        .article { width: 100%; padding-left: 2em; background-color: #F9F9F9; font-family: Arial, "Bitstream Vera Sans" ,Helvetica,Verdana,sans-serif; color: #000; margin-top: 3px; }
+        .article td, table.article th { border-top-color: white; border-bottom: 1px solid #DFDFDF; color: #fff; }
+        .article th { text-shadow: rgba(255, 255, 255, 0.796875) 0px 1px 0px; font-family: Arial, "Bitstream Vera Sans" ,Helvetica,Verdana,sans-serif; font-weight: bold; padding: 7px 7px 8px; text-align: left; line-height: 1.3em; font-size: 12px; background: #E3F2D4; border-right: 1px solid #DFDFDF; }
+        .article td { font-size: 12px; padding: 7px 7px 8px; vertical-align: top; border-right: 1px solid #DFDFDF; height: 1.5em;}
+		.article .on { background: #d4e157;}
+		.article .hglt{	border-left:4px solid green;}
+		.article .f {position: absolute; width:2em; left: 0.4em; background:#524c00;opacity:0.7}
+		input[type=range] {position: relative;top: 6px;}
+    </style>
+    <script type="text/javascript">
+		var audio;
+		var isPlay,step;
+		var play_tone = {
+			"freq": 0,
+			"time": 0
+		}
+		var rtttl = {
+			"position": 0,
+			"startposition": 0,
+			"loop": 0,
+			"play": 0,
+			"default_dur": 0,
+			"default_oct": 0,
+			"bpm": 0,
+			"wholenote": 0,
+			"str": '',
+			"globalSound": 1
+		}
+
+		var notes = [
+			0, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880,
+			932, 988, 1047, 1109, 1175, 1245, 1319, 1397, 1480, 1568, 1661, 1760, 1865, 1976, 2093, 2217, 2349, 2489, 2637,
+			2794, 2960, 3136, 3322, 3520, 3729, 3951
+		];
+		var notesb = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+		var notesl = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+		var tableBPM = [25, 28, 31, 35, 40, 45, 50, 56, 63, 70, 80, 90, 100, 112, 125, 140, 160, 
+						180, 200, 225, 250, 285, 320, 355, 400, 450, 500, 565, 635, 715, 800, 900];
+		var t = [];
+		var tD = [];
+		var tO = [];
+		var table = document.createElement('table');
+		var BPM = 125;
+		var octave = 5;
+		var rtttlSource = '';
+		function setBPM(v){
+			v = v * 1;
+			for(var i = 0; i < tableBPM.length; i++){
+				if(tableBPM[i] >= v){
+					BPM = tableBPM[i];
+					document.getElementById('BPM').value = tableBPM[i];
+					generateRtttl();
+					return;
+				}
+			}
+		}
+		function generateRtttl(){
+			rtttlSource = 's:d=4,o=' + octave + ',b=' + BPM + ':';
+			for(var j = 0; j < 64; j++){
+				var n = 'p';
+				for(var i = 0; i < 12; i++){
+					if(t[i][j] == 1){
+						n =  notesl[i];
+					}
+				}
+				if(tD[j] > 0)
+					rtttlSource += tD[j] + n;
+				else
+					rtttlSource += n;
+				if(tO[j] > 0 && n != 'p')
+					rtttlSource += tO[j];
+				rtttlSource += ',';
+			}
+			rtttlSource += ' ';
+			rtttlSource = rtttlSource.replace(/[,p,]*\s/g, '');
+			document.getElementById('rtttl').value = rtttlSource;
+		}
+        function createTable() {
+            table.onclick = function(e) {
+				var target = (e || window.event).target;
+				var ti = target.getAttribute('i') * 1;
+				var tj = target.getAttribute('j') * 1;
+				if (target.tagName in {TD:1, TH:1} && target.innerHTML == ' '){
+					if(target.getAttribute('class')){
+						target.setAttribute('class', '');
+						t[ti][tj] = 0;
+					}
+					else{
+						for(i = 0 ; i < 12; i++){
+							t[i][tj] = 0;
+							table.rows[i].cells[tj + 1].setAttribute('class', '');
+						}
+						t[ti][tj] = 1;
+						target.setAttribute('class', 'on');
+					}
+					generateRtttl();
+				}
+			};
+            table.setAttribute('class', 'article');
+            // Insert New Row for table at index '0'.
+			for(var i = 0; i < 12; i++){
+				var row1 = table.insertRow(0);
+				t[i] = [];
+				for(var j = 64; j >= 0; j--){
+					// Insert New Column for Row1 at index '0'.
+					var row1col1 = row1.insertCell(0);
+					if(j == 0){
+						row1col1.innerHTML = notesb[i];
+						row1col1.setAttribute('class', 'f');
+					}
+					else{
+						row1col1.innerHTML = ' ';
+						row1col1.setAttribute('i', i);
+						row1col1.setAttribute('j', j - 1);
+						t[i][j - 1] = 0;
+					}
+				}
+			}
+			var row1 = table.insertRow(12);
+			for(var j = 64; j >= 0; j--){
+				// Insert New Column for Row1 at index '0'.
+				var row1col1 = row1.insertCell(0);
+				if(j == 0){
+					row1col1.innerHTML = 'd';
+					row1col1.setAttribute('class', 'f');
+				}
+				else{
+					tD[j - 1] = 0;
+					row1col1.innerHTML = '<select onchange="setD(this.options[this.selectedIndex].value,' + (j - 1) +')">' + 
+						'<option value="1">1</option><option value="2">1/2</option>' +
+						'<option value="4">1/4</option><option value="8">1/8</option>' +
+						'<option value="16">1/16</option><option value="32">1/32</option>' +
+						'<option selected value="0">d</option></select>';
+				}
+			}
+			var row1 = table.insertRow(13);
+			for(var j = 64; j >= 0; j--){
+				// Insert New Column for Row1 at index '0'.
+				var row1col1 = row1.insertCell(0);
+				if(j == 0){
+					row1col1.innerHTML = 'o';
+					row1col1.setAttribute('class', 'f');
+				}
+				else{
+					tO[j - 1] = 0;
+					row1col1.innerHTML = '<select onchange="setO(this.options[this.selectedIndex].value,' + (j - 1) +')">' + 
+						'<option value="4">4</option><option value="5">5</option>' +
+						'<option value="6">6</option><option value="7">7</option>' +
+						'<option selected value="0">o</option></select>';
+				}
+			}
+            // Append Table into div.
+            var div = document.getElementById('divTable');
+            div.appendChild(table);
+		}
+		
+		function setD(v, i){
+			tD[i] = v * 1;
+			generateRtttl();
+		}
+		
+		function setO(v, i){
+			tO[i] = v * 1;
+			generateRtttl();
+		}
+		
+		function initAudio() {
+			if (!audio)
+				audio = new(window.AudioContext || window.webkitAudioContext)();
+		}
+
+		function isdigit(str) {
+			return /^\d+$/.test(str);
+		}
+
+		function isNumber(value) {
+			return typeof value === 'number' && isFinite(value);
+		}
+
+		function tone(freq, delay) {
+			var attack = 10,
+			gain = audio.createGain(),
+			osc = audio.createOscillator();
+			osc.connect(gain);
+			gain.connect(audio.destination);
+			gain.gain.value = 0.1;
+			osc.frequency.value = freq;
+			osc.type = "sine";
+			osc.start(0);
+			setTimeout(function () {
+				osc.stop(0);
+				osc.disconnect(gain);
+				gain.disconnect(audio.destination);
+			}, delay);
+		}
+
+		function addTone(f, t) {
+			play_tone.freq = f;
+			play_tone.time = t;
+		}
+
+		function loadRtttl() {
+			var n,
+			c,
+			i;
+			rtttl.default_dur = 4;
+			rtttl.default_oct = 6;
+			rtttl.bpm = 63;
+			rtttl.startposition = 0;
+			i = 0;
+			c = 0;
+			rtttl.str = rtttlSource;
+			rtttl.str += String.fromCharCode(0);
+			while (c != ':' && rtttl.startposition < rtttl.str.length) {
+				// ignore name
+				c = rtttl.str[rtttl.startposition];
+				rtttl.startposition++;
+			}
+			c = rtttl.str[rtttl.startposition]; // skip ':'
+			// get default duration
+			if (c == 'd') {
+				rtttl.startposition += 2; // skip "d="
+				n = '';
+				while (isdigit(rtttl.str[rtttl.startposition])) {
+					n += rtttl.str[rtttl.startposition];
+					rtttl.startposition++;
+				}
+				if (parseInt(n) > 0)
+					rtttl.default_dur = parseInt(n)
+						rtttl.startposition++; // skip comma
+			}
+			// get default octave
+			c = rtttl.str[rtttl.startposition];
+			if (c == 'o') {
+				rtttl.startposition += 2; // skip "o="
+				c = rtttl.str[rtttl.startposition];
+				if (parseInt(c) >= 3 && parseInt(c) <= 7)
+					rtttl.default_oct = parseInt(c);
+				rtttl.startposition += 2;
+			}
+			// get BPM
+			c = rtttl.str[rtttl.startposition];
+			if (c == 'b') {
+				rtttl.startposition += 2; // skip "b="
+				n = '';
+				while (isdigit(rtttl.str[rtttl.startposition])) {
+					n += rtttl.str[rtttl.startposition];
+					rtttl.startposition++;
+				}
+				if (parseInt(n) > 0)
+					rtttl.bpm = parseInt(n);
+			}
+			// BPM usually expresses the number of quarter notes per minute
+			rtttl.wholenote = (60 * 1000 / rtttl.bpm) * 4; // this is the time for whole note (in milliseconds)
+			rtttl.startposition++;
+			rtttl.position = 0;
+			return 1;
+		}
+
+		function testEndRtttl() {
+			if (rtttl.startposition + rtttl.position >= rtttl.str.length) {
+				if (!rtttl.loop)
+					rtttl.play = 0;
+				rtttl.position = 0;
+				clearColumns(step);
+				step = 0;
+			}
+		}
+
+		function highlihtColumns(n){
+			if(n < 64)
+				for(var i = 0 ; i < 12; i++){
+					table.rows[i].cells[n + 1].classList.add('hglt');
+				}		
+		}
+		
+		function clearColumns(n){
+			var pn;
+			if(n < 64){
+				if(step == 0)
+					pn = 63;
+				else
+					pn = step - 1;
+				for(var i = 0 ; i < 12; i++){
+					table.rows[i].cells[pn + 1].classList.remove('hglt');
+				}
+			}
+		}
+		
+		function playRtttl() {
+			var n,
+			duration,
+			note,
+			scale,
+			c;
+			//first, get note duration, if available
+			n = 0;
+			testEndRtttl();
+			c = rtttl.str[rtttl.startposition + rtttl.position];
+			n = '';
+			while (isdigit(rtttl.str[rtttl.startposition + rtttl.position])) {
+				n += rtttl.str[rtttl.startposition + rtttl.position];
+				rtttl.position++;
+			}
+			if (isNumber(parseInt(n)) && parseInt(n) != 0)
+				duration = rtttl.wholenote / n;
+			else
+				duration = rtttl.wholenote / rtttl.default_dur; // we will need to check if we are a dotted note after
+			//now get the note
+			c = rtttl.str[rtttl.startposition + rtttl.position];
+			note = 0;
+			switch (c) {
+			case 'c':
+			case 'C':
+				note = 1;
+				break;
+			case 'd':
+			case 'D':
+				note = 3;
+				break;
+			case 'e':
+			case 'E':
+				note = 5;
+				break;
+			case 'f':
+			case 'F':
+				note = 6;
+				break;
+			case 'g':
+			case 'G':
+				note = 8;
+				break;
+			case 'a':
+			case 'A':
+				note = 10;
+				break;
+			case 'b':
+			case 'B':
+				note = 12;
+				break;
+			case 'p':
+			case 'P':
+			default:
+				note = 0;
+			}
+			clearColumns(step);
+			if(isPlay == 1)
+				highlihtColumns(step);
+			else
+				return;
+			step++;
+			if(step > 64){
+				rtttl.position = 0;
+				step = 0;
+				isPlay = 0;
+				setTimeout(function() { isPlay = 1;playRtttl(); }, 500);
+			}
+			if (rtttl.position < rtttl.str.length)
+				rtttl.position++;
+			else{
+				step = 0;
+				setTimeout(function() {playRtttl()}, 100);
+			}
+			c = rtttl.str[rtttl.startposition + rtttl.position];
+			// now, get optional '#' sharp
+			if (c == '#') {
+				note++;
+				if (rtttl.position < rtttl.str.length)
+					rtttl.position++;
+				else
+					setTimeout(function() {playRtttl()}, 100);
+				c = rtttl.str[rtttl.startposition + rtttl.position];
+			}
+			// now, get optional '.' dotted note
+			if (c == '.') {
+				duration += duration / 2;
+				if (rtttl.position < rtttl.str.length)
+					rtttl.position++;
+				else
+					setTimeout(function() {playRtttl()}, 100);
+				c = rtttl.str[rtttl.startposition + rtttl.position];
+			}
+			// now, get scale
+			if (isdigit(c)) {
+				scale = c - '0';
+				if (rtttl.position < rtttl.str.length)
+					rtttl.position++;
+				else
+					setTimeout(function() {playRtttl()}, 100);
+				c = rtttl.str[rtttl.startposition + rtttl.position];
+			} else {
+				scale = rtttl.default_oct;
+			}
+			if (c == ',')
+				rtttl.position++; // skip comma for next note (or we may be at the end)
+			// now play the note
+			if (note) {
+				tone(notes[(scale - 4) * 12 + note], duration);
+			} else {
+				//console.log("Pausing: " + duration);
+			}
+			setTimeout(function() {playRtttl()}, duration);
+		}
+		function startPlay(){
+			loadRtttl();
+			rtttl.loop = 1;
+			isPlay = 1;
+			step = 0;
+			playRtttl();
+		}
+		initAudio();
+    </script>
+</head>
+<body onload="createTable();">
+	<div id="divTable">
+    </div>
+    <textarea style="width:99%" id="rtttl"></textarea>
+	<br>
+	Beats per minute
+	<input type="range" class="slider" min="25" max="950" id="size" 
+     oninput="setBPM(this.value)" value="125">
+	<input id="BPM" value = "125">
+	Octave
+	<select onchange="octave = (this.options[this.selectedIndex].value * 1); generateRtttl();">
+		<option value="4">4</option>
+		<option selected value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+	</select>
+	<button onclick="startPlay();">play</button>
+	<button onclick="isPlay = 2;">stop</button>
+</body>
+</html>
