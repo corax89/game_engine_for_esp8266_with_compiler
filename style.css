@@ -130,7 +130,8 @@ textarea:focus {
 	font-weight: 500; 
 	margin: 0px; 
 	padding: 0px; 
-	white-space: nowrap; overflow: auto;
+	white-space: pre; 
+	overflow: auto;
 }
 #inputCanvas {
 	border:0px; 
