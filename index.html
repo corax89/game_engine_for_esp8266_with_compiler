@@ -60,18 +60,12 @@
 		<div id="wrap-right">
 			<div class="header">source</div>
 			<div id="editBlock">
-			<table id="edit-table">
-			<tr>
-				<td style="width:2em;position:relative;">
-					<div spellcheck="false" disabled id="line-count"></div>
-				</td><td style="width:100%;position:relative;">
-<textArea spellcheck="false" id="input" wrap="off">
-void main(){
-	puts("hello world");
-}
-</textArea>	
-			</td></tr>
-			</table>
+			<table cellspacing="0" cellpadding="0" style="padding:0px 0px 0px 0px!important; margin:0px 0px 0px 0px!important; font-size:1px;line-height:0px; width:auto;">
+			<tr><td style="border:1px #345 solid; border-right:0px; vertical-align:top; width:1px;">
+				<canvas width="48" height="511" id="inputCanvas"></canvas></td>
+				<td style="border:1px #345 solid; border-left:0px; vertical-align:top; width:100%">
+				<textarea id="input" cols="80"></textarea>
+				</td></tr></table></div>
 			</div>
 			<select id="example" name="example">
 				<option value="0">particle</option>

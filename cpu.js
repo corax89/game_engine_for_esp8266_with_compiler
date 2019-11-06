@@ -1689,18 +1689,7 @@ function Cpu() {
 					// GETK R			D20R
 					reg1 = (op2 & 0xf);
 					display.viewKeyboard(keyPosition);
-					if (globalJKey == 1 && keyPosition > 21)
-						keyPosition -= 21;
-					if (globalJKey == 2 && keyPosition < 42)
-						keyPosition += 21;
-					if (globalJKey == 4 && keyPosition > 0)
-						keyPosition--;
-					if (globalJKey == 8 && keyPosition < 62)
-						keyPosition++;
-					if (globalJKey >= 16)
-						globalKey = keyArray.charCodeAt(keyPosition) & 0xff;
-					globalJKey = 0;
-					if (globalKey != 0)
+					if(globalKey & 0xff)
 						reg[reg1] = globalKey;
 					else
 						pc -= 2;
@@ -1993,7 +1982,7 @@ function Cpu() {
 		}
 		d = clearStringFast(d);
 		debugSprArea.value = d;
-		highliteLine();
+		lineCount();
 		return s;
 	}
 

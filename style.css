@@ -62,7 +62,7 @@ textarea:focus {
 	padding: 2.5px;
 }
 #container {
-	height: 42.5em;
+	height: 42em;
 	overflow: hidden;
 	position: relative;
 }
@@ -73,7 +73,7 @@ textarea:focus {
 	width: 54em;
 }
 #wrap-right {
-	height: 41em;
+	height: 39em;
 	margin-left: 54em;
 	padding: 2px;
 }
@@ -105,10 +105,8 @@ textarea:focus {
 	border: none;
 }
 #editBlock {
-	border: 1px solid #516399;
 	color: #516399;
 	height: 38em;
-	overflow: auto;
 	padding-left: 2px;
 	width: 95%;
 }
@@ -122,11 +120,23 @@ textarea:focus {
 }
 #input {
 	border: none;
-	font-family: monospace;
-	overflow: hidden;
 	resize: none;
 	tab-size: 4;
 	width: 100%;
+    height: 37.5em; 
+	font-size: 13px; 
+	font-family: monospace; 
+	line-height: 16px; 
+	font-weight: 500; 
+	margin: 0px; 
+	padding: 0px; 
+	white-space: nowrap; overflow: auto;
+}
+#inputCanvas {
+	border:0px; 
+	background-color:#fff; 
+	margin-top:0px; 
+	padding-top:0px;
 }
 #line-count {
 	height: auto;
@@ -402,5 +412,8 @@ textarea:focus {
 	}
 	#memoryPreviev {
 		float:none;
+	}
+	#editBlock {
+		margin-top:1em;
 	}
 }

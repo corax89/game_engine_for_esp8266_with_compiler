@@ -689,7 +689,7 @@ function compile(t) {
 			if (thisToken != '=') {
 				previousToken();
 				if (type == 'char' || type == '*char') {
-					if (type == '*char' && !point) {
+					if (type == 'char' && !point) {
 						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
 					} else
@@ -718,7 +718,9 @@ function compile(t) {
 						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
-						putError(lineCount, 9, '');
+						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
+						//putError(lineCount, 9, '');
 						//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 					}
 				} else {
@@ -726,7 +728,10 @@ function compile(t) {
 						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
-						putError(lineCount, 9, '');
+						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
+						asm.push(' STI (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
+						//putError(lineCount, 9, '');
 						//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 					}
 				}
