@@ -918,22 +918,22 @@ function Cpu() {
 
 	function charLineUp(n) {
 		display.reset();
-		for (var i = 0; i < 420 - n * 21; i++) {
-			charArray[i] = charArray[i + n * 21];
-			display.char(charArray[i], (i % 21) * 6, Math.floor(i / 21) * 8, 1, 0);
+		for (var i = 0; i < 420 - n * 20; i++) {
+			charArray[i] = charArray[i + n * 20];
+			display.char(charArray[i], (i % 20) * 6, Math.floor(i / 20) * 8, 1, 0);
 		}
 	}
 
 	function printc(c, fc, bc) {
 		if (c == '\n') {
-			for (var i = regx; i <= 20; i++) {
+			for (var i = regx; i < 20; i++) {
 				display.char(' ', i * 6, regy * 8, fc, bc);
 				charArray[i + regy * 20] = ' ';
 			}
 			regy++;
 			regx = 0;
-			if (regy > 19) {
-				regy = 19;
+			if (regy > 15) {
+				regy = 15;
 				charLineUp(1);
 			}
 		} else if (c == '\t') {
@@ -945,8 +945,8 @@ function Cpu() {
 					i = 99;
 					regy++;
 					regx = 0;
-					if (regy > 19) {
-						regy = 19;
+					if (regy > 15) {
+						regy = 15;
 						charLineUp(1);
 					}
 				}
@@ -958,8 +958,8 @@ function Cpu() {
 			if (regx > 20) {
 				regy++;
 				regx = 0;
-				if (regy > 19) {
-					regy = 19;
+				if (regy > 15) {
+					regy = 15;
 					charLineUp(1);
 				}
 			}

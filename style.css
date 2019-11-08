@@ -118,6 +118,17 @@ textarea:focus {
 	padding: 0;
 	width: 100%;
 }
+#viewKeyboard{
+	position: absolute;
+    left: 27em;
+    background-color: rgba(255,255,255,0.7);
+    width: 11em;
+    height: 3em;
+    text-align: center;
+    line-height: 3em;
+    border-radius: 0.5em;
+    display: none;
+}
 #input {
 	border: none;
 	resize: none;

@@ -35,6 +35,7 @@ var timerstart = new Date().getTime(),
 timertime = 0;
 
 document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keypress", keyPressHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 setup_mouse("div_wind1", "drag_wind1");
 input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut = input.onpaste = inputOnKey;
@@ -190,6 +191,12 @@ function viewDebug(id) {
 	document.getElementById(id).style.display = "block";
 }
 
+function keyPressHandler(e) {
+	globalKey = e.keyCode;
+	if(globalKey == 13)
+		globalKey = 0xA;
+}
+
 function keyDownHandler(e) {
 	/*
 	Bit[0] – Up (Вверх)
@@ -201,9 +208,7 @@ function keyDownHandler(e) {
 	Bit[6] — A
 	Bit[7] — B
 	 */
-	globalKey = e.keyCode;
-	if(globalKey == 13)
-		globalKey = 0xA;
+	
 	switch (e.keyCode) {
 	case 38:
 	case 87:
@@ -761,27 +766,6 @@ function Display() {
 
 	function viewKeyboard(pos) {
 		isDrawKeyboard = true;
-		keyboardPos = pos;
-	}
-
-	function drawKeyboard() {
-		var i = 0;
-		var bit;
-		var adr = 0;
-		for (var y = 0; y < 16; y++)
-			for (var x = 0; x < 32; x++) {
-				if (i % 8 == 0) {
-					bit = keyboardImage[adr];
-					adr++;
-				}
-				if (bit & 0x80)
-					drawSpritePixel(11, 48 + x, 56 + y);
-				else {
-					drawSpritePixel(1, 48 + x, 56 + y);
-				}
-				bit = bit << 1;
-				i++;
-			}
 	}
 
 	function redraw() {
@@ -789,8 +773,11 @@ function Display() {
 		x,
 		y;
 		if (isDrawKeyboard) {
-			drawKeyboard();
+			document.getElementById("viewKeyboard").style.display = "block";
 			isDrawKeyboard = 0;
+		}
+		else{
+			document.getElementById("viewKeyboard").style.display = "none";
 		}
 		for (x = 0; x < 128; x++)
 			for (y = 0; y < 128; y++) {

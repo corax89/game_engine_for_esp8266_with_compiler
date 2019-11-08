@@ -36,6 +36,7 @@
 					<textarea id="areaMemoryPrewiew" disabled="disabled"></textarea>
 				</div>
 				<canvas id="screen" width="256" height="320"></canvas>
+				<div id="viewKeyboard">print on keyboard</div>
 				<button onclick="cpu.step();document.getElementById('debug').value = cpu.debug();clearTimeout(timerId);">step</button>
 				<button onclick="timerstart = new Date().getTime();timertime = 0;soundTimer = 0;run();">run</button>
 				<button onclick="clearTimeout(timerId);document.getElementById('debug').value = cpu.debug();">stop</button>
