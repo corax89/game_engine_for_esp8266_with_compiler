@@ -739,15 +739,22 @@ function compile(t) {
 					if (type == 'char' && !point) {
 						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
-					} else
-						putError(lineCount, 9, '');
+					} else{
+						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
+					}
+					//putError(lineCount, 9, '');
 					//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 				} else {
 					if (type == '*int' && !point) {
 						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
-					} else
-						putError(lineCount, 9, '');
+					} else{
+						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
+						asm.push(' LDI R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
+					}
+					//putError(lineCount, 9, '');
 					//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 				}
 			}
@@ -766,6 +773,7 @@ function compile(t) {
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
 						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 						//putError(lineCount, 9, '');
 						//info("" + lineCount + " работа с локальными массивами не поддерживается ");
@@ -1143,7 +1151,7 @@ function compile(t) {
 			putError(lineCount, 12, '');
 			//info("" + lineCount + " неверное количество аргументов");
 		}
-		registerCount == 1;
+		registerCount = 1;
 		asm.push(' RET ');
 	}
 	//присваивание значения переменной

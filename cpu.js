@@ -24,13 +24,13 @@ function Cpu() {
 	var charArray = []; //массив символов, выводимых на экран
 	var interruptBuffer = [];
 	var keyPosition = 0;
-	var keyArray = "qwertyuiop[]{}()=789\basdfghjkl:;\"/#$@0456\nzxcvbnm<>?.,!%+*-123 ";
 	var dataName = 0;
 
 	function init() {
-		for (var i = 0; i < 0xffff; i++)
+		var i;
+		for (i = 0; i < 0xffff; i++)
 			mem[i] = 0;
-		for (var i = 1; i < 16; i++)
+		for (i = 1; i < 16; i++)
 			reg[i] = 0;
 		//указываем последнюю ячейку памяти для стека, если памяти меньше то и значение соответственно меняется
 		reg[0] = 0xffff;
@@ -42,7 +42,7 @@ function Cpu() {
 		color = 1;
 		interrupt = 0;
 		//задаем начальные координаты спрайтов вне границ экрана
-		for (var i = 0; i < 32; i++) {
+		for (i = 0; i < 32; i++) {
 			sprites[i] = {
 				address: 0,
 				x: 255,
@@ -63,7 +63,7 @@ function Cpu() {
 				fliphorisontal: 0
 			};
 		}
-		for (var i = 0; i < maxParticles; i++) {
+		for (i = 0; i < maxParticles; i++) {
 			particles[i] = {
 				time: 0,
 				x: 0,
@@ -97,9 +97,9 @@ function Cpu() {
 			x: 0,
 			y: 0
 		};
-		for (var i = 0; i < 420; i++)
+		for (i = 0; i < 420; i++)
 			charArray[i] = '';
-		for (var i = 0; i < 8; i++)
+		for (i = 0; i < 8; i++)
 			timers[i] = 0;
 	}
 	//загрузка программы
@@ -317,7 +317,6 @@ function Cpu() {
 	}
 
 	function setEmitter(time, dir, dir1, speed) {
-		speed = speed;
 		emitter.time = time;
 		emitter.speedx = Math.round(speed * Math.cos(dir / 57));
 		emitter.speedy = Math.round(speed * Math.sin(dir / 57));
@@ -621,7 +620,6 @@ function Cpu() {
 								 || getTileInXY(x0, y0 + sprites[n].height)
 								 || getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)) {
 								sprites[n].x = sprites[n].x - sprites[n].speedx;
-								//sprites[n].speedx = Math.floor((sprites[n].x - (sprites[n].x - sprites[n].speedx)) / 2);
 							}
 							sprites[n].speedy = Math.floor(sprites[n].speedy / 2 - sprites[n].gravity);
 							sprites[n].speedx = Math.floor(sprites[n].speedx / 2);
@@ -740,7 +738,6 @@ function Cpu() {
 	}
 	//рисование однобитной картинки
 	function drawImage1bit(adr, x1, y1, w, h) {
-		var size = w * h / 8;
 		var i = 0;
 		var bit;
 		if (x1 > 0x7fff)
@@ -833,7 +830,6 @@ function Cpu() {
 	}
 
 	function drawImage1bitS(adr, x1, y1, w, h) {
-		var size = w * h / 8;
 		var i = 0;
 		var bit,
 		jx,
