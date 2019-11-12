@@ -12,17 +12,69 @@ function tokenize(s) {
 		'S_FLIP_HORIZONTAL', 15,
 		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8, 'KEY_A', 16, 'KEY_B', 32
 	];
-	//упрощенный вариант #define, лишь замена
+	//упрощенный вариант #define
 	function define(s) {
 		lastDefine = [''];
 		while (lastDefine.length != 0) {
 			lastDefine = [];
-			s = s.replace(/#define\s*([^\s]*)\s*([^\n]*)/, function (str, def, repl, offset, s) {
-					lastDefine = [def, repl];
+			s = s.replace(/#define\s*([^\n]*)/, function (str, def, offset, s) {
+					lastDefine = [def];
 					return ' ';
 				});
-			if (lastDefine.length > 0)
-				s = s.replace(new RegExp(lastDefine[0], 'g'), lastDefine[1]);
+			if (lastDefine.length > 0){
+				var d = lastDefine[0];
+				if(d.search(/\(/) > -1){
+					var f,e;
+					for(var i = 0; i < d.length; i++){
+						if(d[i] == '('){
+							f = i;
+							var c = 0;
+							for(var j = i; j < d.length; j++){
+								if(d[j] == '(')
+									c++;
+								if(d[j] == ')'){
+									c--;
+									if(c == 0){
+										e = j;
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+					if(e - f == 1){
+						d = d.split(' ');
+						s = s.replace(new RegExp(d[0], 'g'), d.slice(1).join(' '));
+					}
+					else{
+						var func = d.slice(0, f);
+						var onePart = d.slice(f + 1, e);
+						var twoPart = d.slice(e + 1);
+						var Dvars = onePart.split(',');
+						var fnrgexp = new RegExp(func + '\\\((.*?)\\)', 'g');
+						s = s.replace(fnrgexp, function (str, def, offset, s) {
+							var Dvsource = def.split(',');
+							var nFunc = twoPart + ' ';
+							if(Dvars.length != Dvsource.length){
+								info('#define ' + func + ' error: ' + def);
+							}
+							else{
+								for(var i = 0; i < Dvars.length; i++){
+									nFunc = nFunc.replace(new RegExp(Dvars[i], 'g'), Dvsource[i]);
+									//console.log(nFunc);
+								}
+								
+							}
+							return nFunc;
+						});
+					}
+				}
+				else{
+					d = d.split(' ');
+					s = s.replace(new RegExp(d[0], 'g'), d.slice(1).join(' '));
+				}
+			}
 		}
 		return s;
 	}
@@ -971,7 +1023,7 @@ function compile(t) {
 			//вычисление номера ячейки массива
 			getToken();
 			while (thisToken != ']') {
-				if (!thisToken) {
+				if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
 					putError(thisLine, 18, '');
 					return;
 				}
@@ -1299,9 +1351,9 @@ function compile(t) {
 			asm.push(' SHL R' + (registerCount - 1) + ',R' + registerCount);
 		else
 			return false;
-		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
+		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
 			getToken();
-		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
+		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
 			execut();
 	}
 	//обработка условных ветвлений
@@ -1659,9 +1711,9 @@ function compile(t) {
 	//выполняем блок скобок
 	function skipBracket() {
 		while (thisToken && thisToken != ')') {
-			if (getRangOperation(thisToken) == 0)
+			if (getRangOperation(thisToken) == 0)// || thisToken == ':')
 				getToken();
-			if (!thisToken)
+			if (!thisToken || ('}]),:'.indexOf(thisToken) > -1))
 				return;
 			execut();
 		}
@@ -1672,7 +1724,7 @@ function compile(t) {
 	function skipBrace() {
 		while (thisToken && thisToken != '}') {
 			getToken();
-			if (!thisToken)
+		if (!thisToken || ('}]),:'.indexOf(thisToken) > -1))
 				return;
 			execut();
 		}
