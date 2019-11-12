@@ -3,8 +3,7 @@
 function tokenize(s) {
 	var tokens = [];
 	var thisToken = 0;
-	var l;
-	var lastDefine;
+	var lastDefine, l;
 	var tokenReplace = [
 		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5,
 		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
@@ -21,20 +20,21 @@ function tokenize(s) {
 					lastDefine = [def];
 					return ' ';
 				});
-			if (lastDefine.length > 0){
+			if (lastDefine.length > 0) {
 				var d = lastDefine[0];
-				if(d.search(/\(/) > -1){
-					var f,e;
-					for(var i = 0; i < d.length; i++){
-						if(d[i] == '('){
+				if (d.search(/\(/) > -1) {
+					var f,
+					e;
+					for (var i = 0; i < d.length; i++) {
+						if (d[i] == '(') {
 							f = i;
 							var c = 0;
-							for(var j = i; j < d.length; j++){
-								if(d[j] == '(')
+							for (var j = i; j < d.length; j++) {
+								if (d[j] == '(')
 									c++;
-								if(d[j] == ')'){
+								if (d[j] == ')') {
 									c--;
-									if(c == 0){
+									if (c == 0) {
 										e = j;
 										break;
 									}
@@ -43,34 +43,29 @@ function tokenize(s) {
 							break;
 						}
 					}
-					if(e - f == 1){
+					if (e - f == 1) {
 						d = d.split(' ');
 						s = s.replace(new RegExp(d[0], 'g'), d.slice(1).join(' '));
-					}
-					else{
+					} else {
 						var func = d.slice(0, f);
 						var onePart = d.slice(f + 1, e);
 						var twoPart = d.slice(e + 1);
 						var Dvars = onePart.split(',');
 						var fnrgexp = new RegExp(func + '\\\((.*?)\\)', 'g');
 						s = s.replace(fnrgexp, function (str, def, offset, s) {
-							var Dvsource = def.split(',');
-							var nFunc = twoPart + ' ';
-							if(Dvars.length != Dvsource.length){
-								info('#define ' + func + ' error: ' + def);
-							}
-							else{
-								for(var i = 0; i < Dvars.length; i++){
-									nFunc = nFunc.replace(new RegExp(Dvars[i], 'g'), Dvsource[i]);
-									//console.log(nFunc);
+								var Dvsource = def.split(',');
+								var nFunc = twoPart + ' ';
+								if (Dvars.length != Dvsource.length) {
+									info('#define ' + func + ' error: ' + def);
+								} else {
+									for (var i = 0; i < Dvars.length; i++) {
+										nFunc = nFunc.replace(new RegExp(Dvars[i], 'g'), Dvsource[i]);
+									}
 								}
-								
-							}
-							return nFunc;
-						});
+								return nFunc;
+							});
 					}
-				}
-				else{
+				} else {
 					d = d.split(' ');
 					s = s.replace(new RegExp(d[0], 'g'), d.slice(1).join(' '));
 				}
@@ -408,7 +403,7 @@ function compile(t) {
 		case '/':
 		case '%':
 			return 4;
-		
+
 		}
 		return 0;
 	}
@@ -1434,8 +1429,7 @@ function compile(t) {
 
 	function forToken() {
 		var labe = labelNumber;
-		var startToken;
-		var memToken;
+		var startToken, memToken;
 		var bracketCount = 0;
 		labelNumber++;
 		getToken();
@@ -1496,8 +1490,8 @@ function compile(t) {
 		asm.push(' JMP start_for_' + labe + ' \nend_for_' + labe + ':');
 		registerCount = 1;
 	}
-	
-	function ternaryToken(){
+
+	function ternaryToken() {
 		var labe = labelNumber;
 		var saveRegCount;
 		labelNumber += 2;
@@ -1517,7 +1511,7 @@ function compile(t) {
 		execut();
 		asm.push('end_ternary_' + (labe + 1) + ':');
 	}
-	
+
 	function switchToken() {
 		var labe = labelNumber;
 		labelNumber++;
@@ -1711,9 +1705,9 @@ function compile(t) {
 	//выполняем блок скобок
 	function skipBracket() {
 		while (thisToken && thisToken != ')') {
-			if (getRangOperation(thisToken) == 0)// || thisToken == ':')
+			if (getRangOperation(thisToken) == 0)
 				getToken();
-			if (!thisToken || ('}]),:'.indexOf(thisToken) > -1))
+			if (!thisToken || thisToken == ':')
 				return;
 			execut();
 		}
@@ -1724,7 +1718,7 @@ function compile(t) {
 	function skipBrace() {
 		while (thisToken && thisToken != '}') {
 			getToken();
-		if (!thisToken || ('}]),:'.indexOf(thisToken) > -1))
+			if (!thisToken || thisToken == ':')
 				return;
 			execut();
 		}
@@ -1828,7 +1822,7 @@ function compile(t) {
 			//info("" + lineCount + " неизвестный токен " + thisToken);
 		}
 	}
-	
+
 	numberDebugString = [];
 	console.time("compile");
 	//регистрируем некоторые стандартные функции
@@ -1953,6 +1947,6 @@ function compile(t) {
 	//объеденяем код с данными
 	asm = asm.concat(dataAsm);
 	console.timeEnd("compile");
-	
+
 	return asm;
 }
