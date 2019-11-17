@@ -22,6 +22,9 @@ input[type=file] {
 input[type=range] {
 	width: 3.7em;
 }
+input::placeholder { 
+	color: #ffd595; 
+}
 textarea:focus {
 	outline: none;
 }
@@ -321,6 +324,11 @@ textarea:focus {
 	top: 10em;
 	width: 24em;
 }
+#spriteLoad{
+	height: 0px;
+	overflow: hidden;
+	transition: all 0.3s ease;
+}
 #pixelearea {
 	image-rendering: optimizeSpeed;             /* Older versions of FF          */
 	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
@@ -335,10 +343,17 @@ textarea:focus {
 	font-size: 180%;
     text-align: center;
 }
-#pixelpanel>label {
+#pixelpanel>label{
 	border: 1px solid #516399;
 	display: block;
     margin-bottom: 0.1em;
+}
+#pixelpanel>button{
+	width: 2em;
+	display: block;
+    margin-bottom: 0.1em;
+	position: relative;
+    bottom: -20px;
 }
 #pixelpanel>input[type="radio"] {
 	display: none;
@@ -361,7 +376,7 @@ textarea:focus {
 	left: -0.4em;
     width: 1.5em;
 }
-#spriteArea {
+#spriteArea, #spriteLoadArea {
 	color: #516399;
 	height: 4.2em;
 	margin-top: 0.2em;

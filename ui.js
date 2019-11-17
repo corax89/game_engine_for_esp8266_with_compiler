@@ -177,7 +177,10 @@ function motion_wind(obj_event) {
 		x = window.event.clientX;
 		y = window.event.clientY;
 	}
-	obj_wind.style.top = (delta_y + y) + "px";
+	if(delta_y + y < 0)
+		obj_wind.style.top = "0px";
+	else
+		obj_wind.style.top = (delta_y + y) + "px";
 	obj_wind.style.left = (delta_x + x) + "px";
 	window.getSelection().removeAllRanges();
 }

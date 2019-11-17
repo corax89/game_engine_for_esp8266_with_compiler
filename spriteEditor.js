@@ -4,6 +4,7 @@ var mousedown;
 
 function SpriteEditor() {
 	var data = [];
+	var story = [];
 	var isRLE = false;
 	var is1bit = false;
 	var reservePalette = [
@@ -27,6 +28,53 @@ function SpriteEditor() {
 	lasty = 0;
 	var type = 0;
 
+	function load(){
+		var a = document.getElementById("spriteLoadArea").value;
+		var w = document.getElementById("spriteLoadWidth").value;
+		var i, j, x, y;
+		w = parseInt(w, 10);
+		if(isNaN(w) || w < 1 || w > 32)
+			w = 8;
+		a = a.replace(/[{}]/g, '');
+		a = a.split(',');
+		for (var i = 0; i < 32; i++) {
+			sprite[i] = [];
+			for (var j = 0; j < 32; j++)
+				sprite[i][j] = 0;
+		}
+		x = 0;
+		y = 0;
+		for(i = 0; i < a.length; i++){
+			sprite[x][y] = (parseInt(a[i]) & 0xf0) >> 4;
+			x++;
+			sprite[x][y] = (parseInt(a[i]) & 0x0f);
+			x++;
+			if(x >= w){
+				x = 0;
+				y++;
+				if(y > 31)
+					break;
+			}
+		}
+		redraw();
+		updateText();
+	}
+	
+	function storyData(a){
+		story.push(JSON.stringify(a));
+		if(story.length > 64){
+			story.splice(0, 1);
+		}
+	}
+	
+	function back(){
+		if(story.length > 0){
+			sprite = JSON.parse(story.pop());
+			redraw();
+			updateText();
+		}
+	}
+	
 	function setType(n) {
 		if (n == 1)
 			type = 1;
@@ -179,6 +227,7 @@ function SpriteEditor() {
 		var x = Math.floor((e.offsetX == undefined ? e.layerX : e.offsetX) / (rect.width / 32));
 		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 34));
 		if (mousedown && x < 32 && y < 34 && x >= 0 && y >= 0) {
+			storyData(sprite);
 			data = [];
 			if (y > 31) {
 				thiscolor = Math.floor(x / 2);
@@ -190,7 +239,6 @@ function SpriteEditor() {
 					pixelareactx.fillRect(x, y, 1, 1);
 					sprite[x][y] = thiscolor;
 				} else {
-
 					pixelareactx.fillStyle = palette[thiscolor];
 					if (sprite[x][y] != thiscolor)
 						fillPixels(x, y, sprite[x][y], thiscolor);
@@ -257,10 +305,8 @@ function SpriteEditor() {
 			bit = 0;
 			j = 0;
 			for (i = 0; i < data.length; i++) {
-				//bit = bit << 1;
 				if ((data[i] & 0xf0) > 0)
 					bit += 1 << (7 - j);
-				//bit = bit << 1;
 				j++;
 				if ((data[i] & 0x0f) > 0)
 					bit += 1 << (7 - j);
@@ -398,6 +444,8 @@ function SpriteEditor() {
 		clear: clear,
 		fillPixels: fillPixels,
 		selectAll: selectAll,
-		scroll: scroll
+		scroll: scroll,
+		back: back,
+		load:load
 	};
 }

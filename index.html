@@ -112,10 +112,18 @@
         </div>
         <div class="content_wind">
            <div id="spriteEditior">
+			<div id="spriteLoad">
+				<textarea id="spriteLoadArea"></textarea>
+				<input id="spriteLoadWidth" placeholder="width, px (default 8)">
+				<button onclick="spriteEditor.load()">load</button>
+				<button onclick="document.getElementById('spriteLoad').style.height = '0px'">close</button>
+			</div>
 			<canvas id="pixelearea" width="32" height="34" ondrop="pAreaOnDrop(event)" ondragover="pAreaAllowDrop(event)"></canvas>	
 			<div id="pixelpanel">
 				<input name="pixeled" type="radio" value="1" onchange="spriteEditor.setType(0)" checked id="check1"><label for="check1">&#128393;</label>
 				<input name="pixeled" type="radio" value="2" onchange="spriteEditor.setType(1)" id="check2"><label for="check2">&#127778;</label>
+				<button onclick="spriteEditor.back();">&#9100;</button>
+				<button onclick="document.getElementById('spriteLoad').style.height = '10em'">&#128449;</button>
 			</div>
 			<button onclick="spriteEditor.clear();">cls</button>
 			<button onclick = "spriteEditor.scroll(0);" style = "width: 1.8em;">&#8594</button>
