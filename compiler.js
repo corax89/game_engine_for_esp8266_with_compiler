@@ -3,7 +3,8 @@
 function tokenize(s) {
 	var tokens = [];
 	var thisToken = 0;
-	var lastDefine, l;
+	var lastDefine,
+	l;
 	var tokenReplace = [
 		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5,
 		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
@@ -205,6 +206,8 @@ function compile(t) {
 	var localVarTable = []; //таблица локальных переменных
 	var functionTable = []; //таблица, содержащая имена функций и их исходный код на ассемблере
 	var thisFunction;
+	var callInFunction; //Есть ли вызов другой функции внутри функции
+	var varInRegister; //локальная переменная в регистре
 	var isIntoFunction = false; //находимся ли мы в теле функции
 	var functionVarTable = []; //таблица переменных, указанных в объявлении текущей обрабатываемой функции
 	var lineCount = 0; //номер текущей строки
@@ -416,8 +419,7 @@ function compile(t) {
 				pos = i;
 		}
 		if (pos >= 0 && functionTable[pos].declar == 1) {
-			putError(lineCount, 0, name);
-			//info("" + lineCount + " функция " + name + " уже была объявлена");
+			putError(lineCount, 0, name); //info("" + lineCount + " функция " + name + " уже была объявлена");
 		} else if (pos == -1) {
 			// имя функции, тип возвращаемых данных, операнды, объявлена ли функция, используется ли функция, код функции, нужно ли вставлять функцию вместо перехода
 			functionTable.push({
@@ -432,18 +434,21 @@ function compile(t) {
 			});
 		} else {
 			if (!(functionTable[pos].type == ftype)) {
-				putError(lineCount, 1, name);
-				//info("" + lineCount + " функция " + name + " не соответствует прототипу");
+				putError(lineCount, 1, name); //info("" + lineCount + " функция " + name + " не соответствует прототипу");
 			}
 			functionTable[pos].declar = declar;
 			functionTable[pos].asm = asm;
 			functionTable[pos].varLength = varLength;
 		}
+		return pos;
 	}
 	//обработка встреченной в коде функции
-	function addFunction(type) {
+	function addFunction(type, optimizationVar) {
 		var name = thisToken;
 		var start = 0;
+		var inCodePos = thisTokenNumber - 1;
+		varInRegister = optimizationVar;
+		callInFunction = 0;
 		thisFunction = name;
 		localVarTable = [];
 		functionVarTable = [];
@@ -458,8 +463,7 @@ function compile(t) {
 			if (isType(thisToken))
 				functionVarTable.push(thisToken);
 			else {
-				putError(lineCount, 2, '');
-				//info("" + lineCount + " ожидалось определение типа");
+				putError(lineCount, 2, ''); //info("" + lineCount + " ожидалось определение типа");
 				return false;
 			}
 			getToken();
@@ -477,8 +481,7 @@ function compile(t) {
 				if (thisToken == ',')
 					getToken();
 				else if (thisToken != ')') {
-					putError(lineCount, 3, '');
-					//info("" + lineCount + " ожидалась запятая или закрывающая скобка");
+					putError(lineCount, 3, ''); //info("" + lineCount + " ожидалась запятая или закрывающая скобка");
 					return false;
 				}
 			}
@@ -494,11 +497,10 @@ function compile(t) {
 			isIntoFunction = true;
 			registerFunction(name, type, functionVarTable, 0, [], 0, 0);
 			if (thisToken != '{') {
-				putError(lineCount, 4, '');
-				//info("" + lineCount + " ожидалась фигурная открывающая скобка");
+				putError(lineCount, 4, ''); //info("" + lineCount + " ожидалась фигурная открывающая скобка");
 				return false;
 			}
-			//запоминаем начала ассемблерного кода, принадлежащего функции
+			//запоминаем начало ассемблерного кода, принадлежащего функции
 			start = asm.length;
 			asm.push('_' + name + ':');
 			skipBrace();
@@ -509,12 +511,21 @@ function compile(t) {
 				asm.push('_end_main:');
 			}
 			//иначе вырезаем весь код функции из таблицы asm и сохраняем в таблицу функций. Это позволит в итоге добавить в финальный код только используемые функции
-			else
-				registerFunction(name, type, functionVarTable, 1, asm.splice(start, asm.length - start), false, localVarTable.length);
+			else {
+				if (callInFunction == 0 && optimizationVar == 0) {
+					thisTokenNumber = inCodePos;
+					thisToken = t[thisTokenNumber++];
+					localVarTable = [];
+					asm.splice(start, asm.length - start);
+					addFunction(type, 1);
+				} else
+					registerFunction(name, type, functionVarTable, 1, asm.splice(start, asm.length - start), false, localVarTable.length);
+			}
 			localVarTable = [];
 			isIntoFunction = false;
 		}
 		thisFunction = '';
+		varInRegister = 0;
 	}
 	//вставка кода функции
 	function inlineFunction(func) {
@@ -536,16 +547,14 @@ function compile(t) {
 						getToken();
 				}
 				if (i > func.operands.length / 2 && !longArg) {
-					putError(lineCount, 3, t);
-					//info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
+					putError(lineCount, 3, t); //info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
 					return false;
 				}
 			}
 		}
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
-			putError(lineCount, 6, t);
-			//info("" + lineCount + " ожидался аргумент в функции " + t);
+			putError(lineCount, 6, t); //info("" + lineCount + " ожидался аргумент в функции " + t);
 			return false;
 		}
 		asm.push(func.asm.replace(/[Rr]\%(\d)/g, function (str, reg, offset, s) {
@@ -585,14 +594,14 @@ function compile(t) {
 				registerCount++;
 				return;
 			} else
-				putError(lineCount, 7, t);
-			//info("" + lineCount + " ожидалась открывающая скобка в функции " + t);
+				putError(lineCount, 7, t); //info("" + lineCount + " ожидалась открывающая скобка в функции " + t);
 			return false;
 		}
 		if (func.inline == true) {
 			inlineFunction(func);
 			return;
 		}
+		callInFunction = 1;
 		func.use++;
 		i = 0;
 		if (registerCount > 1) {
@@ -602,8 +611,7 @@ function compile(t) {
 				pushOnStack = registerCount - 1;
 				localStackLength += (registerCount - 1);
 			} else
-				putError(lineCount, 8, func.name);
-			//info('' + lineCount + ' функция ' + func.name + ' не может возвращать значение');
+				putError(lineCount, 8, func.name); //info('' + lineCount + ' функция ' + func.name + ' не может возвращать значение');
 		} else
 			registerCount++;
 		getToken();
@@ -628,16 +636,14 @@ function compile(t) {
 				asm.push(' PUSH R' + registerCount);
 				localStackLength += 1;
 				if (i > func.operands.length / 2 && !longArg) {
-					putError(lineCount, 5, t);
-					//info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
+					putError(lineCount, 5, t); //info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
 					return false;
 				}
 			}
 		}
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
-			putError(lineCount, 6, t);
-			//info("" + lineCount + " ожидался аргумент в функции " + t);
+			putError(lineCount, 6, t); //info("" + lineCount + " ожидался аргумент в функции " + t);
 			return false;
 		}
 		if (longArg)
@@ -708,6 +714,7 @@ function compile(t) {
 		var type,
 		l,
 		op;
+		var numberVarInRegister = -1; //номер регистра, содержащего переменную
 		var point = false;
 		if (lastToken == '*' && registerCount == 1)
 			point = true;
@@ -716,6 +723,9 @@ function compile(t) {
 			number = localVarTable.indexOf(thisToken);
 			type = localVarTable[number - 1];
 			l = localStackLength * 2 + number + 1; //позиция переменной относительно указателя на стек
+			if (number <= 6 && number >= 0 && varInRegister) {
+				numberVarInRegister = 15 - number;
+			}
 		} else {
 			type = functionVarTable[number - 1];
 			l = localStackLength * 2 + functionVarTable.length + localVarTable.length - number + 1;
@@ -735,27 +745,20 @@ function compile(t) {
 			//загрузка ячейки массива
 			if (thisToken != '=') {
 				previousToken();
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + (registerCount + 1) + ',R' + numberVarInRegister + ' ;' + token);
+				} else {
+					asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+				}
 				if (type == 'char' || type == '*char') {
-					if (type == 'char' && !point) {
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
-					} else{
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
-					}
-					//putError(lineCount, 9, '');
-					//info("" + lineCount + " работа с локальными массивами не поддерживается ");
+					asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
 				} else {
 					if (type == '*int' && !point) {
-						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
-					} else{
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+					} else {
 						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 						asm.push(' LDI R' + (registerCount - 1) + ',(R' + (registerCount + 1) + '+R' + (registerCount - 1) + ')');
 					}
-					//putError(lineCount, 9, '');
-					//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 				}
 			}
 			//сохранение ячейки массива
@@ -767,27 +770,24 @@ function compile(t) {
 				if (getRangOperation(thisToken) > 0)
 					execut();
 				registerCount--;
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + (registerCount + 1) + ',R' + numberVarInRegister + ' ;' + token);
+				} else {
+					asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+				}
 				if (type == 'char' || type == '*char') {
 					if (type == '*char' && !point) {
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
-						//putError(lineCount, 9, '');
-						//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 					}
 				} else {
 					if (type == '*int' && !point) {
-						asm.push(' LDIAL R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' STC (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
-						asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
 						asm.push(' LDC R' + (registerCount + 2) + ',2\n MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 						asm.push(' STI (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
-						//putError(lineCount, 9, '');
-						//info("" + lineCount + " работа с локальными массивами не поддерживается ");
 					}
 				}
 				registerCount--;
@@ -796,10 +796,19 @@ function compile(t) {
 		//получить значение переменной
 		else if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
 			previousToken();
-			if (type == 'char')
-				asm.push(' LDC R' + registerCount + ',(' + l + '+R0) ;' + token);
-			else
-				asm.push(' LDI R' + registerCount + ',(' + l + '+R0) ;' + token);
+			if (type == 'char') {
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + registerCount + ',R' + numberVarInRegister + ' ;' + token);
+				} else {
+					asm.push(' LDC R' + registerCount + ',(' + l + '+R0) ;' + token);
+				}
+			} else {
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + registerCount + ',R' + numberVarInRegister + ' ;' + token);
+				} else {
+					asm.push(' LDI R' + registerCount + ',(' + l + '+R0) ;' + token);
+				}
+			}
 			registerCount++;
 		}
 		//присвоить значение переменной
@@ -814,27 +823,41 @@ function compile(t) {
 				execut();
 			registerCount--;
 			//---------
-			if (op == '+=') {
-				asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-				asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
-			} else if (op == '-=') {
-				asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-				asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
-				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
-			} else if (op == '*=') {
-				asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-				asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
-			} else if (op == '/=') {
-				asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
-				asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
-				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+			if (op == '+=' || op == '-=' || op == '*=' || op == '/=') {
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + (registerCount + 1) + ',R' + numberVarInRegister + ' ;' + token);
+				} else {
+					asm.push(' LDI R' + (registerCount + 1) + ',(' + l + '+R0) ;' + token);
+				}
+				if (op == '+=') {
+					asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '-=') {
+					asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
+					asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '*=') {
+					asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '/=') {
+					asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
+					asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+				}
+				
 			} else
 				previousToken();
 			//---------
-			if (type == 'char')
-				asm.push(' STC (' + l + '+R0),R' + registerCount + ' ;' + token);
-			else
-				asm.push(' STI (' + l + '+R0),R' + registerCount + ' ;' + token);
+			if (type == 'char') {
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + numberVarInRegister + ',R' + registerCount + ' ;' + token);
+					asm.push(' LDI R' + registerCount + ',255\nAND R' + numberVarInRegister + ',' + registerCount);
+				} else {
+					asm.push(' STC (' + l + '+R0),R' + registerCount + ' ;' + token);
+				}
+			} else {
+				if (numberVarInRegister > -1) {
+					asm.push(' MOV R' + numberVarInRegister + ',R' + registerCount + ' ;' + token);
+				} else {
+					asm.push(' STI (' + l + '+R0),R' + registerCount + ' ;' + token);
+				}
+			}
 
 		}
 	}
@@ -876,8 +899,7 @@ function compile(t) {
 		if (thisToken == ']') {
 			getToken();
 			if (thisToken != '=')
-				putError(lineCount, 10, '');
-			//info("" + lineCount + " не указана длина массива");
+				putError(lineCount, 10, ''); //info("" + lineCount + " не указана длина массива");
 			else
 				getToken();
 			//массив это строка символов
@@ -908,8 +930,7 @@ function compile(t) {
 					getToken();
 					removeNewLine();
 					if (!(thisToken == '}' || thisToken == ','))
-						putError(lineCount, 11, '');
-					//info("" + lineCount + " неправильное объявление массива");
+						putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 				}
 				if (type == 'int')
 					dataAsm.push('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
@@ -937,8 +958,7 @@ function compile(t) {
 			});
 			getToken();
 			if (thisToken != ']')
-				putError(lineCount, 11, '');
-			//info("" + lineCount + " неправильное объявление массива");
+				putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 			getToken();
 			if (thisToken == '=') {
 				getToken();
@@ -960,8 +980,7 @@ function compile(t) {
 					getToken();
 					removeNewLine();
 					if (!(thisToken == '}' || thisToken == ','))
-						putError(lineCount, 11, '');
-					//info("" + lineCount + " неправильное объявление массива");
+						putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 				}
 				if (type == 'int')
 					newArr = ('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
@@ -981,8 +1000,7 @@ function compile(t) {
 			}
 			dataAsm.push(newArr);
 		} else
-			putError(lineCount, 11, '');
-		//info("" + lineCount + " неправильное объявление массива");
+			putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 	}
 	//проверка, является ли токен t функцией
 	function isFunction(t) {
@@ -1148,8 +1166,7 @@ function compile(t) {
 		asm.push(' MOV R1,R' + registerCount);
 		registerCount--;
 		if (registerCount > 1) {
-			putError(lineCount, 12, '');
-			//info("" + lineCount + " неверное количество аргументов");
+			putError(lineCount, 12, ''); //info("" + lineCount + " неверное количество аргументов");
 		}
 		registerCount = 1;
 		asm.push(' RET ');
@@ -1200,13 +1217,19 @@ function compile(t) {
 			//если инкремент следует за переменной (var++)
 			if (isVar(variable) || localVarTable.indexOf(variable) > -1 || functionVarTable.indexOf(variable) > -1) {
 				if (localVarTable.indexOf(variable) > -1) {
-					if (registerCount == 1) {
-						asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(variable) + 1) + '+R0)');
-						registerCount++;
+					var number = localVarTable.indexOf(variable);
+					if (number <= 6 && number >= 0 && varInRegister) {
+						var numberVarInRegister = 15 - number;
+						asm.push(' INC R' + numberVarInRegister);
+					} else {
+						if (registerCount == 1) {
+							asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + number + 1) + '+R0)');
+							registerCount++;
+						}
+						asm.push(' MOV R' + registerCount + ',R' + (registerCount - 1));
+						asm.push(' INC R' + registerCount);
+						asm.push(' STI (' + (localStackLength * 2 + number + 1) + '+R0),R' + registerCount);
 					}
-					asm.push(' MOV R' + registerCount + ',R' + (registerCount - 1));
-					asm.push(' INC R' + registerCount);
-					asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(variable) + 1) + '+R0),R' + registerCount);
 				} else if (isVar(variable))
 					asm.push(' INC _' + variable);
 			}
@@ -1214,9 +1237,16 @@ function compile(t) {
 			else {
 				getToken();
 				if (localVarTable.indexOf(thisToken) > -1) {
-					asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0)');
-					asm.push(' INC R' + registerCount);
-					asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0),R' + registerCount);
+					var number = localVarTable.indexOf(thisToken);
+					if (number <= 6 && number >= 0 && varInRegister) {
+						var numberVarInRegister = 15 - number;
+						asm.push(' INC R' + numberVarInRegister);
+						asm.push(' MOV R' + registerCount + ',R' + numberVarInRegister);
+					} else {
+						asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0)');
+						asm.push(' INC R' + registerCount);
+						asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0),R' + registerCount);
+					}
 					registerCount++;
 				} else if (isVar(thisToken)) {
 					asm.push(' INC _' + thisToken);
@@ -1229,21 +1259,34 @@ function compile(t) {
 		else if (thisToken == '-' && operation == '-') {
 			if (isVar(variable) || localVarTable.indexOf(variable) > -1 || functionVarTable.indexOf(variable) > -1) {
 				if (localVarTable.indexOf(variable) > -1) {
-					if (registerCount == 1) {
-						asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(variable) + 1) + '+R0)');
-						registerCount++;
+					var number = localVarTable.indexOf(variable);
+					if (number <= 6 && number >= 0 && varInRegister) {
+						var numberVarInRegister = 15 - number;
+						asm.push(' DEC R' + numberVarInRegister);
+					} else {
+						if (registerCount == 1) {
+							asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + number + 1) + '+R0)');
+							registerCount++;
+						}
+						asm.push(' MOV R' + registerCount + ',R' + (registerCount - 1));
+						asm.push(' DEC R' + registerCount);
+						asm.push(' STI (' + (localStackLength * 2 + number + 1) + '+R0),R' + registerCount);
 					}
-					asm.push(' MOV R' + registerCount + ',R' + (registerCount - 1));
-					asm.push(' DEC R' + registerCount);
-					asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(variable) + 1) + '+R0),R' + registerCount);
 				} else if (isVar(variable))
 					asm.push(' DEC _' + variable);
 			} else {
 				getToken();
 				if (localVarTable.indexOf(thisToken) > -1) {
-					asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0)');
-					asm.push(' DEC R' + registerCount);
-					asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0),R' + registerCount);
+					var number = localVarTable.indexOf(thisToken);
+					if (number <= 6 && number >= 0 && varInRegister) {
+						var numberVarInRegister = 15 - number;
+						asm.push(' DEC R' + numberVarInRegister);
+						asm.push(' MOV R' + registerCount + ',R' + numberVarInRegister);
+					} else {
+						asm.push(' LDI R' + registerCount + ',(' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0)');
+						asm.push(' DEC R' + registerCount);
+						asm.push(' STI (' + (localStackLength * 2 + localVarTable.indexOf(thisToken) + 1) + '+R0),R' + registerCount);
+					}
 					registerCount++;
 				} else if (isVar(thisToken)) {
 					asm.push(' DEC _' + thisToken);
@@ -1366,8 +1409,7 @@ function compile(t) {
 		labelNumber++;
 		getToken();
 		if (thisToken != '(')
-			putError(lineCount, 13, 'if');
-		//info("" + lineCount + " ожидалась открывающая скобка в конструкции if");
+			putError(lineCount, 13, 'if'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции if");
 		skipBracket();
 		removeNewLine();
 		registerCount--;
@@ -1409,8 +1451,7 @@ function compile(t) {
 		labelNumber++;
 		getToken();
 		if (thisToken != '(')
-			putError(lineCount, 13, 'while');
-		//info("" + lineCount + " ожидалась открывающая скобка в конструкции while");
+			putError(lineCount, 13, 'while'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции while");
 		asm.push('start_while_' + labe + ':');
 		skipBracket();
 		registerCount--;
@@ -1437,14 +1478,14 @@ function compile(t) {
 
 	function forToken() {
 		var labe = labelNumber;
-		var startToken, memToken;
+		var startToken,
+		memToken;
 		var bracketCount = 0;
 		labelNumber++;
 		getToken();
 		removeNewLine();
 		if (thisToken != '(')
-			putError(lineCount, 13, 'for');
-		//info("" + lineCount + " ожидалась открывающая скобка в конструкции for");
+			putError(lineCount, 13, 'for'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции for");
 		//обрабатываем часть до первой точки с запятой, это выполнится только один раз
 		while (thisToken != ';') {
 			getToken();
@@ -1525,8 +1566,7 @@ function compile(t) {
 		labelNumber++;
 		getToken();
 		if (thisToken != '(')
-			putError(lineCount, 13, 'switch');
-		//info("" + lineCount + " ожидалась открывающая скобка в конструкции switch");
+			putError(lineCount, 13, 'switch'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции switch");
 		skipBracket();
 		registerCount--;
 		//оставляем пустую ячейку в таблице asm и запоминаем ее позицию, сюда будем добавлять весь код, сгенерированный case
@@ -1541,8 +1581,7 @@ function compile(t) {
 		if (thisToken == '{') {
 			skipBrace();
 		} else {
-			putError(lineCount, 13, 'switch');
-			//info("" + lineCount + " ожидалась открывающая фигурная скобка в конструкции switch");
+			putError(lineCount, 13, 'switch'); //info("" + lineCount + " ожидалась открывающая фигурная скобка в конструкции switch");
 		}
 		asm.push('end_switch_' + labe + ':');
 		switchStack.pop();
@@ -1561,19 +1600,16 @@ function compile(t) {
 		if (switchStack.length > 0)
 			lastSwitch = switchStack[switchStack.length - 1];
 		else
-			putError(lineCount, 14, '');
-		//info("" + lineCount + " отсутствует конструкция switch ");
+			putError(lineCount, 14, ''); //info("" + lineCount + " отсутствует конструкция switch ");
 		getToken();
 		if (isNumber(thisToken)) {
 			asm[lastSwitch.block] += 'CMP R1,' + parseInt(thisToken) + ' \n JZ case_' + labe + '\n ';
 			asm.push(' case_' + labe + ':');
 			getToken();
 			if (thisToken != ':')
-				putError(lineCount, 15, '');
-			//info("" + lineCount + " ожидалось двоеточие ");
+				putError(lineCount, 15, ''); //info("" + lineCount + " ожидалось двоеточие ");
 		} else {
-			putError(lineCount, 16, '');
-			//info("" + lineCount + " ожидалось число ");
+			putError(lineCount, 16, ''); //info("" + lineCount + " ожидалось число ");
 		}
 	}
 
@@ -1587,12 +1623,10 @@ function compile(t) {
 		if (switchStack.length > 0)
 			lastSwitch = switchStack[switchStack.length - 1];
 		else
-			putError(lineCount, 14, '');
-		//info("" + lineCount + " отсутствует конструкция switch ");
+			putError(lineCount, 14, ''); //info("" + lineCount + " отсутствует конструкция switch ");
 		getToken();
 		if (thisToken != ':')
-			putError(lineCount, 15, '');
-		//info("" + lineCount + " ожидалось двоеточие ");
+			putError(lineCount, 15, ''); //info("" + lineCount + " ожидалось двоеточие ");
 		asm[lastSwitch.block] += 'JMP default_' + labe + '\n ';
 		asm.push(' default_' + labe + ':');
 	}
@@ -1606,8 +1640,7 @@ function compile(t) {
 			lastSwitch = switchStack[switchStack.length - 1];
 			asm.push(' JMP end_switch_' + lastSwitch.labe);
 		} else
-			putError(lineCount, 14, '');
-		//info("" + lineCount + " отсутствует конструкция switch ");
+			putError(lineCount, 14, ''); //info("" + lineCount + " отсутствует конструкция switch ");
 	}
 	//обработка объявления типа, предполагаем что за ним следует объявление переменной или функции
 	function typeToken() {
@@ -1631,7 +1664,7 @@ function compile(t) {
 		//вызываем регестрацию функции
 		if (thisToken == '(') {
 			previousToken();
-			addFunction(type);
+			addFunction(type, 0);
 		} else if (thisToken == '[') {
 			addArray(type);
 		}
@@ -1645,8 +1678,7 @@ function compile(t) {
 				addVar(type);
 				getToken();
 				if (!(thisToken == ',' || thisToken == ';'))
-					putError(lineCount, 17, '');
-				//info("" + lineCount + " неподдерживаемое объявление переменных");
+					putError(lineCount, 17, ''); //info("" + lineCount + " неподдерживаемое объявление переменных");
 			}
 		} else {
 			previousToken();
@@ -1784,8 +1816,7 @@ function compile(t) {
 		} else if (thisToken == '(') {
 			skipBracket();
 			if (thisToken == ';')
-				putError(lineCount, 18, '');
-			//info("" + lineCount + " ожидалась скобка");
+				putError(lineCount, 18, ''); //info("" + lineCount + " ожидалась скобка");
 			getToken();
 		} else if (thisToken == '=' || thisToken == '+=' || thisToken == '-=' || thisToken == '*=' || thisToken == '/=') {
 			assigment();
@@ -1819,15 +1850,13 @@ function compile(t) {
 		} else if (thisToken == 'break') {
 			breakToken();
 		} else if (thisToken == 'unsigned') {
-			putError(lineCount, 19, 'switch');
-			//info("" + lineCount + "предупреждение, unsigned не реализовано " + thisToken);
+			putError(lineCount, 19, 'switch'); //info("" + lineCount + "предупреждение, unsigned не реализовано " + thisToken);
 			return;
 		} else if (thisToken[0] == '"') {
 			stringToken();
 		} else {
 			if (thisToken.length > 0)
-				putError(lineCount, 20, thisToken);
-			//info("" + lineCount + " неизвестный токен " + thisToken);
+				putError(lineCount, 20, thisToken); //info("" + lineCount + " неизвестный токен " + thisToken);
 		}
 	}
 
@@ -1943,8 +1972,7 @@ function compile(t) {
 	}
 	//если ее нет, то программа будет работать все равно
 	else
-		putError(lineCount, 21, '');
-	//info("не найдена точка входа в функцию main");
+		putError(lineCount, 21, ''); //info("не найдена точка входа в функцию main");
 	//при возврате из main останавливаем выполнение программы
 	asm.push('HLT');
 	//проверяем, были ли хоть раз вызваны функции и добовляем код только вызванных

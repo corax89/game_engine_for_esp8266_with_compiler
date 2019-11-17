@@ -226,7 +226,8 @@ function keyDownHandler(e) {
 	case 68:
 		globalJKey |= 8;
 		break;
-	case 32: //B - space
+	case 88:
+	case 32: //B - space,x
 		globalJKey |= 32;
 		break;
 	case 90: //A - Z
@@ -253,7 +254,8 @@ function keyUpHandler(e) {
 	case 68:
 		globalJKey &= ~8;
 		break;
-	case 32: //B - space
+	case 88:
+	case 32: //B - space,x
 		globalJKey &= ~32;
 		break;
 	case 90: //A - Z
@@ -271,11 +273,6 @@ function highliteasm(code) {
 		'C': comments,
 		'S': strings,
 		'R': res
-	};
-	var safe = {
-		'<': '<',
-		'>': '>',
-		'&': '&'
 	};
 
 	return code
@@ -315,11 +312,6 @@ function highlitec() {
 		'C': comments,
 		'S': strings,
 		'R': res
-	};
-	var safe = {
-		'<': '<',
-		'>': '>',
-		'&': '&'
 	};
 
 	document.getElementById("help_hl").innerHTML = code

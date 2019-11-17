@@ -3,7 +3,8 @@ var audio;
 var play_tone = {
 	"freq": 0,
 	"time": 0
-}
+};
+
 var rtttl = {
 	"address": 0,
 	"position": 0,
@@ -16,7 +17,7 @@ var rtttl = {
 	"wholenote": 0,
 	"str": '',
 	"globalSound": 1
-}
+};
 
 var notes = [
 	0, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880,
@@ -43,9 +44,6 @@ function tone(freq, delay) {
 		gain = audio.createGain(),
 		osc = audio.createOscillator();
 		gain.connect(audio.destination);
-		//gain.gain.setValueAtTime(0, audio.currentTime);
-		//gain.gain.linearRampToValueAtTime(1, audio.currentTime + attack / 1000);
-		//gain.gain.linearRampToValueAtTime(0, audio.currentTime + delay / 1000);
 		gain.gain.value = 0.1;
 		osc.frequency.value = freq;
 		osc.type = "square";
@@ -96,8 +94,8 @@ function loadRtttl() {
 			rtttl.startposition++;
 		}
 		if (parseInt(n) > 0)
-			rtttl.default_dur = parseInt(n)
-				rtttl.startposition++; // skip comma
+			rtttl.default_dur = parseInt(n);
+		rtttl.startposition++; // skip comma
 	}
 	// get default octave
 	c = rtttl.str[rtttl.startposition];
