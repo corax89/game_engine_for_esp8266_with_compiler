@@ -413,6 +413,23 @@ textarea:focus {
 	font-weight:bold;
 	color: #0070de;
 }
+@keyframes colorRotate {
+  from {
+    color: #EDE3C7;
+  }
+  10% {
+    color: #BE3746;
+  }
+  50% {
+    color: #6EA76C;
+  }
+  75% {
+    color: #DEBB59;
+  }
+  100% {
+    color: #B48D6C;
+  }
+}
 @media screen and (max-width: 60em) {
 	#menu {
 		height: 4em;

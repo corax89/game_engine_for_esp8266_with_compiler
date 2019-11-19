@@ -543,6 +543,30 @@ function asm(s) {
 				out.push(0xD1); // SETY R			D14R
 				out.push(0x40 + getRegister(a[i + 1]));
 				return;
+			case 'DRECT':
+				out.push(0xD1); // DRECT R     		D15R
+				out.push(0x50 + getRegister(a[i + 1]));
+				return;
+			case 'FRECT':
+				out.push(0xD1); // FRECT R     		D16R
+				out.push(0x60 + getRegister(a[i + 1]));
+				return;
+			case 'DCIRK':
+				out.push(0xD1); // DCIRC R     		D17R
+				out.push(0x70 + getRegister(a[i + 1]));
+				return;
+			case 'FCIRK':
+				out.push(0xD1); // FCIRC R     		D18R
+				out.push(0x80 + getRegister(a[i + 1]));
+				return;
+			case 'DTRIANG':
+				out.push(0xD1); // DTRIANG R   		D19R
+				out.push(0x90 + getRegister(a[i + 1]));
+				return;
+			case 'FTRIANG':
+				out.push(0xD1); // FTRIANG R   		D1AR
+				out.push(0xA0 + getRegister(a[i + 1]));
+				return;
 			case 'GETK':
 				out.push(0xD2); // GETK R			D20R
 				out.push(0x00 + getRegister(a[i + 1]));

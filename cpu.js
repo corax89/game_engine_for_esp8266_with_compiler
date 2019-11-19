@@ -859,17 +859,17 @@ function Cpu() {
 			}
 	}
 
-	function drawFastVLine(x, y1, y2) {
+	function drawFVLine(x, y1, y2) {
 		for (var i = y1; i <= y2; i++)
 			display.plot(color, x, i);
 	}
 
-	function drawFastHLine(x1, x2, y) {
+	function drawFHLine(x1, x2, y) {
 		for (var i = x1; i <= x2; i++)
 			display.plot(color, i, y);
 	}
 
-	function drawLine(x1, y1, x2, y2) {
+	function drwLine(x1, y1, x2, y2) {
 		if (x1 > 0x7fff)
 			x1 = x1 - 0x10000;
 		if (y1 > 0x7fff)
@@ -880,15 +880,15 @@ function Cpu() {
 			y2 = y2 - 0x10000;
 		if (x1 == x2) {
 			if (y1 > y2)
-				drawFastVLine(x1, y2, y1);
+				drawFVLine(x1, y2, y1);
 			else
-				drawFastVLine(x1, y1, y2);
+				drawFVLine(x1, y1, y2);
 			return;
 		} else if (y1 == y2) {
 			if (x1 > x2)
-				drawFastHLine(x2, x1, y1);
+				drawFHLine(x2, x1, y1);
 			else
-				drawFastHLine(x1, x2, y1);
+				drawFHLine(x1, x2, y1);
 			return;
 		}
 		var deltaX = Math.abs(x2 - x1);
@@ -908,6 +908,180 @@ function Cpu() {
 				error += deltaX;
 				y1 += signY;
 			}
+		}
+	}
+
+	function drwRect(x0, y0, x1, y1) {
+		drawFHLine(x0, x1, y0);
+		drawFHLine(x0, x1, y1);
+		drawFVLine(x0, y0, y1);
+		drawFVLine(x1, y1, y1);
+	}
+
+	function fllRect(x0, y0, x1, y1) {
+		for (var jy = y0; jy <= y1; jy++)
+			drawFHLine(x0, x1, jy);
+	}
+
+	function drwCirc(x0, y0, r) {
+		var x = 0;
+		var dx = 1;
+		var dy = r + r;
+		var p =  - (r >> 1);
+
+		// These are ordered to minimise coordinate changes in x or y
+		// drawPixel can then send fewer bounding box commands
+		setPix(x0 + r, y0, color);
+		setPix(x0 - r, y0, color);
+		setPix(x0, y0 - r, color);
+		setPix(x0, y0 + r, color);
+		while (x < r) {
+
+			if (p >= 0) {
+				dy -= 2;
+				p -= dy;
+				r--;
+			}
+
+			dx += 2;
+			p += dx;
+
+			x++;
+
+			// These are ordered to minimise coordinate changes in x or y
+			// drawPixel can then send fewer bounding box commands
+			setPix(x0 + x, y0 + r, color);
+			setPix(x0 - x, y0 + r, color);
+			setPix(x0 - x, y0 - r, color);
+			setPix(x0 + x, y0 - r, color);
+
+			setPix(x0 + r, y0 + x, color);
+			setPix(x0 - r, y0 + x, color);
+			setPix(x0 - r, y0 - x, color);
+			setPix(x0 + r, y0 - x, color);
+		}
+	}
+
+	function fllCirc(x0, y0, r) {
+		var x = 0;
+		var dx = 1;
+		var dy = r + r;
+		var p =  - (r >> 1);
+
+		drawFHLine(x0 - r, x0 + r, y0);
+		while (x < r) {
+			if (p >= 0) {
+				dy -= 2;
+				p -= dy;
+				r--;
+			}
+
+			dx += 2;
+			p += dx;
+
+			x++;
+
+			drawFHLine(x0 - r, x0 + r, y0 + x);
+			drawFHLine(x0 - r, x0 + r, y0 - x);
+			drawFHLine(x0 - x, x0 + x, y0 + r);
+			drawFHLine(x0 - x, x0 + x, y0 - r);
+		}
+	}
+
+	function drwTriangle(x1, y1, x2, y2, x3, y3) {
+		drwLine(x1, y1, x2, y2);
+		drwLine(x2, y2, x3, y3);
+		drwLine(x3, y3, x1, y1);
+	}
+
+	function fllTriangle(x0, y0, x1, y1, x2, y2) {
+		var a,
+		b,
+		y,
+		last,
+		t;
+
+		if (y0 > y1) {
+			t = y0;
+			y0 = y1;
+			y1 = t;
+			t = x0;
+			x0 = x1;
+			x1 = t;
+		}
+		if (y1 > y2) {
+			t = y2;
+			y2 = y1;
+			y1 = t;
+			t = x2;
+			x2 = x1;
+			x1 = t;
+		}
+		if (y0 > y1) {
+			t = y0;
+			y0 = y1;
+			y1 = t;
+			t = x0;
+			x0 = x1;
+			x1 = t;
+		}
+
+		if (y0 == y2) {
+			a = b = x0;
+			if (x1 < a)
+				a = x1;
+			else if (x1 > b)
+				b = x1;
+			if (x2 < a)
+				a = x2;
+			else if (x2 > b)
+				b = x2;
+			drawFHLine(a, b, y0);
+			return;
+		}
+
+		var
+		dx01 = x1 - x0,
+		dy01 = y1 - y0,
+		dx02 = x2 - x0,
+		dy02 = y2 - y0,
+		dx12 = x2 - x1,
+		dy12 = y2 - y1;
+		var
+		sa = 0,
+		sb = 0;
+
+		if (y1 == y2)
+			last = y1; // Include y1 scanline
+		else
+			last = y1 - 1; // Skip it
+
+		for (y = y0; y <= last; y++) {
+			a = x0 + Math.floor(sa / dy01);
+			b = x0 + Math.floor(sb / dy02);
+			sa += dx01;
+			sb += dx02;
+			if (a > b) {
+				t = a;
+				a = b;
+				b = t;
+			}
+			drawFHLine(a, b, y);
+		}
+
+		sa = dx12 * (y - y1);
+		sb = dx02 * (y - y0);
+		for (; y <= y2; y++) {
+			a = x1 + Math.floor(sa / dy12);
+			b = x0 + Math.floor(sb / dy02);
+			sa += dx12;
+			sb += dx02;
+			if (a > b) {
+				t = a;
+				a = b;
+				b = t;
+			}
+			drawFHLine(a, b, y);
 		}
 
 	}
@@ -979,47 +1153,49 @@ function Cpu() {
 			y2 = y2 - 0x10000;
 		return Math.floor(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	}
-	
-	function setDataName(address){
+
+	function setDataName(address) {
 		dataName = address;
 	}
-	
-	function saveData(arrayAddress, count){
-		var name, array, i;
-		if(dataName > 0){
+
+	function saveData(arrayAddress, count) {
+		var name,
+		array,
+		i;
+		if (dataName > 0) {
 			name = '';
 			i = 0;
-			while(i < 12 && mem[dataName + i] != 0){
+			while (i < 12 && mem[dataName + i] != 0) {
 				name += String.fromCharCode(mem[dataName + i]);
 				i++;
 			}
-		}
-		else
+		} else
 			name = 'default';
 		array = [];
-		if(count > 242)
+		if (count > 242)
 			count = 242;
-		for(i = 0; i < count; i++)
+		for (i = 0; i < count; i++)
 			array[i] = mem[arrayAddress + i];
 		localStorage[name] = array;
 		return count;
 	}
-	
-	function loadData(arrayAddress){
-		var name, array, i;
-		if(dataName > 0){
+
+	function loadData(arrayAddress) {
+		var name,
+		array,
+		i;
+		if (dataName > 0) {
 			name = '';
 			i = 0;
-			while(i < 12 && mem[dataName + i] != 0){
+			while (i < 12 && mem[dataName + i] != 0) {
 				name += String.fromCharCode(mem[dataName + i]);
 				i++;
 			}
-		}
-		else
+		} else
 			name = 'default';
-		if(localStorage[name]){
+		if (localStorage[name]) {
 			array = localStorage[name].split(',');
-			for(i = 0; i < array.length; i++)
+			for (i = 0; i < array.length; i++)
 				mem[arrayAddress + i] = parseInt(array[i], 10) & 0xff;
 			return i;
 		}
@@ -1033,6 +1209,7 @@ function Cpu() {
 		var reg1 = 0; // дополнительные переменные
 		var reg2 = 0;
 		var reg3 = 0;
+		var adr;
 		var n = 0;
 		switch (op1 & 0xf0) {
 		case 0x00:
@@ -1237,12 +1414,11 @@ function Cpu() {
 				addTone(reg[reg1], reg[reg2]);
 				break;
 			case 0x57:
-				if (op2 < 0x10){
+				if (op2 < 0x10) {
 					// LDATA R			57 0R
 					reg2 = op2 & 0xf;
 					reg[reg2] = loadData(reg[reg2]);
-				}
-				else if (op2 < 0x20){
+				} else if (op2 < 0x20) {
 					// NDATA R			57 1R
 					reg2 = op2 & 0xf;
 					setDataName(reg[reg2]);
@@ -1677,6 +1853,42 @@ function Cpu() {
 					reg1 = (op2 & 0xf);
 					regy = (reg[reg1] & 0xff);
 					break;
+				case 0x50:
+					//DRECT R     D15R
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					drwRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0x60:
+					//FRECT R     D16R
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					fllRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0x70:
+					//DCIRC R     D17R
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					drwCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0x80:
+					//FCIRC R     D18R
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					fllCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0x90:
+					//DTRIANG R   D19R
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					drwTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0xA0:
+					//FTRIANG R   D1AR
+					reg1 = (op2 & 0xf);
+					adr = reg[reg1];
+					fllTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
 				}
 				break;
 			case 0xD2:
@@ -1685,7 +1897,7 @@ function Cpu() {
 					// GETK R			D20R
 					reg1 = (op2 & 0xf);
 					display.viewKeyboard(keyPosition);
-					if(globalKey & 0xff)
+					if (globalKey & 0xff)
 						reg[reg1] = globalKey;
 					else
 						pc -= 2;
@@ -1744,7 +1956,7 @@ function Cpu() {
 					// DLINE			D46R
 					reg1 = op2 & 0xf;
 					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
-					drawLine(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+					drwLine(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
 					break;
 				case 0x70:
 					// DRWRLE R		D47R

@@ -83,7 +83,7 @@
 				<option value="11">dragon</option>
 			</select>
 			<button onclick="loadExample();">load example</button>
-			<a href="gamelist/index.html"  target="_blank" id="gamelist">List of games</a>
+			<a href="gamelist/index.html" style="animation: colorRotate 3s linear 0s 5;" target="_blank" id="gamelist">List of games</a>
 		</div>
 	</div>
 	<div class="header">information</div>
@@ -219,6 +219,15 @@
 				void setimagesize(int size);
 				void gotoxy(int x, int y);
 				void line(int x, int y, int x1, int y1);
+				void rect(int x, int y, int x1, int y1);
+				void fillrect(int x, int y, int x1, 
+				 int y1);
+				void triangle(int x, int y, int x1, 
+				 int y1, int x2, int y2);
+				void filltriangle(int x, int y, int x1, 
+				 int y1, int x2, int y2);
+				void circle(int x, int y, int r);
+				void fillcircle(int x, int y, int r);
 				void putimage(int address, int x,
 				 int y, int w, int h);
 				void putimage1bit(int address, int x,

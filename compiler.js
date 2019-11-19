@@ -1900,6 +1900,12 @@ function compile(t) {
 	registerFunction('scroll', 'void', ['char', 'direction'], 1, 'SCROLL R%1,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
+	registerFunction('circle', 'void', ['int', 'x', 'int', 'y', 'int', 'r'], 1, '_circle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DCIRK R1 \n RET', false, 0);
+	registerFunction('fillcircle', 'void', ['int', 'x', 'int', 'y', 'int', 'r'], 1, '_fillcircle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n FCIRK R1 \n RET', false, 0);
+	registerFunction('rect', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_rect: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRECT R1 \n RET', false, 0);
+	registerFunction('fillrect', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_fillrect: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n FRECT R1 \n RET', false, 0);
+	registerFunction('triangle', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1', 'int', 'x2', 'int', 'y2'], 1, '_triangle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DTRIANG R1 \n RET', false, 0);
+	registerFunction('filltriangle', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1', 'int', 'x2', 'int', 'y2'], 1, '_filltriangle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n FTRIANG R1 \n RET', false, 0);
 	registerFunction('spritespeed', 'void', ['int', 'n', 'int', 'speed', 'int', 'dir'], 1, '_spritespeed: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SPRSDS R1 \n RET', false, 0);
 	registerFunction('delayredraw', 'void', [], 1, '_delayredraw: \n LDF R1,6\n CMP R1,0\n JZ _delayredraw \n RET', false, 0);
 	registerFunction('distance', 'int', ['int', 'x1', 'int', 'y1', 'int', 'x2', 'int', 'y2'], 1, '_distance: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DISTPP R1 \n RET', false, 0);
