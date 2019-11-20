@@ -567,6 +567,10 @@ function asm(s) {
 				out.push(0xD1); // FTRIANG R   		D1AR
 				out.push(0xA0 + getRegister(a[i + 1]));
 				return;
+			case 'PUTF':
+				out.push(0xD1); // PUTF R			D1BR
+				out.push(0xB0 + getRegister(a[i + 1]));
+				return;
 			case 'GETK':
 				out.push(0xD2); // GETK R			D20R
 				out.push(0x00 + getRegister(a[i + 1]));
@@ -744,15 +748,31 @@ function asm(s) {
 				out.push(0x58); // SDATA R,R			58 RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
 				return;
+			case 'LDF': //load flag LDF R,F				C2 RF
+				out.push(0xC2);
+				out.push((getRegister(a[i + 1]) << 4) + (strToNum(a[i + 3]) & 0xf));
+				return;
+			case 'ITOF':
+				out.push(0xC3); // ITOF R				C3 0R
+				out.push(0x00 + (getRegister(a[i + 1])));
+				return;
+			case 'FTOI':
+				out.push(0xC3); // FTOI R				C3 1R
+				out.push(0x10 + (getRegister(a[i + 1])));
+				return;
+			case 'MULF':
+				out.push(0xC4); // MULF R,R				C4 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
+			case 'DIVF':
+				out.push(0xC5); // DIVF R,R				C5 RR
+				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
+				return;
 			case 'DB':
 				dbparse(a.join(''));
 				return;
 			case 'DW':
 				dwparse(a.join(''));
-				return;
-			case 'LDF': //load flag
-				out.push(0xC2);
-				out.push((getRegister(a[i + 1]) << 4) + (strToNum(a[i + 3]) & 0xf));
 				return;
 			}
 		}

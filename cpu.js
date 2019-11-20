@@ -25,6 +25,7 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var dataName = 0;
+	var MULTIPLY_FP_RESOLUTION_BITS = 6; //point position in fixed point number
 
 	function init() {
 		var i;
@@ -1798,6 +1799,34 @@ function Cpu() {
 				} else
 					reg[reg1] = 0;
 				break;
+			case 0xc3:
+				reg1 = op2 & 0xf;
+				reg2 = op2 & 0xf0;
+				// ITOF R		C3 0R
+				if (reg2 == 0x00) {
+					reg[reg1] = reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS);
+				}
+				// FTOI R		C3 1R
+				else if (reg2 == 0x10) {
+					reg[reg1] = Math.floor(reg[reg1] / (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				}
+				break;
+			case 0xC4:
+				// MULF R,R		C4 RR
+				reg1 = (op2 & 0xf0) >> 4;
+				reg2 = op2 & 0xf;
+				n = Math.floor((reg[reg1] * reg[reg2]) / (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				n = setFlags(n);
+				reg[reg1] = n;
+				break;
+			case 0xC5:
+				// DIVF R,R		C5 RR
+				reg1 = (op2 & 0xf0) >> 4;
+				reg2 = op2 & 0xf;
+				n = Math.floor((reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS)) / reg[reg2]);
+				n = setFlags(n);
+				reg[reg1] = n;
+				break;
 			}
 			break;
 		case 0xD0:
@@ -1888,6 +1917,26 @@ function Cpu() {
 					reg1 = (op2 & 0xf);
 					adr = reg[reg1];
 					fllTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+					break;
+				case 0xB0:
+					//PUTF R   	  D1BR
+					reg1 = (op2 & 0xf);
+					var s,u,d;
+					var tb = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023];
+					s = reg[reg1];
+					if (s < 32768)
+						u = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+					else
+						u = (Math.floor((s - 0x10000) / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+					for (var i = 0; i < u.length; i++) {
+						printc(u[i], color, bgcolor);
+					}
+					printc('.', color, bgcolor);
+					for (i = 0; i < 3; i++) {
+						s = (s & ((1 << MULTIPLY_FP_RESOLUTION_BITS) - 1)) * 10;
+						d = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+						printc(d, color, bgcolor);
+					}
 					break;
 				}
 				break;

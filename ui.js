@@ -331,7 +331,7 @@ function highlitec() {
 			return f + '~~~S' + l + '~~~';
 		})
 		// Выделяем ключевые слова
-		.replace(/(int|char|void)([^a-z0-9\$_])/gi,
+		.replace(/(fixed|int|char|void)([^a-z0-9\$_])/gi,
 			'<span class="kwrd">$1</span>$2')
 		// Выделяем скобки
 		.replace(/(\(|\))/gi,
