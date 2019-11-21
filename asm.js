@@ -760,6 +760,14 @@ function asm(s) {
 				out.push(0xC3); // FTOI R				C3 1R
 				out.push(0x10 + (getRegister(a[i + 1])));
 				return;
+			case 'SIN':
+				out.push(0xC3); // SIN R				C3 2R
+				out.push(0x20 + (getRegister(a[i + 1])));
+				return;
+			case 'COS':
+				out.push(0xC3); // COS R				C3 3R
+				out.push(0x30 + (getRegister(a[i + 1])));
+				return;
 			case 'MULF':
 				out.push(0xC4); // MULF R,R				C4 RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));

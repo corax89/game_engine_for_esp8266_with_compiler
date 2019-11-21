@@ -217,7 +217,7 @@ function compile(t) {
 	var localStackLength = 0; //используется в функциях для работы с локальными переменными относительно указателя стека
 	var switchStack = []; //указывает на последний switch, необходимо для обработки break
 	var typeOnStack = []; //тип значения в регистре
-	var MULTIPLY_FP_RESOLUTION_BITS = 6; //point position in fixed point number
+	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 
 	function putError(line, error, par) {
 		var er = 'uncown';
@@ -597,8 +597,10 @@ function compile(t) {
 				return 'R' + (registerCount - parseInt(reg));
 			}));
 		registerCount -= func.operands.length / 2;
-		if (func.type != 'void')
+		if (func.type != 'void'){
+			typeOnStack[registerCount] = func.type;
 			registerCount++;
+		}
 		getToken();
 		if (getRangOperation(thisToken) > 0)
 			execut();
@@ -698,6 +700,7 @@ function compile(t) {
 		//функции возвращают значение в первый регистр, переносим в нужный нам
 		if (func.type != 'void') {
 			if (registerCount != 1) {
+				typeOnStack[registerCount] = func.type;
 				asm.push(' MOV R' + registerCount + ',R1');
 			}
 		}
@@ -1949,6 +1952,8 @@ function compile(t) {
 	//регистрируем некоторые стандартные функции
 	registerFunction('random', 'int', ['int', 'i'], 1, 'RAND R%1', true, 0);
 	registerFunction('sqrt', 'int', ['int', 'n'], 1, 'SQRT R%1', true, 0);
+	registerFunction('sin', 'fixed', ['int', 'n'], 1, 'SIN R%1', true, 0);
+	registerFunction('cos', 'fixed', ['int', 'n'], 1, 'COS R%1', true, 0);
 	registerFunction('putchar', 'char', ['char', 'c'], 1, 'PUTC R%1', true, 0);
 	registerFunction('puts', 'int', ['*char', 'c'], 1, 'PUTS R%1', true, 0);
 	registerFunction('putn', 'int', ['int', 'n'], 1, 'PUTN R%1', true, 0);

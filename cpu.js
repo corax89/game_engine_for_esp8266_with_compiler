@@ -25,7 +25,7 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var dataName = 0;
-	var MULTIPLY_FP_RESOLUTION_BITS = 6; //point position in fixed point number
+	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 
 	function init() {
 		var i;
@@ -385,7 +385,7 @@ function Cpu() {
 		tile.width = width;
 		tile.height = height;
 	}
-
+	
 	function spriteSetDirectionAndSpeed(n, speed, direction) {
 		if (speed > 0x7fff)
 			speed -= 0xffff;
@@ -1810,6 +1810,14 @@ function Cpu() {
 				else if (reg2 == 0x10) {
 					reg[reg1] = Math.floor(reg[reg1] / (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				}
+				// SIN R		C3 2R
+				else if (reg2 == 0x20) {
+					reg[reg1] = Math.floor(Math.sin(reg[reg1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				}
+				// COS R		C3 3R
+				else if (reg2 == 0x30) {
+					reg[reg1] = Math.floor(Math.cos(reg[reg1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				}
 				break;
 			case 0xC4:
 				// MULF R,R		C4 RR
@@ -1921,22 +1929,21 @@ function Cpu() {
 				case 0xB0:
 					//PUTF R   	  D1BR
 					reg1 = (op2 & 0xf);
-					var s,u,d;
+					var s,u;
 					var tb = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023];
 					s = reg[reg1];
 					if (s < 32768)
 						u = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
 					else
 						u = (Math.floor((s - 0x10000) / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
-					for (var i = 0; i < u.length; i++) {
-						printc(u[i], color, bgcolor);
-					}
-					printc('.', color, bgcolor);
+					u += '.';
 					for (i = 0; i < 3; i++) {
 						s = (s & ((1 << MULTIPLY_FP_RESOLUTION_BITS) - 1)) * 10;
-						d = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
-						printc(d, color, bgcolor);
+						u += (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
 					}
+					u = '' + parseFloat(u);
+					for (i = 0; i < u.length; i++)
+						printc(u[i], color, bgcolor);
 					break;
 				}
 				break;
