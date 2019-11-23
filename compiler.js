@@ -77,6 +77,7 @@ function tokenize(s) {
 
 	s = define(s);
 	s = s.replace(/#include[^\n]*/g, ''); //удаление инклюдов, дабы не мешали
+	s = s.replace(/\r/g, ''); //удаление возврата каретки
 	l = s.length;
 	tokens[0] = '';
 	for (var i = 0; i < l; i++) {
@@ -210,7 +211,7 @@ function compile(t) {
 	var varInRegister; //локальная переменная в регистре
 	var isIntoFunction = false; //находимся ли мы в теле функции
 	var functionVarTable = []; //таблица переменных, указанных в объявлении текущей обрабатываемой функции
-	var lineCount = 0; //номер текущей строки
+	var lineCount = -1; //номер текущей строки
 	var registerCount = 1; //указатель на используемый в данный момент регистор процессора
 	var lastEndString = 0; //указатель на токен, являющийся последним в предыдущей строке
 	var labelNumber = 0; //номер ссылки, необходим для создания уникальных имен ссылок
@@ -219,6 +220,7 @@ function compile(t) {
 	var typeOnStack = []; //тип значения в регистре
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 	var longArg = false;
+	var lastNewLine = -1;
 
 	function putError(line, error, par) {
 		var er = 'uncown';
@@ -364,7 +366,7 @@ function compile(t) {
 				er = "type " + par + " not supported";
 				break;
 			}
-		info("" + line + " " + er);
+		info("" + (line + 1) + " " + er);
 	}
 	//получаем следующий токен, возвращаем false если следующего токена не существует
 	function getToken() {
@@ -372,6 +374,10 @@ function compile(t) {
 		if (thisTokenNumber < t.length) {
 			thisToken = t[thisTokenNumber];
 			thisTokenNumber++;
+			if(thisToken == '\n' && thisTokenNumber > lastNewLine){
+				lineCount++;
+				lastNewLine = thisTokenNumber ;
+			}
 			return true;
 		}
 		thisToken = false;
@@ -1474,6 +1480,10 @@ function compile(t) {
 			asm.push(' SHR R' + (registerCount - 1) + ',R' + registerCount);
 		else if (operation == '<<')
 			asm.push(' SHL R' + (registerCount - 1) + ',R' + registerCount);
+		else if (operation == '!'){
+			asm.push(' CMP R' + registerCount + ',0\n LDF R' + registerCount + ',1');
+			registerCount++;
+		}
 		else
 			return false;
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
@@ -1805,17 +1815,16 @@ function compile(t) {
 			if (lastToken == ';')
 				registerCount = 1;
 			if (thisTokenNumber - lastEndString > 1) {
-				//добавляем информацию для отладки
-				numberDebugString.push([asm.length, lineCount, 0]);
-				//добавляем комментарии в таблицу asm для отладки
-				s = ';' + lineCount + ' ' + t.slice(lastEndString, thisTokenNumber - 1).join(' ').replace(/\r|\n/g, '');
-				if (s.length > 40)
-					s = s.substring(0, 40) + '...';
-				asm.push(s);
-			}
+					//добавляем информацию для отладки
+					numberDebugString.push([asm.length, lineCount, 0]);
+					//добавляем комментарии в таблицу asm для отладки
+					s = ';' + lineCount + ' ' + t.slice(lastEndString, thisTokenNumber - 1).join(' ').replace(/\r|\n/g, '');
+					if (s.length > 40)
+						s = s.substring(0, 40) + '...';
+					asm.push(s);
+				}
 			//пропускаем все последующие пустые переводы строки
 			while (thisToken === '\n') {
-				lineCount++;
 				lastEndString = thisTokenNumber;
 				getToken();
 			}
