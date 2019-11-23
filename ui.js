@@ -106,6 +106,8 @@ function saveSettings(){
 	fileIco = saveIco(document.getElementById("fileIco").value);
 	if (document.getElementById('fileTypeChoice2').checked)
 		fileType = 'lge';
+	else if (document.getElementById('fileTypeChoice3').checked)
+		fileType = 'html';
 	else
 		fileType = 'bin';
 	var settings = {};
@@ -359,7 +361,7 @@ function onlyAsm() {
 }
 //компиляция си кода из поля ввода
 function main() {
-	rtttl.play = 0;
+	sound.rtttl.play = 0;
 	document.getElementById("alert").innerHTML = '';
 	var src = document.getElementById('input').value;
 	var t = tokenize(src);
@@ -569,7 +571,7 @@ function setMemoryPage(n) {
 
 function run() {
 	//звук инициализируется только при нажатии на кнопку
-	initAudio();
+	sound.initAudio();
 	//уменьшаем значение таймеров
 	for (var i = 0; i < 8; i++) {
 		timers[i] -= 16;
@@ -578,7 +580,7 @@ function run() {
 	}
 	soundTimer -= 16;
 	if (soundTimer <= 30)
-		soundTimer = playRtttl();
+		soundTimer = sound.playRtttl();
 	if (soundTimer > 2000)
 		soundTimer = 2000;
 	//обрабатываем команды процессора
@@ -882,6 +884,16 @@ function savebin() {
 				saveAs(blob, 'rom.lge');
 		}
 	}
+	else if (fileType == 'html'){
+		if (file.length > 1) {
+			var newFile = saveAsHtml(file, fileIco);
+			var blob = new Blob([newFile], {type: "text/plain;charset=utf-8"});
+			if(fileName.length > 0)
+				saveAs(blob, fileName + '.html');
+			else
+				saveAs(blob, 'game.html');
+		}
+	}
 	else{
 		if (file.length > 1) {
 			for (var i = 0; i < file.length; i++) {
@@ -986,6 +998,7 @@ function compressTest(f1, f2){
 
 var display = new Display();
 display.init();
+var sound = new Sound();
 var spriteEditor = new SpriteEditor();
 spriteEditor.init();
 lineCount();

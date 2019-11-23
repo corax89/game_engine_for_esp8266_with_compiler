@@ -218,6 +218,7 @@ function compile(t) {
 	var switchStack = []; //указывает на последний switch, необходимо для обработки break
 	var typeOnStack = []; //тип значения в регистре
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
+	var longArg = false;
 
 	function putError(line, error, par) {
 		var er = 'uncown';
@@ -610,7 +611,7 @@ function compile(t) {
 	//обработка вызова функции
 	function callFunction(t) {
 		var func;
-		var longArg = false;
+		longArg = false;
 		var operandsCount = 0;
 		var pushOnStack = 0;
 		var copyLocalStackLength = localStackLength;

@@ -1387,24 +1387,24 @@ function Cpu() {
 				// LOADRT		540R
 				reg1 = (op2 & 0xf0) >> 4;
 				reg2 = op2 & 0xf;
-				rtttl.address = reg[reg1];
-				rtttl.loop = reg[reg2];
-				loadRtttl();
+				sound.rtttl.address = reg[reg1];
+				sound.rtttl.loop = reg[reg2];
+				sound.loadRtttl();
 				break;
 			case 0x55:
 				switch (op2) {
 					// PLAYRT		5500
 				case 0x00:
-					rtttl.play = 1;
+					sound.rtttl.play = 1;
 					break;
 					// PAUSERT		5501
 				case 0x01:
-					rtttl.play = 0;
+					sound.rtttl.play = 0;
 					break;
 					// STOPRT		5502
 				case 0x02:
-					rtttl.play = 0;
-					rtttl.position = 0;
+					sound.rtttl.play = 0;
+					sound.rtttl.position = 0;
 					break;
 				}
 				break;
@@ -1412,7 +1412,7 @@ function Cpu() {
 				// LOADRT		540R
 				reg1 = (op2 & 0xf0) >> 4;
 				reg2 = op2 & 0xf;
-				addTone(reg[reg1], reg[reg2]);
+				sound.addTone(reg[reg1], reg[reg2]);
 				break;
 			case 0x57:
 				if (op2 < 0x10) {
