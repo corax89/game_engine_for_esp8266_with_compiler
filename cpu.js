@@ -1855,14 +1855,12 @@ function Cpu() {
 				case 0x00:
 					//PUTC R	D10R
 					reg1 = (op2 & 0xf);
-					//console.log(String.fromCharCode(reg[reg1]) + ':' + reg[reg1]);
 					printc(String.fromCharCode(reg[reg1]), color, bgcolor);
 					break;
 				case 0x10:
 					//PUTS R	D11R
 					reg1 = (op2 & 0xf);
 					var i = 0;
-					//console.log(String.fromCharCode(readMem(reg[reg1])));
 					while (!(readMem(reg[reg1] + i) == 0 || i > 1000)) {
 						printc(String.fromCharCode(readMem(reg[reg1] + i)), color, bgcolor);
 						i++;
@@ -1934,8 +1932,10 @@ function Cpu() {
 					s = reg[reg1];
 					if (s < 32768)
 						u = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
-					else
-						u = (Math.floor((s - 0x10000) / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+					else{
+						s = ((~s) & 0xffff) + 1;
+						u = '-' + (Math.floor( s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+					}
 					u += '.';
 					for (i = 0; i < 3; i++) {
 						s = (s & ((1 << MULTIPLY_FP_RESOLUTION_BITS) - 1)) * 10;
