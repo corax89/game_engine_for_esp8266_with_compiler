@@ -374,9 +374,9 @@ function compile(t) {
 		if (thisTokenNumber < t.length) {
 			thisToken = t[thisTokenNumber];
 			thisTokenNumber++;
-			if(thisToken == '\n' && thisTokenNumber > lastNewLine){
+			if (thisToken == '\n' && thisTokenNumber > lastNewLine) {
 				lineCount++;
-				lastNewLine = thisTokenNumber ;
+				lastNewLine = thisTokenNumber;
 			}
 			return true;
 		}
@@ -604,7 +604,7 @@ function compile(t) {
 				return 'R' + (registerCount - parseInt(reg));
 			}));
 		registerCount -= func.operands.length / 2;
-		if (func.type != 'void'){
+		if (func.type != 'void') {
 			typeOnStack[registerCount] = func.type;
 			registerCount++;
 		}
@@ -1480,11 +1480,10 @@ function compile(t) {
 			asm.push(' SHR R' + (registerCount - 1) + ',R' + registerCount);
 		else if (operation == '<<')
 			asm.push(' SHL R' + (registerCount - 1) + ',R' + registerCount);
-		else if (operation == '!'){
+		else if (operation == '!') {
 			asm.push(' CMP R' + registerCount + ',0\n LDF R' + registerCount + ',1');
 			registerCount++;
-		}
-		else
+		} else
 			return false;
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';' || thisToken == '?'))
 			getToken();
@@ -1815,14 +1814,14 @@ function compile(t) {
 			if (lastToken == ';')
 				registerCount = 1;
 			if (thisTokenNumber - lastEndString > 1) {
-					//добавляем информацию для отладки
-					numberDebugString.push([asm.length, lineCount, 0]);
-					//добавляем комментарии в таблицу asm для отладки
-					s = ';' + lineCount + ' ' + t.slice(lastEndString, thisTokenNumber - 1).join(' ').replace(/\r|\n/g, '');
-					if (s.length > 40)
-						s = s.substring(0, 40) + '...';
-					asm.push(s);
-				}
+				//добавляем информацию для отладки
+				numberDebugString.push([asm.length, lineCount, 0]);
+				//добавляем комментарии в таблицу asm для отладки
+				s = ';' + lineCount + ' ' + t.slice(lastEndString, thisTokenNumber - 1).join(' ').replace(/\r|\n/g, '');
+				if (s.length > 40)
+					s = s.substring(0, 40) + '...';
+				asm.push(s);
+			}
 			//пропускаем все последующие пустые переводы строки
 			while (thisToken === '\n') {
 				lastEndString = thisTokenNumber;

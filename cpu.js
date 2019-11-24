@@ -14,7 +14,7 @@ function Cpu() {
 	var negative = 0; //флаг отрицательности
 	var interrupt = 0; //флаг прерывания
 	var redraw = 0; //флаг, устанавливаемый после перерисовки
-	var sprites = []; //массив адресов и координат спрайтов
+	var _spr = []; //массив адресов и координат спрайтов
 	var particles = []; //массив для частиц
 	var maxParticles = 32; //максимальное количество частиц
 	var emitter = []; //настройки для частиц
@@ -44,7 +44,7 @@ function Cpu() {
 		interrupt = 0;
 		//задаем начальные координаты спрайтов вне границ экрана
 		for (i = 0; i < 32; i++) {
-			sprites[i] = {
+			_spr[i] = {
 				address: 0,
 				x: 255,
 				y: 255,
@@ -104,26 +104,26 @@ function Cpu() {
 			timers[i] = 0;
 	}
 	//загрузка программы
-	function load(arr) {
-		for (var i = 0; i < arr.length; i++)
-			mem[i] = arr[i];
+	function load(a) {
+		for (var i = 0; i < a.length; i++)
+			mem[i] = a[i];
 	}
 
-	function writeInt(adr, n) {
-		writeMem(adr + 1, (n & 0xff00) >> 8);
-		writeMem(adr, n & 0xff);
+	function writeInt(a, n) {
+		writeMem(a + 1, (n & 0xff00) >> 8);
+		writeMem(a, n & 0xff);
 	}
 
-	function readInt(adr) {
-		return (readMem(adr + 1) << 8) + readMem(adr);
+	function readInt(a) {
+		return (readMem(a + 1) << 8) + readMem(a);
 	}
 
-	function writeMem(adr, n) {
-		mem[adr & 0xffff] = n & 0xff;
+	function writeMem(a, n) {
+		mem[a & 0xffff] = n & 0xff;
 	}
 
-	function readMem(adr) {
-		return mem[adr & 0xffff];
+	function readMem(a) {
+		return mem[a & 0xffff];
 	}
 
 	function setRedraw() {
@@ -154,20 +154,20 @@ function Cpu() {
 		return n;
 	}
 
-	function setSprite(n, adr) {
-		sprites[n].address = adr;
+	function setSprite(n, a) {
+		_spr[n].address = a;
 	}
 
-	function angleBetweenSprites(n1, n2) {
-		var A = Math.floor(Math.atan2(sprites[n1].y - sprites[n2].y, sprites[n1].x - sprites[n2].x) * 57.4);
-		A = (A < 0) ? A + 360 : A;
-		return A;
+	function angleBetweenSprites(a, b) {
+		var C = Math.floor(Math.atan2(_spr[a].y - _spr[b].y, _spr[a].x - _spr[b].x) * 57.4);
+		C = (C < 0) ? C + 360 : C;
+		return C;
 	}
 
 	function fillRect(x, y, w, h, c) {
-		for (var jx = x; jx < x + w; jx++)
-			for (var jy = y; jy < y + h; jy++)
-				display.plot(c, jx, jy);
+		for (var i = x; i < x + w; i++)
+			for (var j = y; j < y + h; j++)
+				display.plot(c, i, j);
 	}
 
 	function scrollScreen(step, direction) {
@@ -181,8 +181,8 @@ function Cpu() {
 				display.plot(bufPixel, 127, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (sprites[n].isscrolled != 0)
-					sprites[n].x -= 4;
+				if (_spr[n].isscrolled != 0)
+					_spr[n].x -= 4;
 		} else if (direction == 1) {
 			for (var x = 0; x < 128; x++) {
 				bufPixel = display.getPixel(x, 0);
@@ -191,8 +191,8 @@ function Cpu() {
 				display.plot(bufPixel, x, 127);
 			}
 			for (n = 0; n < 32; n++)
-				if (sprites[n].isscrolled != 0)
-					sprites[n].y -= 4;
+				if (_spr[n].isscrolled != 0)
+					_spr[n].y -= 4;
 		} else if (direction == 0) {
 			for (var y = 0; y < 128; y++) {
 				bufPixel = display.getPixel(127, y);
@@ -201,8 +201,8 @@ function Cpu() {
 				display.plot(bufPixel, 0, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (sprites[n].isscrolled != 0)
-					sprites[n].x += 4;
+				if (_spr[n].isscrolled != 0)
+					_spr[n].x += 4;
 		} else {
 			for (var x = 0; x < 128; x++) {
 				bufPixel = display.getPixel(x, 127);
@@ -211,8 +211,8 @@ function Cpu() {
 				display.plot(bufPixel, x, 0);
 			}
 			for (n = 0; n < 32; n++)
-				if (sprites[n].isscrolled != 0)
-					sprites[n].y += 4;
+				if (_spr[n].isscrolled != 0)
+					_spr[n].y += 4;
 		}
 		if (tile.adr > 0)
 			tileDrawLine(step, direction);
@@ -302,42 +302,42 @@ function Cpu() {
 
 	function drawSprite(n, x1, y1) {
 		if (x1 > 0x7fff)
-			sprites[n].x = Math.floor((x1 - 0x10000) << 2);
+			_spr[n].x = Math.floor((x1 - 0x10000) << 2);
 		else
-			sprites[n].x = Math.floor(x1 << 2);
+			_spr[n].x = Math.floor(x1 << 2);
 		if (y1 > 0x7fff)
-			sprites[n].y = Math.floor((y1 - 0x10000) << 2);
+			_spr[n].y = Math.floor((y1 - 0x10000) << 2);
 		else
-			sprites[n].y = Math.floor(y1 << 2);
+			_spr[n].y = Math.floor(y1 << 2);
 	}
 
-	function setParticle(gravity, count, time) {
-		emitter.gravity = gravity;
-		emitter.count = count;
-		emitter.timeparticle = time;
+	function setParticle(g, c, t) {
+		emitter.gravity = g;
+		emitter.count = c;
+		emitter.timeparticle = t;
+	}
+	//time, direction, direction1, speed
+	function setEmitter(t, d, d1, s) {
+		emitter.time = t;
+		emitter.speedx = Math.round(s * Math.cos(d / 57));
+		emitter.speedy = Math.round(s * Math.sin(d / 57));
+		emitter.speedx1 = Math.round(s * Math.cos(d1 / 57));
+		emitter.speedy1 = Math.round(s * Math.sin(d1 / 57));
 	}
 
-	function setEmitter(time, dir, dir1, speed) {
-		emitter.time = time;
-		emitter.speedx = Math.round(speed * Math.cos(dir / 57));
-		emitter.speedy = Math.round(speed * Math.sin(dir / 57));
-		emitter.speedx1 = Math.round(speed * Math.cos(dir1 / 57));
-		emitter.speedy1 = Math.round(speed * Math.sin(dir1 / 57));
-	}
-
-	function drawParticle(x, y, color) {
+	function drawParticle(x, y, c) {
 		emitter.x = x << 1;
 		emitter.y = y << 1;
-		emitter.color = color;
+		emitter.color = c;
 		emitter.timer = emitter.time;
 	}
 
 	function randomD(a, b) {
 		var min = Math.min(a, b);
 		var max = Math.max(a, b);
-		var rand = min - 0.5 + Math.random() * (max - min + 1)
-			rand = Math.round(rand);
-		return rand;
+		var r = min - 0.5 + Math.random() * (max - min + 1)
+			r = Math.round(r);
+		return r;
 	}
 
 	function redrawParticle() {
@@ -377,25 +377,25 @@ function Cpu() {
 					particles[n].time = 0;
 			}
 	}
-
-	function loadTile(adr, iwidth, iheight, width, height) {
-		tile.adr = adr;
-		tile.imgwidth = iwidth;
-		tile.imgheight = iheight;
-		tile.width = width;
-		tile.height = height;
+	//adress, image width, image height, width, height
+	function loadTile(a, iw, ih, w, h) {
+		tile.adr = a;
+		tile.imgwidth = iw;
+		tile.imgheight = ih;
+		tile.width = w;
+		tile.height = h;
 	}
-	
-	function spriteSetDirectionAndSpeed(n, speed, direction) {
-		if (speed > 0x7fff)
-			speed -= 0xffff;
-		if (direction > 0x7fff) {
-			direction = 360 + direction % 360;
+	//number, speed, direction
+	function spriteSetDirectionAndSpeed(n, s, d) {
+		if (s > 0x7fff)
+			s -= 0xffff;
+		if (d > 0x7fff) {
+			d = 360 + d % 360;
 		}
-		var nx = speed * Math.cos(direction / 57);
-		var ny = speed * Math.sin(direction / 57);
-		sprites[n].speedx = Math.floor(nx);
-		sprites[n].speedy = Math.floor(ny);
+		var nx = s * Math.cos(d / 57);
+		var ny = s * Math.sin(d / 57);
+		_spr[n].speedx = Math.floor(nx);
+		_spr[n].speedy = Math.floor(ny);
 	}
 
 	function drawRotateSprPixel(color, x1, y1, x, y, w, h, a) {
@@ -411,54 +411,54 @@ function Cpu() {
 		n,
 		i;
 		for (n = 0; n < 32; n++) {
-			if (sprites[n].lives > 0) {
-				var adr = sprites[n].address;
-				var x1 = Math.floor(sprites[n].x >> 2);
-				var y1 = Math.floor(sprites[n].y >> 2);
-				if (sprites[n].isonebit == 0) {
-					for (var y = 0; y < sprites[n].height; y++)
-						for (var x = 0; x < sprites[n].width; x++) {
+			if (_spr[n].lives > 0) {
+				var adr = _spr[n].address;
+				var x1 = Math.floor(_spr[n].x >> 2);
+				var y1 = Math.floor(_spr[n].y >> 2);
+				if (_spr[n].isonebit == 0) {
+					for (var y = 0; y < _spr[n].height; y++)
+						for (var x = 0; x < _spr[n].width; x++) {
 							clr = (readMem(adr) & 0xf0) >> 4;
 							if (clr > 0) {
-								if (sprites[n].fliphorisontal)
-									drawRotateSprPixel(clr, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								if (_spr[n].fliphorisontal)
+									drawRotateSprPixel(clr, x1, y1, _spr[n].width - x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 								else
-									drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+									drawRotateSprPixel(clr, x1, y1, x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 							}
 							x++;
 							clr = (readMem(adr) & 0xf);
 							if (clr > 0)
-								if (sprites[n].fliphorisontal)
-									drawRotateSprPixel(clr, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								if (_spr[n].fliphorisontal)
+									drawRotateSprPixel(clr, x1, y1, _spr[n].width - x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 								else
-									drawRotateSprPixel(clr, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+									drawRotateSprPixel(clr, x1, y1, x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 							adr++;
 						}
 				} else {
 					i = 0;
 					var ibit;
-					for (var y = 0; y < sprites[n].height; y++)
-						for (var x = 0; x < sprites[n].width; x++) {
+					for (var y = 0; y < _spr[n].height; y++)
+						for (var x = 0; x < _spr[n].width; x++) {
 							if (i % 8 == 0) {
 								ibit = readMem(adr);
 								adr++;
 							}
 							if (ibit & 0x80)
-								if (sprites[n].fliphorisontal)
-									drawRotateSprPixel(color, x1, y1, sprites[n].width - x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+								if (_spr[n].fliphorisontal)
+									drawRotateSprPixel(color, x1, y1, _spr[n].width - x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 								else
-									drawRotateSprPixel(color, x1, y1, x, y, sprites[n].width, sprites[n].height, sprites[n].angle / 57);
+									drawRotateSprPixel(color, x1, y1, x, y, _spr[n].width, _spr[n].height, _spr[n].angle / 57);
 							ibit = ibit << 1;
 							i++;
 						}
 				}
-				sprites[n].speedy += sprites[n].gravity;
-				sprites[n].x += sprites[n].speedx;
-				sprites[n].y += sprites[n].speedy;
-				if (sprites[n].onexitscreen > 0) {
-					if ((sprites[n].x >> 2) + sprites[n].width < 0 || (sprites[n].x >> 2) > 127
-						 || (sprites[n].y >> 2) + sprites[n].height < 0 || (sprites[n].y >> 2) > 127)
-						setinterrupt(sprites[n].onexitscreen, n);
+				_spr[n].speedy += _spr[n].gravity;
+				_spr[n].x += _spr[n].speedx;
+				_spr[n].y += _spr[n].speedy;
+				if (_spr[n].onexitscreen > 0) {
+					if ((_spr[n].x >> 2) + _spr[n].width < 0 || (_spr[n].x >> 2) > 127
+						 || (_spr[n].y >> 2) + _spr[n].height < 0 || (_spr[n].y >> 2) > 127)
+						setinterrupt(_spr[n].onexitscreen, n);
 				}
 			}
 		}
@@ -502,9 +502,9 @@ function Cpu() {
 		x = Math.floor(x << 2);
 		y = Math.floor(y << 2);
 		for (var n = 0; n < 32; n++) {
-			if (sprites[n].lives > 0)
-				if (sprites[n].x < x && sprites[n].x + (sprites[n].width << 2) > x &&
-					sprites[n].y < y && sprites[n].y + (sprites[n].height << 2) > y)
+			if (_spr[n].lives > 0)
+				if (_spr[n].x < x && _spr[n].x + (_spr[n].width << 2) > x &&
+					_spr[n].y < y && _spr[n].y + (_spr[n].height << 2) > y)
 					return n;
 		}
 		return  - 1;
@@ -515,57 +515,57 @@ function Cpu() {
 		starty,
 		startix,
 		startiy;
-		startx = sprites[n].x;
-		starty = sprites[n].y;
-		startix = sprites[i].x;
-		startiy = sprites[i].y;
-		sprites[n].x = sprites[n].x - sprites[n].speedx;
-		sprites[n].y = sprites[n].y - sprites[n].speedy;
-		sprites[i].x = sprites[i].x - sprites[i].speedx;
-		sprites[i].y = sprites[i].y - sprites[i].speedy;
-		if ((sprites[n].speedy >= 0 && sprites[i].speedy <= 0) || (sprites[n].speedy <= 0 && sprites[i].speedy >= 0)) {
-			if (sprites[n].y > sprites[i].y) {
-				if (sprites[i].gravity > 0) {
-					sprites[i].y = sprites[n].y - (sprites[i].height << 2);
+		startx = _spr[n].x;
+		starty = _spr[n].y;
+		startix = _spr[i].x;
+		startiy = _spr[i].y;
+		_spr[n].x = _spr[n].x - _spr[n].speedx;
+		_spr[n].y = _spr[n].y - _spr[n].speedy;
+		_spr[i].x = _spr[i].x - _spr[i].speedx;
+		_spr[i].y = _spr[i].y - _spr[i].speedy;
+		if ((_spr[n].speedy >= 0 && _spr[i].speedy <= 0) || (_spr[n].speedy <= 0 && _spr[i].speedy >= 0)) {
+			if (_spr[n].y > _spr[i].y) {
+				if (_spr[i].gravity > 0) {
+					_spr[i].y = _spr[n].y - (_spr[i].height << 2);
 				}
 			} else {
-				if (sprites[n].gravity > 0) {
-					sprites[n].y = sprites[i].y - (sprites[n].height << 2);
+				if (_spr[n].gravity > 0) {
+					_spr[n].y = _spr[i].y - (_spr[n].height << 2);
 				}
 			}
 		}
-		if (sprites[n].x < sprites[i].x + (sprites[i].width << 2) &&
-			sprites[n].x + (sprites[n].width << 2) > sprites[i].x &&
-			sprites[n].y < sprites[i].y + (sprites[i].height << 2) &&
-			sprites[n].y + (sprites[n].height << 2) > sprites[i].y) {
-			if (sprites[n].x > sprites[i].x) {
-				sprites[n].x++;
-				sprites[i].x--;
+		if (_spr[n].x < _spr[i].x + (_spr[i].width << 2) &&
+			_spr[n].x + (_spr[n].width << 2) > _spr[i].x &&
+			_spr[n].y < _spr[i].y + (_spr[i].height << 2) &&
+			_spr[n].y + (_spr[n].height << 2) > _spr[i].y) {
+			if (_spr[n].x > _spr[i].x) {
+				_spr[n].x++;
+				_spr[i].x--;
 			} else {
-				sprites[n].x--;
-				sprites[i].x++;
+				_spr[n].x--;
+				_spr[i].x++;
 			}
-			if (sprites[n].y > sprites[i].y) {
-				sprites[n].y++;
-				sprites[i].y--;
+			if (_spr[n].y > _spr[i].y) {
+				_spr[n].y++;
+				_spr[i].y--;
 			} else {
-				sprites[n].y--;
-				sprites[i].y++;
+				_spr[n].y--;
+				_spr[i].y++;
 			}
 		}
-		if (sprites[n].gravity != 0) {
-			sprites[n].speedx = Math.floor((sprites[n].x - startx) / 4);
-			sprites[n].speedy = Math.floor((sprites[n].y - starty) / 4);
+		if (_spr[n].gravity != 0) {
+			_spr[n].speedx = Math.floor((_spr[n].x - startx) / 4);
+			_spr[n].speedy = Math.floor((_spr[n].y - starty) / 4);
 		} else {
-			sprites[n].speedx = Math.floor((sprites[n].x - startx));
-			sprites[n].speedy = Math.floor((sprites[n].y - starty));
+			_spr[n].speedx = Math.floor((_spr[n].x - startx));
+			_spr[n].speedy = Math.floor((_spr[n].y - starty));
 		}
-		if (sprites[i].gravity != 0) {
-			sprites[i].speedx = Math.floor((sprites[i].x - startix) / 4);
-			sprites[i].speedy = Math.floor((sprites[i].y - startiy) / 4);
+		if (_spr[i].gravity != 0) {
+			_spr[i].speedx = Math.floor((_spr[i].x - startix) / 4);
+			_spr[i].speedy = Math.floor((_spr[i].y - startiy) / 4);
 		} else {
-			sprites[i].speedx = Math.floor((sprites[i].x - startix));
-			sprites[i].speedy = Math.floor((sprites[i].y - startiy));
+			_spr[i].speedx = Math.floor((_spr[i].x - startix));
+			_spr[i].speedy = Math.floor((_spr[i].y - startiy));
 		}
 	}
 
@@ -576,33 +576,33 @@ function Cpu() {
 		y0,
 		adr;
 		for (n = 0; n < 32; n++)
-			sprites[n].collision = (-1) & 0xffff;
+			_spr[n].collision = (-1) & 0xffff;
 		for (n = 0; n < 32; n++) {
-			if (sprites[n].lives > 0) {
+			if (_spr[n].lives > 0) {
 				for (i = 0; i < n; i++) {
-					if (sprites[i].lives > 0)
-						if (sprites[n].x < sprites[i].x + (sprites[i].width << 2) &&
-							sprites[n].x + (sprites[n].width << 2) > sprites[i].x &&
-							sprites[n].y < sprites[i].y + (sprites[i].height << 2) &&
-							sprites[n].y + (sprites[n].height << 2) > sprites[i].y) {
-							sprites[n].collision = i;
-							sprites[i].collision = n;
-							if (sprites[n].oncollision > 0)
-								setinterrupt(sprites[n].oncollision, n);
-							if (sprites[i].oncollision > 0)
-								setinterrupt(sprites[i].oncollision, i);
+					if (_spr[i].lives > 0)
+						if (_spr[n].x < _spr[i].x + (_spr[i].width << 2) &&
+							_spr[n].x + (_spr[n].width << 2) > _spr[i].x &&
+							_spr[n].y < _spr[i].y + (_spr[i].height << 2) &&
+							_spr[n].y + (_spr[n].height << 2) > _spr[i].y) {
+							_spr[n].collision = i;
+							_spr[i].collision = n;
+							if (_spr[n].oncollision > 0)
+								setinterrupt(_spr[n].oncollision, n);
+							if (_spr[i].oncollision > 0)
+								setinterrupt(_spr[i].oncollision, i);
 							if (debug) {
-								display.drawTestRect(sprites[n].x >> 2, sprites[n].y >> 2, sprites[n].width, sprites[n].height, sprites[n].solid);
-								display.drawTestRect(sprites[i].x >> 2, sprites[i].y >> 2, sprites[i].width, sprites[i].height, sprites[i].solid);
+								display.drawTestRect(_spr[n].x >> 2, _spr[n].y >> 2, _spr[n].width, _spr[n].height, _spr[n].solid);
+								display.drawTestRect(_spr[i].x >> 2, _spr[i].y >> 2, _spr[i].width, _spr[i].height, _spr[i].solid);
 							}
-							if (sprites[n].solid != 0 && sprites[i].solid != 0) {
+							if (_spr[n].solid != 0 && _spr[i].solid != 0) {
 								resolveCollision(n, i);
 							}
 						}
 				}
-				if (sprites[n].solid != 0) {
-					x0 = Math.floor((Math.floor(sprites[n].x >> 2) + sprites[n].width / 2 - tile.x) / tile.imgwidth);
-					y0 = Math.floor((Math.floor(sprites[n].y >> 2) + sprites[n].height / 2 - tile.y) / tile.imgheight);
+				if (_spr[n].solid != 0) {
+					x0 = Math.floor((Math.floor(_spr[n].x >> 2) + _spr[n].width / 2 - tile.x) / tile.imgwidth);
+					y0 = Math.floor((Math.floor(_spr[n].y >> 2) + _spr[n].height / 2 - tile.y) / tile.imgheight);
 					if (x0 >= -1 && x0 <= tile.width && y0 >= -1 && y0 <= tile.height) {
 						if (debug) {
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + y0 * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0, y0));
@@ -611,24 +611,24 @@ function Cpu() {
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 - 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0, y0 - 1));
 							display.drawTestRect(tile.x + x0 * tile.imgwidth, tile.y + (y0 + 1) * tile.imgheight, tile.imgwidth, tile.imgheight, getTile(x0, y0 + 1));
 						}
-						x0 = Math.floor(sprites[n].x >> 2);
-						y0 = Math.floor(sprites[n].y >> 2);
-						if (getTileInXY(x0, y0) || getTileInXY(x0 + sprites[n].width, y0)
-							 || getTileInXY(x0, y0 + sprites[n].height) || getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)) {
-							sprites[n].y = sprites[n].y - sprites[n].speedy;
-							y0 = Math.floor(sprites[n].y >> 2);
-							if (getTileInXY(x0, y0) || getTileInXY(x0 + sprites[n].width, y0)
-								 || getTileInXY(x0, y0 + sprites[n].height)
-								 || getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)) {
-								sprites[n].x = sprites[n].x - sprites[n].speedx;
+						x0 = Math.floor(_spr[n].x >> 2);
+						y0 = Math.floor(_spr[n].y >> 2);
+						if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+							_spr[n].y = _spr[n].y - _spr[n].speedy;
+							y0 = Math.floor(_spr[n].y >> 2);
+							if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+								 || getTileInXY(x0, y0 + _spr[n].height)
+								 || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								_spr[n].x = _spr[n].x - _spr[n].speedx;
 							}
-							sprites[n].speedy = Math.floor(sprites[n].speedy / 2 - sprites[n].gravity);
-							sprites[n].speedx = Math.floor(sprites[n].speedx / 2);
-							x0 = Math.floor(sprites[n].x >> 2);
-							y0 = Math.floor(sprites[n].y >> 2);
-							if (getTileInXY(x0, y0 + sprites[n].height)
-								 || getTileInXY(x0 + sprites[n].width, y0 + sprites[n].height)) {
-								sprites[n].y--;
+							_spr[n].speedy = Math.floor(_spr[n].speedy / 2 - _spr[n].gravity);
+							_spr[n].speedx = Math.floor(_spr[n].speedx / 2);
+							x0 = Math.floor(_spr[n].x >> 2);
+							y0 = Math.floor(_spr[n].y >> 2);
+							if (getTileInXY(x0, y0 + _spr[n].height)
+								 || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								_spr[n].y--;
 							}
 						}
 					}
@@ -676,7 +676,7 @@ function Cpu() {
 		}
 	}
 
-	function drawImage(adr, x1, y1, w, h) {
+	function drawImage(a, x1, y1, w, h) {
 		var color;
 		if (x1 > 0x7fff)
 			x1 -= 0xffff;
@@ -684,23 +684,23 @@ function Cpu() {
 			y1 -= 0xffff;
 		for (var y = 0; y < h; y++)
 			for (var x = 0; x < w; x++) {
-				color = (readMem(adr) & 0xf0) >> 4;
+				color = (readMem(a) & 0xf0) >> 4;
 				if (color > 0)
 					display.plot(color, x1 + x, y1 + y);
 				x++;
-				color = (readMem(adr) & 0xf);
+				color = (readMem(a) & 0xf);
 				if (color > 0)
 					display.plot(color, x1 + x, y1 + y);
-				adr++;
+				a++;
 			}
 	}
 
-	function drawImageRLE(adr, x1, y1, w, h) {
+	function drawImageRLE(a, x1, y1, w, h) {
 		var i = 0;
-		var repeat = readMem(adr);
-		adr++;
-		var color1 = (readMem(adr) & 0xf0) >> 4;
-		var color2 = readMem(adr) & 0xf
+		var repeat = readMem(a);
+		a++;
+		var color1 = (readMem(a) & 0xf0) >> 4;
+		var color2 = readMem(a) & 0xf
 			if (x1 > 0x7fff)
 				x1 -= 0xffff;
 			if (y1 > 0x7fff)
@@ -712,15 +712,15 @@ function Cpu() {
 					if (color2 > 0)
 						display.plot(color2, x1 + i % w + 1, y1 + Math.floor(i / w));
 					i += 2;
-					adr++;
+					a++;
 					repeat--;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf;
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf;
 				} else if (repeat == 0x81) {
-					repeat = readMem(adr);
-					adr++;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf;
+					repeat = readMem(a);
+					a++;
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf;
 				} else if (repeat > 0) {
 					if (color1 > 0)
 						display.plot(color1, x1 + i % w, y1 + Math.floor(i / w));
@@ -729,16 +729,16 @@ function Cpu() {
 					i += 2;
 					repeat--;
 				} else if (repeat == 0) {
-					adr++;
-					repeat = readMem(adr);
-					adr++;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf;
+					a++;
+					repeat = readMem(a);
+					a++;
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf;
 				}
 			}
 	}
 	//рисование однобитной картинки
-	function drawImage1bit(adr, x1, y1, w, h) {
+	function drawImage1bit(a, x1, y1, w, h) {
 		var i = 0;
 		var bit;
 		if (x1 > 0x7fff)
@@ -748,8 +748,8 @@ function Cpu() {
 		for (var y = 0; y < h; y++)
 			for (var x = 0; x < w; x++) {
 				if (i % 8 == 0) {
-					bit = readMem(adr);
-					adr++;
+					bit = readMem(a);
+					a++;
 				}
 				if (bit & 0x80)
 					display.plot(color, x1 + x, y1 + y);
@@ -760,7 +760,7 @@ function Cpu() {
 			}
 	}
 	//функция рисования картинки, если ее размер отличается от 1
-	function drawImageS(adr, x1, y1, w, h) {
+	function drawImageS(a, x1, y1, w, h) {
 		var color,
 		jx,
 		jy;
@@ -771,28 +771,28 @@ function Cpu() {
 			y1 -= 0xffff;
 		for (var y = 0; y < h; y++)
 			for (var x = 0; x < w; x++) {
-				color = (readMem(adr) & 0xf0) >> 4;
+				color = (readMem(a) & 0xf0) >> 4;
 				if (color > 0)
 					for (jx = 0; jx < s; jx++)
 						for (jy = 0; jy < s; jy++)
 							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
 				x++;
-				color = (readMem(adr) & 0xf);
+				color = (readMem(a) & 0xf);
 				if (color > 0)
 					for (jx = 0; jx < s; jx++)
 						for (jy = 0; jy < s; jy++)
 							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
-				adr++;
+				a++;
 			}
 	}
 
-	function drawImageRLES(adr, x1, y1, w, h) {
+	function drawImageRLES(a, x1, y1, w, h) {
 		var i = 0;
 		var s = imageSize;
-		var repeat = readMem(adr);
-		adr++;
-		var color1 = (readMem(adr) & 0xf0) >> 4;
-		var color2 = readMem(adr) & 0xf
+		var repeat = readMem(a);
+		a++;
+		var color1 = (readMem(a) & 0xf0) >> 4;
+		var color2 = readMem(a) & 0xf
 			if (x1 > 0x7fff)
 				x1 -= 0xffff;
 			if (y1 > 0x7fff)
@@ -804,15 +804,15 @@ function Cpu() {
 					if (color2 > 0)
 						display.largeplot(color2, x1 + (i % w) * s + s, y1 + Math.floor(i / w) * s, s);
 					i += 2;
-					adr++;
+					a++;
 					repeat--;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf
 				} else if (repeat == 0x81) {
-					repeat = readMem(adr);
-					adr++;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf
+					repeat = readMem(a);
+					a++;
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf
 				} else if (repeat > 0) {
 					if (color1 > 0)
 						display.largeplot(color1, x1 + (i % w) * s, y1 + Math.floor(i / w) * s, s);
@@ -821,16 +821,16 @@ function Cpu() {
 					i += 2;
 					repeat--;
 				} else if (repeat == 0) {
-					adr++;
-					repeat = readMem(adr);
-					adr++;
-					color1 = (readMem(adr) & 0xf0) >> 4;
-					color2 = readMem(adr) & 0xf
+					a++;
+					repeat = readMem(a);
+					a++;
+					color1 = (readMem(a) & 0xf0) >> 4;
+					color2 = readMem(a) & 0xf
 				}
 			}
 	}
 
-	function drawImage1bitS(adr, x1, y1, w, h) {
+	function drawImage1bitS(a, x1, y1, w, h) {
 		var i = 0;
 		var bit,
 		jx,
@@ -843,8 +843,8 @@ function Cpu() {
 		for (var y = 0; y < h; y++)
 			for (var x = 0; x < w; x++) {
 				if (i % 8 == 0) {
-					bit = readMem(adr);
-					adr++;
+					bit = readMem(a);
+					a++;
 				}
 				if (bit & 0x80) {
 					for (jx = 0; jx < s; jx++)
@@ -892,36 +892,36 @@ function Cpu() {
 				drawFHLine(x1, x2, y1);
 			return;
 		}
-		var deltaX = Math.abs(x2 - x1);
-		var deltaY = Math.abs(y2 - y1);
-		var signX = x1 < x2 ? 1 : -1;
-		var signY = y1 < y2 ? 1 : -1;
-		var error = deltaX - deltaY;
+		var dX = Math.abs(x2 - x1);
+		var dY = Math.abs(y2 - y1);
+		var sX = x1 < x2 ? 1 : -1;
+		var sY = y1 < y2 ? 1 : -1;
+		var err = dX - dY;
 		display.plot(color, x2, y2);
 		while (x1 != x2 || y1 != y2) {
 			display.plot(color, x1, y1);
-			var error2 = error * 2;
-			if (error2 > -deltaY) {
-				error -= deltaY;
-				x1 += signX;
+			var err2 = err * 2;
+			if (err2 > -dY) {
+				err -= dY;
+				x1 += sX;
 			}
-			if (error2 < deltaX) {
-				error += deltaX;
-				y1 += signY;
+			if (err2 < dX) {
+				err += dX;
+				y1 += sY;
 			}
 		}
 	}
 
-	function drwRect(x0, y0, x1, y1) {
-		drawFHLine(x0, x1, y0);
-		drawFHLine(x0, x1, y1);
-		drawFVLine(x0, y0, y1);
+	function drwRect(x, y, x1, y1) {
+		drawFHLine(x, x1, y);
+		drawFHLine(x, x1, y1);
+		drawFVLine(x, y, y1);
 		drawFVLine(x1, y1, y1);
 	}
 
-	function fllRect(x0, y0, x1, y1) {
-		for (var jy = y0; jy <= y1; jy++)
-			drawFHLine(x0, x1, jy);
+	function fllRect(x, y, x1, y1) {
+		for (var jy = y; jy <= y1; jy++)
+			drawFHLine(x, x1, jy);
 	}
 
 	function drwCirc(x0, y0, r) {
@@ -929,7 +929,6 @@ function Cpu() {
 		var dx = 1;
 		var dy = r + r;
 		var p =  - (r >> 1);
-
 		// These are ordered to minimise coordinate changes in x or y
 		// drawPixel can then send fewer bounding box commands
 		setPix(x0 + r, y0, color);
@@ -937,25 +936,20 @@ function Cpu() {
 		setPix(x0, y0 - r, color);
 		setPix(x0, y0 + r, color);
 		while (x < r) {
-
 			if (p >= 0) {
 				dy -= 2;
 				p -= dy;
 				r--;
 			}
-
 			dx += 2;
 			p += dx;
-
 			x++;
-
 			// These are ordered to minimise coordinate changes in x or y
 			// drawPixel can then send fewer bounding box commands
 			setPix(x0 + x, y0 + r, color);
 			setPix(x0 - x, y0 + r, color);
 			setPix(x0 - x, y0 - r, color);
 			setPix(x0 + x, y0 - r, color);
-
 			setPix(x0 + r, y0 + x, color);
 			setPix(x0 - r, y0 + x, color);
 			setPix(x0 - r, y0 - x, color);
@@ -968,7 +962,6 @@ function Cpu() {
 		var dx = 1;
 		var dy = r + r;
 		var p =  - (r >> 1);
-
 		drawFHLine(x0 - r, x0 + r, y0);
 		while (x < r) {
 			if (p >= 0) {
@@ -976,12 +969,9 @@ function Cpu() {
 				p -= dy;
 				r--;
 			}
-
 			dx += 2;
 			p += dx;
-
 			x++;
-
 			drawFHLine(x0 - r, x0 + r, y0 + x);
 			drawFHLine(x0 - r, x0 + r, y0 - x);
 			drawFHLine(x0 - x, x0 + x, y0 + r);
@@ -1001,7 +991,6 @@ function Cpu() {
 		y,
 		last,
 		t;
-
 		if (y0 > y1) {
 			t = y0;
 			y0 = y1;
@@ -1026,7 +1015,6 @@ function Cpu() {
 			x0 = x1;
 			x1 = t;
 		}
-
 		if (y0 == y2) {
 			a = b = x0;
 			if (x1 < a)
@@ -1040,7 +1028,6 @@ function Cpu() {
 			drawFHLine(a, b, y0);
 			return;
 		}
-
 		var
 		dx01 = x1 - x0,
 		dy01 = y1 - y0,
@@ -1051,12 +1038,10 @@ function Cpu() {
 		var
 		sa = 0,
 		sb = 0;
-
 		if (y1 == y2)
 			last = y1; // Include y1 scanline
 		else
 			last = y1 - 1; // Skip it
-
 		for (y = y0; y <= last; y++) {
 			a = x0 + Math.floor(sa / dy01);
 			b = x0 + Math.floor(sb / dy02);
@@ -1069,7 +1054,6 @@ function Cpu() {
 			}
 			drawFHLine(a, b, y);
 		}
-
 		sa = dx12 * (y - y1);
 		sb = dx02 * (y - y0);
 		for (; y <= y2; y++) {
@@ -1084,7 +1068,6 @@ function Cpu() {
 			}
 			drawFHLine(a, b, y);
 		}
-
 	}
 
 	function charLineUp(n) {
@@ -1138,9 +1121,9 @@ function Cpu() {
 	}
 
 	function randomInteger(min, max) {
-		var rand = min - 0.5 + Math.random() * (max - min + 1)
-			rand = Math.round(rand);
-		return rand;
+		var r = min - 0.5 + Math.random() * (max - min + 1)
+			r = Math.round(r);
+		return r;
 	}
 
 	function distancepp(x1, y1, x2, y2) {
@@ -1155,8 +1138,8 @@ function Cpu() {
 		return Math.floor(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	}
 
-	function setDataName(address) {
-		dataName = address;
+	function setDataName(a) {
+		dataName = a;
 	}
 
 	function saveData(arrayAddress, count) {
@@ -1205,85 +1188,85 @@ function Cpu() {
 
 	function step() {
 		//все команды двухбайтные, за некоторыми следуют два байта данных
-		var op1 = mem[pc++]; //первый байт
-		var op2 = mem[pc++]; //второй байт
-		var reg1 = 0; // дополнительные переменные
-		var reg2 = 0;
-		var reg3 = 0;
+		var o1 = mem[pc++]; //первый байт
+		var o2 = mem[pc++]; //второй байт
+		var r1 = 0; // дополнительные переменные
+		var r2 = 0;
+		var r3 = 0;
 		var adr;
 		var n = 0;
-		switch (op1 & 0xf0) {
+		switch (o1 & 0xf0) {
 		case 0x00:
-			switch (op1) {
+			switch (o1) {
 			case 0x01:
 				//LDI R,int		01 0R XXXX
-				reg1 = (op2 & 0xf);
-				reg[reg1] = readInt(pc);
-				setFlags(reg[reg1]);
+				r1 = (o2 & 0xf);
+				reg[r1] = readInt(pc);
+				setFlags(reg[r1]);
 				pc += 2;
 				break;
 			case 0x02:
 				//LDI R,(R)		02 RR
-				reg1 = ((op2 & 0xf0) >> 4);
-				reg2 = (op2 & 0xf);
-				reg[reg1] = readInt(reg[reg2]);
-				setFlags(reg[reg1]);
+				r1 = ((o2 & 0xf0) >> 4);
+				r2 = (o2 & 0xf);
+				reg[r1] = readInt(reg[r2]);
+				setFlags(reg[r1]);
 				break;
 			case 0x03:
 				//LDI R,(adr)	03 0R XXXX
-				reg1 = (op2 & 0xf);
-				reg[reg1] = readInt(readInt(pc));
-				setFlags(reg[reg1]);
+				r1 = (o2 & 0xf);
+				reg[r1] = readInt(readInt(pc));
+				setFlags(reg[r1]);
 				pc += 2;
 				break;
 			case 0x04:
 				//LDI R,(int+R)	04 RR XXXX
-				reg1 = ((op2 & 0xf0) >> 4);
-				reg2 = (op2 & 0xf);
-				reg[reg1] = readInt(reg[reg2] + readInt(pc));
-				setFlags(reg[reg1]);
+				r1 = ((o2 & 0xf0) >> 4);
+				r2 = (o2 & 0xf);
+				reg[r1] = readInt(reg[r2] + readInt(pc));
+				setFlags(reg[r1]);
 				pc += 2;
 				break;
 			case 0x05:
 				//STI (R),R		05 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				//writeInt(readInt(reg[reg1]),reg[reg2]);
-				writeInt(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				//writeInt(readInt(reg[r1]),reg[r2]);
+				writeInt(reg[r1], reg[r2]);
 				break;
 			case 0x06:
-				if ((op2 & 0x0f) == 0) {
+				if ((o2 & 0x0f) == 0) {
 					//STI (adr),R	06 R0 XXXX
-					reg1 = (op2 & 0xf0) >> 4;
-					writeInt(readInt(pc), reg[reg1]);
+					r1 = (o2 & 0xf0) >> 4;
+					writeInt(readInt(pc), reg[r1]);
 					pc += 2;
 				} else {
 					//STI (adr+R),R 06 RR XXXX
-					reg1 = (op2 & 0xf0) >> 4;
-					reg2 = op2 & 0xf;
-					writeInt(readInt(pc) + reg[reg1], reg[reg2]);
+					r1 = (o2 & 0xf0) >> 4;
+					r2 = o2 & 0xf;
+					writeInt(readInt(pc) + reg[r1], reg[r2]);
 					pc += 2;
 				}
 				break;
 			case 0x07:
 				//MOV R,R		07 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				reg[reg1] = reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				reg[r1] = reg[r2];
 				break;
 			case 0x08:
 				//LDIAL R,(int+R*2)	08 RR XXXX
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				reg[reg1] = readInt(reg[reg2] * 2 + readInt(pc));
-				setFlags(reg[reg1]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				reg[r1] = readInt(reg[r2] * 2 + readInt(pc));
+				setFlags(reg[r1]);
 				pc += 2;
 				break;
 			case 0x09:
 				//STIAL (adr+R*2),R 	09 RR XXXX
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				writeInt(readInt(pc) + reg[reg1] * 2, reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				writeInt(readInt(pc) + reg[r1] * 2, reg[r2]);
 				pc += 2;
 				break;
 			default:
@@ -1292,107 +1275,107 @@ function Cpu() {
 			break;
 		case 0x10:
 			// LDC R,char	1R XX
-			reg1 = (op1 & 0xf);
-			reg[reg1] = op2;
-			setFlagsC(reg[reg1]);
+			r1 = (o1 & 0xf);
+			reg[r1] = o2;
+			setFlagsC(reg[r1]);
 			break;
 		case 0x20:
-			if (op1 == 0x20) {
+			if (o1 == 0x20) {
 				// LDC R,(R)	20 RR
-				reg1 = ((op2 & 0xf0) >> 4);
-				reg2 = (op2 & 0xf);
-				reg[reg1] = readMem(reg[reg2]);
-				setFlagsC(reg[reg1]);
+				r1 = ((o2 & 0xf0) >> 4);
+				r2 = (o2 & 0xf);
+				reg[r1] = readMem(reg[r2]);
+				setFlagsC(reg[r1]);
 			} else {
 				// LDC R,(R+R)	2R RR
-				reg1 = (op1 & 0xf);
-				reg2 = ((op2 & 0xf0) >> 4);
-				reg3 = (op2 & 0xf);
-				reg[reg1] = readMem(reg[reg2] + reg[reg3]);
-				setFlagsC(reg[reg1]);
+				r1 = (o1 & 0xf);
+				r2 = ((o2 & 0xf0) >> 4);
+				r3 = (o2 & 0xf);
+				reg[r1] = readMem(reg[r2] + reg[r3]);
+				setFlagsC(reg[r1]);
 			}
 			break;
 		case 0x30:
-			switch (op1) {
+			switch (o1) {
 			case 0x30:
 				// LDC R,(int+R)30 RR XXXX
-				reg1 = ((op2 & 0xf0) >> 4);
-				reg2 = (op2 & 0xf);
-				reg[reg1] = readMem(reg[reg2] + readInt(pc));
-				setFlagsC(reg[reg1]);
+				r1 = ((o2 & 0xf0) >> 4);
+				r2 = (o2 & 0xf);
+				reg[r1] = readMem(reg[r2] + readInt(pc));
+				setFlagsC(reg[r1]);
 				pc += 2;
 				break;
 			case 0x31:
 				// LDC R,(adr)	31 0R XXXX
-				reg1 = (op2 & 0xf);
-				reg[reg1] = readMem(readInt(pc));
-				setFlagsC(reg[reg1]);
+				r1 = (o2 & 0xf);
+				reg[r1] = readMem(readInt(pc));
+				setFlagsC(reg[r1]);
 				pc += 2;
 				break;
 			case 0x32:
 				// STC (adr),R	32 0R XXXX
-				reg1 = (op2 & 0xf0) >> 4;
-				writeMem(readInt(pc), reg[reg1]);
+				r1 = (o2 & 0xf0) >> 4;
+				writeMem(readInt(pc), reg[r1]);
 				pc += 2;
 				break;
 			case 0x33:
 				// STC (int+R),R33 RR XXXX
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				writeMem(readInt(pc) + reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				writeMem(readInt(pc) + reg[r1], reg[r2]);
 				pc += 2;
 				break;
 			}
 			break;
 		case 0x40:
-			if (op1 == 0x40) {
+			if (o1 == 0x40) {
 				// STC (R),R	40 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				//writeMem(readInt(reg[reg1]),reg[reg2]);
-				writeMem(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				//writeMem(readInt(reg[r1]),reg[r2]);
+				writeMem(reg[r1], reg[r2]);
 			} else {
 				// STC (R+R),R	4R RR
-				reg1 = (op1 & 0xf);
-				reg2 = ((op2 & 0xf0) >> 4);
-				reg3 = (op2 & 0xf);
-				writeMem(reg[reg1] + reg[reg2], reg[reg3]);
+				r1 = (o1 & 0xf);
+				r2 = ((o2 & 0xf0) >> 4);
+				r3 = (o2 & 0xf);
+				writeMem(reg[r1] + reg[r2], reg[r3]);
 			}
 			break;
 		case 0x50:
-			switch (op1) {
+			switch (o1) {
 			case 0x50:
 				//HLT				5000
 				pc -= 2;
 				break;
 			case 0x51:
 				// STIMER R,R		51RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				timers[reg[reg1] & 0x7] = reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				timers[reg[r1] & 0x7] = reg[r2];
 				break;
 			case 0x52:
 				// GTIMER R		520R
-				reg1 = op2 & 0xf;
-				reg[reg1] = timers[reg[reg1] & 0x7];
-				setFlags(reg[reg1]);
+				r1 = o2 & 0xf;
+				reg[r1] = timers[reg[r1] & 0x7];
+				setFlags(reg[r1]);
 				break;
 			case 0x53:
 				// SETLED R		530R
-				reg1 = op2 & 0xf;
-				display.drawLed(reg[reg1]);
-				//console.log('New pixel color: ' + reg[reg1]);
+				r1 = o2 & 0xf;
+				display.drawLed(reg[r1]);
+				//console.log('New pixel color: ' + reg[r1]);
 				break;
 			case 0x54:
 				// LOADRT		540R
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				sound.rtttl.address = reg[reg1];
-				sound.rtttl.loop = reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				sound.rtttl.address = reg[r1];
+				sound.rtttl.loop = reg[r2];
 				sound.loadRtttl();
 				break;
 			case 0x55:
-				switch (op2) {
+				switch (o2) {
 					// PLAYRT		5500
 				case 0x00:
 					sound.rtttl.play = 1;
@@ -1410,70 +1393,70 @@ function Cpu() {
 				break;
 			case 0x56:
 				// LOADRT		540R
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				sound.addTone(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				sound.addTone(reg[r1], reg[r2]);
 				break;
 			case 0x57:
-				if (op2 < 0x10) {
+				if (o2 < 0x10) {
 					// LDATA R			57 0R
-					reg2 = op2 & 0xf;
-					reg[reg2] = loadData(reg[reg2]);
-				} else if (op2 < 0x20) {
+					r2 = o2 & 0xf;
+					reg[r2] = loadData(reg[r2]);
+				} else if (o2 < 0x20) {
 					// NDATA R			57 1R
-					reg2 = op2 & 0xf;
-					setDataName(reg[reg2]);
+					r2 = o2 & 0xf;
+					setDataName(reg[r2]);
 				}
 				break;
 			case 0x58:
 				// SDATA R,R			58 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				reg[reg1] = saveData(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				reg[r1] = saveData(reg[r1], reg[r2]);
 				break;
 			}
 			break;
 		case 0x60:
 			// LDI R,(R+R)	6R RR
-			reg1 = (op1 & 0xf);
-			reg2 = ((op2 & 0xf0) >> 4);
-			reg3 = (op2 & 0xf);
-			reg[reg1] = readInt(reg[reg2] + reg[reg3]);
-			setFlags(reg[reg1]);
+			r1 = (o1 & 0xf);
+			r2 = ((o2 & 0xf0) >> 4);
+			r3 = (o2 & 0xf);
+			reg[r1] = readInt(reg[r2] + reg[r3]);
+			setFlags(reg[r1]);
 			break;
 		case 0x70:
 			// STI (R+R),R	7R RR
-			reg1 = (op1 & 0xf);
-			reg2 = ((op2 & 0xf0) >> 4);
-			reg3 = (op2 & 0xf);
-			writeInt(reg[reg1] + reg[reg2], reg[reg3]);
+			r1 = (o1 & 0xf);
+			r2 = ((o2 & 0xf0) >> 4);
+			r3 = (o2 & 0xf);
+			writeInt(reg[r1] + reg[r2], reg[r3]);
 			break;
 		case 0x80:
-			switch (op1) {
+			switch (o1) {
 			case 0x80:
 				// POP R		80 0R
-				reg1 = (op2 & 0xf);
-				reg[reg1] = readInt(reg[0]);
+				r1 = (o2 & 0xf);
+				reg[r1] = readInt(reg[0]);
 				reg[0] += 2;
 				break;
 			case 0x81:
 				// POPN R		81 0R
-				reg1 = (op2 & 0xf);
-				for (var j = reg1; j >= 1; j--) {
+				r1 = (o2 & 0xf);
+				for (var j = r1; j >= 1; j--) {
 					reg[j] = readInt(reg[0]);
 					reg[0] += 2;
 				}
 				break;
 			case 0x82:
 				// PUSH R		82 0R
-				reg1 = (op2 & 0xf);
+				r1 = (o2 & 0xf);
 				reg[0] -= 2;
-				writeInt(reg[0], reg[reg1]);
+				writeInt(reg[0], reg[r1]);
 				break;
 			case 0x83:
 				// PUSHN R		83 0R
-				reg1 = (op2 & 0xf);
-				for (var j = 1; j <= reg1; j++) {
+				r1 = (o2 & 0xf);
+				for (var j = 1; j <= r1; j++) {
 					reg[0] -= 2;
 					writeInt(reg[0], reg[j]);
 				}
@@ -1481,7 +1464,7 @@ function Cpu() {
 			}
 			break;
 		case 0x90:
-			switch (op1) {
+			switch (o1) {
 			case 0x90:
 				// JMP adr		90 00 XXXX
 				pc = readInt(pc);
@@ -1530,16 +1513,16 @@ function Cpu() {
 				break;
 			case 0x97:
 				// JZR R,adr	97 0R XXXX
-				reg1 = op2 & 0xf;
-				if (reg[reg1] == 0)
+				r1 = o2 & 0xf;
+				if (reg[r1] == 0)
 					pc = readInt(pc);
 				else
 					pc += 2;
 				break;
 			case 0x98:
 				// JNZR R,adr	98 0R XXXX
-				reg1 = op2 & 0xf;
-				if (reg[reg1] != 0)
+				r1 = o2 & 0xf;
+				if (reg[r1] != 0)
 					pc = readInt(pc);
 				else
 					pc += 2;
@@ -1577,359 +1560,359 @@ function Cpu() {
 			}
 			break;
 		case 0xA0:
-			switch (op1) {
+			switch (o1) {
 			case 0xA0:
 				// ADD R,R		A0 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] + reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] + reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA1:
 				// ADC R,R		A1 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] + reg[reg2] + carry;
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] + reg[r2] + carry;
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA2:
 				// SUB R,R		A2 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] - reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] - reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA3:
 				// SBC R,R		A3 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] - reg[reg2] - carry;
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] - reg[r2] - carry;
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA4:
 				// MUL R,R		A4 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] * reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] * reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA5:
 				// DIV R,R		A5 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				if (reg[reg1] > 0x7fff)
-					reg[reg1] -= 0x10000;
-				if (reg[reg2] > 0x7fff)
-					reg[reg2] -= 0x10000;
-				n = reg[reg1] / reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				if (reg[r1] > 0x7fff)
+					reg[r1] -= 0x10000;
+				if (reg[r2] > 0x7fff)
+					reg[r2] -= 0x10000;
+				n = reg[r1] / reg[r2];
 				n = setFlags(n);
-				reg[reg2] = Math.abs(reg[reg1] % reg[reg2]);
-				reg[reg1] = n;
+				reg[r2] = Math.abs(reg[r1] % reg[r2]);
+				reg[r1] = n;
 				break;
 			case 0xA6:
 				// AND R,R		A6 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] & reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] & reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA7:
 				// OR R,R		A7 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] | reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] | reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xA8:
-				if (op2 == 0x10) {
+				if (o2 == 0x10) {
 					// INC adr		A8 10 XXXX
-					reg1 = op2 & 0xf;
+					r1 = o2 & 0xf;
 					n = readInt(readInt(pc)) + 1;
 					n = setFlags(n);
 					writeInt(readInt(pc), n);
 					pc += 2;
-				} else if (op2 > 0x10) {
+				} else if (o2 > 0x10) {
 					// INC R,n		A8 nR
-					reg1 = op2 & 0xf;
-					n = reg[reg1] + (op2 >> 4);
+					r1 = o2 & 0xf;
+					n = reg[r1] + (o2 >> 4);
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				} else {
 					// INC R		A8 0R
-					reg1 = op2 & 0xf;
-					n = reg[reg1] + 1;
+					r1 = o2 & 0xf;
+					n = reg[r1] + 1;
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				}
 				break;
 			case 0xA9:
-				if (op2 == 0x10) {
+				if (o2 == 0x10) {
 					// DEC adr		A9 10 XXXX
-					reg1 = op2 & 0xf;
+					r1 = o2 & 0xf;
 					n = readInt(readInt(pc)) - 1;
 					n = setFlags(n);
 					writeInt(readInt(pc), n);
 					pc += 2;
-				} else if (op2 > 0x10) {
+				} else if (o2 > 0x10) {
 					// DEC R,n		A9 nR
-					reg1 = op2 & 0xf;
-					n = reg[reg1] - (op2 >> 4);
+					r1 = o2 & 0xf;
+					n = reg[r1] - (o2 >> 4);
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				} else {
 					// DEC R		A9 0R
-					reg1 = op2 & 0xf;
-					n = reg[reg1] - 1;
+					r1 = o2 & 0xf;
+					n = reg[r1] - 1;
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				}
 				break;
 			case 0xAA:
 				// XOR R,R		AA RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] ^ reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] ^ reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xAB:
 				// SHL R,R		AB RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] << reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] << reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xAC:
 				// SHR R,R		AC RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] >> reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] >> reg[r2];
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xAD:
-				reg1 = op2 & 0xf;
-				reg2 = op2 & 0xf0;
+				r1 = o2 & 0xf;
+				r2 = o2 & 0xf0;
 				// RAND R,R		AD 0R
-				if (reg2 == 0x00) {
-					n = randomInteger(0, reg[reg1]);
+				if (r2 == 0x00) {
+					n = randomInteger(0, reg[r1]);
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				}
 				// SQRT R		AD 1R
-				else if (reg2 == 0x10) {
-					n = Math.floor(Math.sqrt(reg[reg1]));
+				else if (r2 == 0x10) {
+					n = Math.floor(Math.sqrt(reg[r1]));
 					n = setFlags(n);
-					reg[reg1] = n;
+					reg[r1] = n;
 				}
 				break;
 			case 0xAE:
 				// ANDL R,R		AE RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = (reg[reg1] != 0 && reg[reg2] != 0) ? 1 : 0;
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = (reg[r1] != 0 && reg[r2] != 0) ? 1 : 0;
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xAF:
 				// ORL R,R		AF RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = (reg[reg1] != 0 || reg[reg2] != 0) ? 1 : 0;
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = (reg[r1] != 0 || reg[r2] != 0) ? 1 : 0;
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			}
 			break;
 		case 0xB0:
 			//CMP R,CHR		BR XX
-			reg1 = (op1 & 0x0f);
-			n = reg[reg1] - op2;
+			r1 = (o1 & 0x0f);
+			n = reg[r1] - o2;
 			n = setFlags(n);
 			break;
 		case 0xC0:
-			switch (op1) {
+			switch (o1) {
 			case 0xC0:
 				//CMP R,INT		C0 R0 XXXX
-				reg1 = (op2 & 0xf0) >> 4;
-				n = reg[reg1] - readInt(pc);
+				r1 = (o2 & 0xf0) >> 4;
+				n = reg[r1] - readInt(pc);
 				n = setFlags(n);
 				pc += 2;
 				break;
 			case 0xC1:
 				//CMP R,R		C1 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = reg[reg1] - reg[reg2];
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = reg[r1] - reg[r2];
 				n = setFlags(n);
 				break;
 			case 0xC2:
 				//LDF R,F		C2 RF
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				if (reg2 == 0)
-					reg[reg1] = carry;
-				else if (reg2 == 1)
-					reg[reg1] = zero;
-				else if (reg2 == 2)
-					reg[reg1] = negative;
-				else if (reg2 == 3) { //pozitive
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				if (r2 == 0)
+					reg[r1] = carry;
+				else if (r2 == 1)
+					reg[r1] = zero;
+				else if (r2 == 2)
+					reg[r1] = negative;
+				else if (r2 == 3) { //pozitive
 					if (negative == 0 && zero == 0)
-						reg[reg1] = 1;
+						reg[r1] = 1;
 					else
-						reg[reg1] = 0;
-				} else if (reg2 == 4) { //not pozitive
+						reg[r1] = 0;
+				} else if (r2 == 4) { //not pozitive
 					if (negative == 0 && zero == 0)
-						reg[reg1] = 0;
+						reg[r1] = 0;
 					else
-						reg[reg1] = 1;
-				} else if (reg2 == 5)
-					reg[reg1] = 1 - zero;
-				else if (reg2 == 6) {
-					reg[reg1] = redraw;
+						reg[r1] = 1;
+				} else if (r2 == 5)
+					reg[r1] = 1 - zero;
+				else if (r2 == 6) {
+					reg[r1] = redraw;
 					redraw = 0;
 				} else
-					reg[reg1] = 0;
+					reg[r1] = 0;
 				break;
 			case 0xc3:
-				reg1 = op2 & 0xf;
-				reg2 = op2 & 0xf0;
+				r1 = o2 & 0xf;
+				r2 = o2 & 0xf0;
 				// ITOF R		C3 0R
-				if (reg2 == 0x00) {
-					reg[reg1] = reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS);
+				if (r2 == 0x00) {
+					reg[r1] = reg[r1] * (1 << MULTIPLY_FP_RESOLUTION_BITS);
 				}
 				// FTOI R		C3 1R
-				else if (reg2 == 0x10) {
-					reg[reg1] = Math.floor(reg[reg1] / (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				else if (r2 == 0x10) {
+					reg[r1] = Math.floor(reg[r1] / (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				}
 				// SIN R		C3 2R
-				else if (reg2 == 0x20) {
-					reg[reg1] = Math.floor(Math.sin(reg[reg1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				else if (r2 == 0x20) {
+					reg[r1] = Math.floor(Math.sin(reg[r1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				}
 				// COS R		C3 3R
-				else if (reg2 == 0x30) {
-					reg[reg1] = Math.floor(Math.cos(reg[reg1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				else if (r2 == 0x30) {
+					reg[r1] = Math.floor(Math.cos(reg[r1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				}
 				break;
 			case 0xC4:
 				// MULF R,R		C4 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = Math.floor((reg[reg1] * reg[reg2]) / (1 << MULTIPLY_FP_RESOLUTION_BITS));
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = Math.floor((reg[r1] * reg[r2]) / (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			case 0xC5:
 				// DIVF R,R		C5 RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				n = Math.floor((reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS)) / reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				n = Math.floor((reg[r1] * (1 << MULTIPLY_FP_RESOLUTION_BITS)) / reg[r2]);
 				n = setFlags(n);
-				reg[reg1] = n;
+				reg[r1] = n;
 				break;
 			}
 			break;
 		case 0xD0:
-			switch (op1) {
+			switch (o1) {
 			case 0xD0:
 				//CLS		D000
-				if ((op2 & 0xff) == 0)
+				if ((o2 & 0xff) == 0)
 					display.clearScreen(bgcolor);
 				else {
 					//GSPRXY R,R
-					reg1 = (op2 & 0xf0) >> 4;
-					reg2 = op2 & 0xf;
-					reg[reg1] = getSpriteInXY(reg[reg1], reg[reg2]);
+					r1 = (o2 & 0xf0) >> 4;
+					r2 = o2 & 0xf;
+					reg[r1] = getSpriteInXY(reg[r1], reg[r2]);
 				}
 				break;
 			case 0xD1:
-				switch (op2 & 0xf0) {
+				switch (o2 & 0xf0) {
 				case 0x00:
 					//PUTC R	D10R
-					reg1 = (op2 & 0xf);
-					printc(String.fromCharCode(reg[reg1]), color, bgcolor);
+					r1 = (o2 & 0xf);
+					printc(String.fromCharCode(reg[r1]), color, bgcolor);
 					break;
 				case 0x10:
 					//PUTS R	D11R
-					reg1 = (op2 & 0xf);
+					r1 = (o2 & 0xf);
 					var i = 0;
-					while (!(readMem(reg[reg1] + i) == 0 || i > 1000)) {
-						printc(String.fromCharCode(readMem(reg[reg1] + i)), color, bgcolor);
+					while (!(readMem(reg[r1] + i) == 0 || i > 1000)) {
+						printc(String.fromCharCode(readMem(reg[r1] + i)), color, bgcolor);
 						i++;
 					}
 					break;
 				case 0x20:
 					//PUTN R D12R
-					reg1 = (op2 & 0xf);
+					r1 = (o2 & 0xf);
 					var s;
-					if (reg[reg1] < 32768)
-						s = reg[reg1].toString(10);
+					if (reg[r1] < 32768)
+						s = reg[r1].toString(10);
 					else
-						s = (reg[reg1] - 0x10000).toString(10);
+						s = (reg[r1] - 0x10000).toString(10);
 					for (var i = 0; i < s.length; i++) {
 						printc(s[i], color, bgcolor);
 					}
 					break;
 				case 0x30:
 					//SETX R			D13R
-					reg1 = (op2 & 0xf);
-					regx = (reg[reg1] & 0xff);
+					r1 = (o2 & 0xf);
+					regx = (reg[r1] & 0xff);
 					break;
 				case 0x40:
 					//SETY R			D14R
-					reg1 = (op2 & 0xf);
-					regy = (reg[reg1] & 0xff);
+					r1 = (o2 & 0xf);
+					regy = (reg[r1] & 0xff);
 					break;
 				case 0x50:
 					//DRECT R     D15R
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					drwRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0x60:
 					//FRECT R     D16R
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					fllRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0x70:
 					//DCIRC R     D17R
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					drwCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0x80:
 					//FCIRC R     D18R
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					fllCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0x90:
 					//DTRIANG R   D19R
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					drwTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0xA0:
 					//FTRIANG R   D1AR
-					reg1 = (op2 & 0xf);
-					adr = reg[reg1];
+					r1 = (o2 & 0xf);
+					adr = reg[r1];
 					fllTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
 					break;
 				case 0xB0:
 					//PUTF R   	  D1BR
-					reg1 = (op2 & 0xf);
+					r1 = (o2 & 0xf);
 					var s,u;
 					var tb = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023];
-					s = reg[reg1];
+					s = reg[r1];
 					if (s < 32768)
 						u = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
 					else{
@@ -1948,262 +1931,262 @@ function Cpu() {
 				}
 				break;
 			case 0xD2:
-				switch (op2 & 0xf0) {
+				switch (o2 & 0xf0) {
 				case 0x00:
 					// GETK R			D20R
-					reg1 = (op2 & 0xf);
+					r1 = (o2 & 0xf);
 					display.viewKeyboard(keyPosition);
 					if (globalKey & 0xff)
-						reg[reg1] = globalKey;
+						reg[r1] = globalKey;
 					else
 						pc -= 2;
 					globalKey = 0;
 					break;
 				case 0x10:
 					// GETJ R			D21R
-					reg1 = (op2 & 0xf);
-					reg[reg1] = globalJKey;
+					r1 = (o2 & 0xf);
+					reg[r1] = globalJKey;
 					break;
 				}
 				break;
 			case 0xD3:
 				// PPIX R,R		D3RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				display.plot(color, reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				display.plot(color, reg[r1], reg[r2]);
 				break;
 			case 0xD4:
-				switch (op2 & 0xf0) {
+				switch (o2 & 0xf0) {
 				case 0x00:
 					// DRWIM R			D40R
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
 					if (imageSize > 1)
-						drawImageS(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImageS(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					else
-						drawImage(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImage(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				case 0x10:
 					// SFCLR R			D41R
-					reg1 = op2 & 0xf;
-					color = reg[reg1] & 0xf;
+					r1 = o2 & 0xf;
+					color = reg[r1] & 0xf;
 					break;
 				case 0x20:
 					// SBCLR R			D42R
-					reg1 = op2 & 0xf;
-					bgcolor = reg[reg1] & 0xf;
+					r1 = o2 & 0xf;
+					bgcolor = reg[r1] & 0xf;
 					break;
 				case 0x30:
 					// GFCLR R			D43R
-					reg1 = op2 & 0xf;
-					reg[reg1] = color;
+					r1 = o2 & 0xf;
+					reg[r1] = color;
 					break;
 				case 0x40:
 					// GBCLR R			D44R
-					reg1 = op2 & 0xf;
-					reg[reg1] = bgcolor;
+					r1 = o2 & 0xf;
+					reg[r1] = bgcolor;
 					break;
 				case 0x50:
 					// ISIZE			D45R
-					reg1 = op2 & 0xf;
-					imageSize = reg[reg1] & 31;
+					r1 = o2 & 0xf;
+					imageSize = reg[r1] & 31;
 					break;
 				case 0x60:
 					// DLINE			D46R
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
-					drwLine(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
+					drwLine(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				case 0x70:
 					// DRWRLE R		D47R
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
 					if (imageSize > 1)
-						drawImageRLES(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImageRLES(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					else
-						drawImageRLE(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImageRLE(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				case 0x80:
 					// LDTILE R		D4 8R
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
-					loadTile(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
+					loadTile(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				case 0x90:
 					// SPRSDS R*2	D4 9R
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
-					spriteSetDirectionAndSpeed(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
+					spriteSetDirectionAndSpeed(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				case 0xA0:
 					// DRW1BIT R	D4AR
-					reg1 = op2 & 0xf;
-					reg2 = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
 					if (imageSize > 1)
-						drawImage1bitS(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImage1bitS(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					else
-						drawImage1bit(readInt(reg2 + 8), readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+						drawImage1bit(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				}
 				break;
 			case 0xD5:
 				// LDSPRT R,R		D5RR
-				reg1 = (op2 & 0xf0) >> 4; //номер спрайта
-				reg2 = op2 & 0xf; //адрес спрайта
-				setSprite(reg[reg1] & 0x1f, reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //номер спрайта
+				r2 = o2 & 0xf; //адрес спрайта
+				setSprite(reg[r1] & 0x1f, reg[r2]);
 				break;
 			case 0xD6:
 				// SPALET R,R		D6 RR
-				reg1 = (op2 & 0xf0) >> 4; //номер цвета
-				reg2 = op2 & 0xf; //новый цвет
-				display.changePalette(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //номер цвета
+				r2 = o2 & 0xf; //новый цвет
+				display.changePalette(reg[r1], reg[r2]);
 				break;
 			case 0xD7:
-				reg1 = op2 & 0xf;
-				reg2 = reg[reg1];
-				if ((op2 & 0xf0) == 0)
+				r1 = o2 & 0xf;
+				r2 = reg[r1];
+				if ((o2 & 0xf0) == 0)
 					// SPART R 		D7 0R
 					//регистр указывает на участок памяти, в котором расположены последовательно count, time, gravity
-					setParticle(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
-				else if ((op2 & 0xf0) == 0x10)
+					setParticle(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+				else if ((o2 & 0xf0) == 0x10)
 					//регистр указывает на участок памяти, в котором расположены последовательно speed, direction2, direction1, time
-					setEmitter(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
-				else if ((op2 & 0xf0) == 0x20)
+					setEmitter(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+				else if ((o2 & 0xf0) == 0x20)
 					//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
-					drawParticle(readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
-				else if ((op2 & 0xf0) == 0x50)
+					drawParticle(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+				else if ((o2 & 0xf0) == 0x50)
 					//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
-					reg[1] = distancepp(readInt(reg2 + 6), readInt(reg2 + 4), readInt(reg2 + 2), readInt(reg2));
+					reg[1] = distancepp(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 				break;
 			case 0xD8:
 				// SCROLL R,R		D8RR
-				reg1 = (op2 & 0xf0) >> 4; //шаг, доделать
-				reg2 = op2 & 0xf; //направление
-				scrollScreen(1, reg[reg2]);
-				if (reg[reg2] == 0 || reg[reg2] == 2)
-					scrollScreen(1, reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //шаг, доделать
+				r2 = o2 & 0xf; //направление
+				scrollScreen(1, reg[r2]);
+				if (reg[r2] == 0 || reg[r2] == 2)
+					scrollScreen(1, reg[r2]);
 				break;
 			case 0xD9:
 				// GETPIX R,R		D9RR
-				reg1 = (op2 & 0xf0) >> 4; //x
-				reg2 = op2 & 0xf; //y
-				reg[reg1] = display.getPixel(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //x
+				r2 = o2 & 0xf; //y
+				reg[r1] = display.getPixel(reg[r1], reg[r2]);
 				break;
 			case 0xDA:
 				// DRTILE R		DA RR
-				reg1 = (op2 & 0xf0) >> 4; //x
-				reg2 = op2 & 0xf; //y
-				drawTile(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //x
+				r2 = o2 & 0xf; //y
+				drawTile(reg[r1], reg[r2]);
 				break;
 			case 0xDB:
 				// SPRSPX R,R		DB RR
-				reg1 = (op2 & 0xf0) >> 4; //num
-				reg2 = op2 & 0xf; //speed y
+				r1 = (o2 & 0xf0) >> 4; //num
+				r2 = o2 & 0xf; //speed y
 
 				break;
 			case 0xDC:
 				// SPRGET R,R		DC RR
-				reg1 = (op2 & 0xf0) >> 4; //num
-				reg2 = op2 & 0xf; //type
-				if (reg[reg2] == 0)
-					reg[reg1] = Math.floor(sprites[reg[reg1] & 31].x >> 2);
-				else if (reg[reg2] == 1)
-					reg[reg1] = Math.floor(sprites[reg[reg1] & 31].y >> 2);
-				else if (reg[reg2] == 2)
-					reg[reg1] = sprites[reg[reg1] & 31].speedx;
-				else if (reg[reg2] == 3)
-					reg[reg1] = sprites[reg[reg1] & 31].speedy;
-				else if (reg[reg2] == 4)
-					reg[reg1] = sprites[reg[reg1] & 31].width;
-				else if (reg[reg2] == 5)
-					reg[reg1] = sprites[reg[reg1] & 31].height;
-				else if (reg[reg2] == 6)
-					reg[reg1] = sprites[reg[reg1] & 31].angle;
-				else if (reg[reg2] == 7)
-					reg[reg1] = sprites[reg[reg1] & 31].lives;
-				else if (reg[reg2] == 8)
-					reg[reg1] = sprites[reg[reg1] & 31].collision;
-				else if (reg[reg2] == 9)
-					reg[reg1] = sprites[reg[reg1] & 31].solid;
-				else if (reg[reg2] == 10)
-					reg[reg1] = sprites[reg[reg1] & 31].gravity;
+				r1 = (o2 & 0xf0) >> 4; //num
+				r2 = o2 & 0xf; //type
+				if (reg[r2] == 0)
+					reg[r1] = Math.floor(_spr[reg[r1] & 31].x >> 2);
+				else if (reg[r2] == 1)
+					reg[r1] = Math.floor(_spr[reg[r1] & 31].y >> 2);
+				else if (reg[r2] == 2)
+					reg[r1] = _spr[reg[r1] & 31].speedx;
+				else if (reg[r2] == 3)
+					reg[r1] = _spr[reg[r1] & 31].speedy;
+				else if (reg[r2] == 4)
+					reg[r1] = _spr[reg[r1] & 31].width;
+				else if (reg[r2] == 5)
+					reg[r1] = _spr[reg[r1] & 31].height;
+				else if (reg[r2] == 6)
+					reg[r1] = _spr[reg[r1] & 31].angle;
+				else if (reg[r2] == 7)
+					reg[r1] = _spr[reg[r1] & 31].lives;
+				else if (reg[r2] == 8)
+					reg[r1] = _spr[reg[r1] & 31].collision;
+				else if (reg[r2] == 9)
+					reg[r1] = _spr[reg[r1] & 31].solid;
+				else if (reg[r2] == 10)
+					reg[r1] = _spr[reg[r1] & 31].gravity;
 				break;
 			case 0xDE:
 				// AGBSPR R,R			DE RR
-				reg1 = (op2 & 0xf0) >> 4; //n1
-				reg2 = op2 & 0xf; //n2
-				reg[reg1] = angleBetweenSprites(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4; //n1
+				r2 = o2 & 0xf; //n2
+				reg[r1] = angleBetweenSprites(reg[r1], reg[r2]);
 				break;
 			case 0xDF:
 				// GTILEXY R,R			DF RR
-				reg1 = (op2 & 0xf0) >> 4;
-				reg2 = op2 & 0xf;
-				reg[reg1] = getTileInXY(reg[reg1], reg[reg2]);
+				r1 = (o2 & 0xf0) >> 4;
+				r2 = o2 & 0xf;
+				reg[r1] = getTileInXY(reg[r1], reg[r2]);
 				break;
 			}
 			break;
 		case 0xE0:
 			// DRSPRT R,R,R	ERRR
-			reg1 = (op1 & 0xf); //номер спрайта
-			reg2 = (op2 & 0xf0) >> 4; //x
-			reg3 = op2 & 0xf; //y
-			drawSprite(reg[reg1] & 0x1f, reg[reg2], reg[reg3]);
-			if (sprites[reg[reg1] & 31].lives < 1)
-				sprites[reg[reg1] & 31].lives = 1;
+			r1 = (o1 & 0xf); //номер спрайта
+			r2 = (o2 & 0xf0) >> 4; //x
+			r3 = o2 & 0xf; //y
+			drawSprite(reg[r1] & 0x1f, reg[r2], reg[r3]);
+			if (_spr[reg[r1] & 31].lives < 1)
+				_spr[reg[r1] & 31].lives = 1;
 			break;
 		case 0xF0:
 			// SSPRTV R,R,R	FR RR
-			reg1 = (op1 & 0xf); //номер спрайта
-			reg2 = (op2 & 0xf0) >> 4; //type
-			reg3 = op2 & 0xf; //value
-			if (reg[reg2] == 0) {
-				if (reg[reg3] > 0x7fff)
-					sprites[reg[reg1] & 31].x = (reg[reg3] - 0x10000) << 2;
+			r1 = (o1 & 0xf); //номер спрайта
+			r2 = (o2 & 0xf0) >> 4; //type
+			r3 = o2 & 0xf; //value
+			if (reg[r2] == 0) {
+				if (reg[r3] > 0x7fff)
+					_spr[reg[r1] & 31].x = (reg[r3] - 0x10000) << 2;
 				else
-					sprites[reg[reg1] & 31].x = reg[reg3] << 2;
-			} else if (reg[reg2] == 1) {
-				if (reg[reg3] > 0x7fff)
-					sprites[reg[reg1] & 31].y = (reg[reg3] - 0x10000) << 2;
+					_spr[reg[r1] & 31].x = reg[r3] << 2;
+			} else if (reg[r2] == 1) {
+				if (reg[r3] > 0x7fff)
+					_spr[reg[r1] & 31].y = (reg[r3] - 0x10000) << 2;
 				else
-					sprites[reg[reg1] & 31].y = reg[reg3] << 2;
-			} else if (reg[reg2] == 2) {
-				if (reg[reg3] > 128)
-					sprites[reg[reg1] & 31].speedx =  - (256 - (reg[reg3] & 0xff));
+					_spr[reg[r1] & 31].y = reg[r3] << 2;
+			} else if (reg[r2] == 2) {
+				if (reg[r3] > 128)
+					_spr[reg[r1] & 31].speedx =  - (256 - (reg[r3] & 0xff));
 				else
-					sprites[reg[reg1] & 31].speedx = reg[reg3];
-			} else if (reg[reg2] == 3) {
-				if (reg[reg3] > 128)
-					sprites[reg[reg1] & 31].speedy =  - (256 - (reg[reg3] & 0xff));
+					_spr[reg[r1] & 31].speedx = reg[r3];
+			} else if (reg[r2] == 3) {
+				if (reg[r3] > 128)
+					_spr[reg[r1] & 31].speedy =  - (256 - (reg[r3] & 0xff));
 				else
-					sprites[reg[reg1] & 31].speedy = reg[reg3];
-			} else if (reg[reg2] == 4)
-				sprites[reg[reg1] & 31].width = reg[reg3];
-			else if (reg[reg2] == 5)
-				sprites[reg[reg1] & 31].height = reg[reg3];
-			else if (reg[reg2] == 6)
-				if (reg[reg3] > 0x7fff)
-					sprites[reg[reg1] & 31].angle = (reg[reg3] - 0x10000) % 360;
+					_spr[reg[r1] & 31].speedy = reg[r3];
+			} else if (reg[r2] == 4)
+				_spr[reg[r1] & 31].width = reg[r3];
+			else if (reg[r2] == 5)
+				_spr[reg[r1] & 31].height = reg[r3];
+			else if (reg[r2] == 6)
+				if (reg[r3] > 0x7fff)
+					_spr[reg[r1] & 31].angle = (reg[r3] - 0x10000) % 360;
 				else
-					sprites[reg[reg1] & 31].angle = reg[reg3] % 360;
-			else if (reg[reg2] == 7) {
-				if (reg[reg3] > 128)
-					sprites[reg[reg1] & 31].lives =  - (256 - (reg[reg3] & 0xff));
+					_spr[reg[r1] & 31].angle = reg[r3] % 360;
+			else if (reg[r2] == 7) {
+				if (reg[r3] > 128)
+					_spr[reg[r1] & 31].lives =  - (256 - (reg[r3] & 0xff));
 				else
-					sprites[reg[reg1] & 31].lives = reg[reg3];
-			} else if (reg[reg2] == 9)
-				sprites[reg[reg1] & 31].solid = reg[reg3];
-			else if (reg[reg2] == 10)
-				sprites[reg[reg1] & 31].gravity = reg[reg3];
-			else if (reg[reg2] == 11)
-				sprites[reg[reg1] & 31].oncollision = reg[reg3];
-			else if (reg[reg2] == 12)
-				sprites[reg[reg1] & 31].onexitscreen = reg[reg3];
-			else if (reg[reg2] == 13)
-				sprites[reg[reg1] & 31].isscrolled = reg[reg3];
-			else if (reg[reg2] == 14)
-				sprites[reg[reg1] & 31].isonebit = reg[reg3];
-			else if (reg[reg2] == 15)
-				sprites[reg[reg1] & 31].fliphorisontal = reg[reg3];
+					_spr[reg[r1] & 31].lives = reg[r3];
+			} else if (reg[r2] == 9)
+				_spr[reg[r1] & 31].solid = reg[r3];
+			else if (reg[r2] == 10)
+				_spr[reg[r1] & 31].gravity = reg[r3];
+			else if (reg[r2] == 11)
+				_spr[reg[r1] & 31].oncollision = reg[r3];
+			else if (reg[r2] == 12)
+				_spr[reg[r1] & 31].onexitscreen = reg[r3];
+			else if (reg[r2] == 13)
+				_spr[reg[r1] & 31].isscrolled = reg[r3];
+			else if (reg[r2] == 14)
+				_spr[reg[r1] & 31].isonebit = reg[r3];
+			else if (reg[r2] == 15)
+				_spr[reg[r1] & 31].fliphorisontal = reg[r3];
 			break;
 		}
 	}
@@ -2234,15 +2217,15 @@ function Cpu() {
 		d = '';
 		for (var i = 0; i < 32; i++) {
 			d += '\nsprite ' + i + '\n';
-			d += 'S_ADDRESS \t' + toHex4(sprites[i].address) + '\n';
-			d += 'S_X \t' + sprites[i].x / 4 + '\n';
-			d += 'S_Y \t' + sprites[i].y / 4 + '\n';
-			d += 'S_SPEEDX \t' + sprites[i].speedx + '\n';
-			d += 'S_SPEEDY \t' + sprites[i].speedy + '\n';
-			d += 'S_WIDTH \t' + sprites[i].width + '\n';
-			d += 'S_HEIGHT \t' + sprites[i].height + '\n';
-			d += 'S_ANGLE \t' + sprites[i].angle + '\n';
-			d += 'S_LIVES \t' + sprites[i].lives + '\n';
+			d += 'S_ADDRESS \t' + toHex4(_spr[i].address) + '\n';
+			d += 'S_X \t' + _spr[i].x / 4 + '\n';
+			d += 'S_Y \t' + _spr[i].y / 4 + '\n';
+			d += 'S_SPEEDX \t' + _spr[i].speedx + '\n';
+			d += 'S_SPEEDY \t' + _spr[i].speedy + '\n';
+			d += 'S_WIDTH \t' + _spr[i].width + '\n';
+			d += 'S_HEIGHT \t' + _spr[i].height + '\n';
+			d += 'S_ANGLE \t' + _spr[i].angle + '\n';
+			d += 'S_LIVES \t' + _spr[i].lives + '\n';
 		}
 		d = clearStringFast(d);
 		debugSprArea.value = d;

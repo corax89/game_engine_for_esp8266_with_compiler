@@ -404,7 +404,7 @@ function SpriteEditor() {
 	function edit() {
 		var d = document.getElementById("div_wind2");
 		d.style.display = "block";
-		d.style.left = window.innerWidth / 5 + 'px';
+		d.style.left = window.innerWidth / 7 + 'px';
 		d.style.top = "3em";
 	}
 

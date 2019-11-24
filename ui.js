@@ -27,7 +27,7 @@ var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
 var language = 'eng';
-var fileType = 'lge';
+var fileType = 'html';
 var fileName = '';
 var fileAuthor = '';
 var fileIco = '';
@@ -507,7 +507,7 @@ function listing() {
 function debugVars() {
 	var d = document.getElementById("div_wind3");
 	d.style.display = "block";
-	d.style.left = window.innerWidth / 5 * 2 + 'px';
+	d.style.left = window.innerWidth / 7 * 2 + 'px';
 	d.style.top = "3em";
 	isDebug = true;
 }
@@ -515,14 +515,14 @@ function debugVars() {
 function viewHelp() {
 	var d = document.getElementById("div_wind4");
 	d.style.display = "block";
-	d.style.left = window.innerWidth / 5 * 3 + 'px';
+	d.style.left = window.innerWidth / 7 * 3 + 'px';
 	d.style.top = "3em";
 }
 
 function viewSettings() {
 	var d = document.getElementById("div_wind5");
 	d.style.display = "block";
-	d.style.left = window.innerWidth / 5 * 4 + 'px';
+	d.style.left = window.innerWidth / 7 * 4 + 'px';
 	d.style.top = "3em";
 	loadSettings();
 }
@@ -886,7 +886,7 @@ function savebin() {
 	}
 	else if (fileType == 'html'){
 		if (file.length > 1) {
-			var newFile = saveAsHtml(file, fileIco);
+			var newFile = saveAsHtml(compress(file), fileIco);
 			var blob = new Blob([newFile], {type: "text/plain;charset=utf-8"});
 			if(fileName.length > 0)
 				saveAs(blob, fileName + '.html');
