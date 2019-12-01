@@ -2023,6 +2023,9 @@ function compile(t) {
 	dataAsm.push('_setemitter: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SEMIT R1 \n RET');
 	registerFunction('setemitter', 'void', ['int', 'time', 'int', 'dir', 'int', 'dir1', 'int', 'speed'], 1, dataAsm, false, 0);
 	dataAsm = [];
+	dataAsm.push('_emittersize: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SEMITSZ R1 \n RET');
+	registerFunction('emittersize', 'void', ['int', 'width', 'int', 'height', 'int', 'size'], 1, dataAsm, false, 0);
+	dataAsm = [];
 	dataAsm.push('_drawparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DPART R1 \n RET');
 	registerFunction('drawparticle', 'void', ['int', 'x', 'int', 'y', 'char', 'color'], 1, dataAsm, false, 0);
 	dataAsm = [];

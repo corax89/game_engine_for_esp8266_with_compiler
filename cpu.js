@@ -72,7 +72,8 @@ function Cpu() {
 				gravity: 0,
 				speedx: 0,
 				speedy: 0,
-				color: 0
+				color: 0,
+				size: 0
 			};
 		}
 		emitter = {
@@ -87,7 +88,10 @@ function Cpu() {
 			speedy: 0,
 			speedx1: 0,
 			speedy1: 0,
-			color: 0
+			color: 0,
+			width: 0,
+			height: 0,
+			size: 0
 		};
 		tile = {
 			adr: 0,
@@ -331,6 +335,12 @@ function Cpu() {
 		emitter.color = c;
 		emitter.timer = emitter.time;
 	}
+	
+	function setEmitterSize(w, h, s) {
+		emitter.width = w * 2;
+		emitter.height = h * 2;
+		emitter.size = s;
+	}
 
 	function randomD(a, b) {
 		var min = Math.min(a, b);
@@ -339,7 +349,40 @@ function Cpu() {
 			r = Math.round(r);
 		return r;
 	}
-
+	
+	function largeParticle(x0, y0, r, c) {
+		var x = 0;
+		var dx = 1;
+		var dy = r + r;
+		var p =  - (r >> 1);
+		// These are ordered to minimise coordinate changes in x or y
+		// drawPixel can then send fewer bounding box commands
+		display.drawSpritePixel(c, x0 + r, y0);
+		display.drawSpritePixel(c, x0 - r, y0);
+		display.drawSpritePixel(c, x0, y0 - r);
+		display.drawSpritePixel(c, x0, y0 + r);
+		while (x < r) {
+			if (p >= 0) {
+				dy -= 2;
+				p -= dy;
+				r--;
+			}
+			dx += 2;
+			p += dx;
+			x++;
+			// These are ordered to minimise coordinate changes in x or y
+			// drawPixel can then send fewer bounding box commands
+			display.drawSpritePixel(c, x0 + x, y0 + r);
+			display.drawSpritePixel(c, x0 - x, y0 + r);
+			display.drawSpritePixel(c, x0 - x, y0 - r);
+			display.drawSpritePixel(c, x0 + x, y0 - r);
+			display.drawSpritePixel(c, x0 + r, y0 + x);
+			display.drawSpritePixel(c, x0 - r, y0 + x);
+			display.drawSpritePixel(c, x0 - r, y0 - x);
+			display.drawSpritePixel(c, x0 + r, y0 - x);
+		}
+	}
+	
 	function redrawParticle() {
 		var n,
 		i;
@@ -352,8 +395,9 @@ function Cpu() {
 				if (particles[n].time <= 0) {
 					i--;
 					particles[n].time = emitter.timeparticle;
-					particles[n].x = emitter.x;
-					particles[n].y = emitter.y;
+					particles[n].x = emitter.x + randomD(0, emitter.width);
+					particles[n].y = emitter.y + randomD(0, emitter.height);
+					particles[n].size = emitter.size;
 					particles[n].color = emitter.color;
 					particles[n].speedx = randomD(emitter.speedx, emitter.speedx1);
 					particles[n].speedy = randomD(emitter.speedy, emitter.speedy1);
@@ -363,7 +407,11 @@ function Cpu() {
 		}
 		for (n = 0; n < maxParticles; n++)
 			if (particles[n].time > 0) {
-				display.drawSpritePixel(particles[n].color, Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1));
+				if(particles[n].size < 1)
+					display.drawSpritePixel(particles[n].color, Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1));
+				else{
+					largeParticle(Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1), particles[n].size, particles[n].color);
+				}
 				particles[n].time -= 50;
 				if (randomD(0, 1) == 1) {
 					particles[n].x += particles[n].speedx;
@@ -2057,6 +2105,9 @@ function Cpu() {
 				else if ((o2 & 0xf0) == 0x50)
 					//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
 					reg[1] = distancepp(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+				else if ((o2 & 0xf0) == 0x60)
+					//регистр указывает на участок памяти, в котором расположены последовательно color, y, x
+					setEmitterSize(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 				break;
 			case 0xD8:
 				// SCROLL R,R		D8RR

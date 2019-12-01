@@ -663,6 +663,10 @@ function asm(s) {
 				out.push(0xD7); // DISTPP		D7 5R
 				out.push(0x50 + getRegister(a[i + 1]));
 				return;
+			case 'SEMITSZ':
+				out.push(0xD7); // SEMITSZ R	D7 6R
+				out.push(0x60 + getRegister(a[i + 1]));
+				return;
 			case 'SCROLL':
 				out.push(0xD8); // SCROLL R,R		D8RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
