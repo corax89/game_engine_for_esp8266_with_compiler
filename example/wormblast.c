@@ -135,7 +135,7 @@ void step(){
 		}
 		x = spritegetvalue(2, S_X);
 		y = spritegetvalue(2, S_Y);
-		if(getpixel(x + 3, y + 6) == 3)
+		if(getpixel(x + 3, y + 6) == 3 || y < 32)
 			spritesetvalue(2,S_Y,y + 1);
 		else{
 			spritesetvalue(2,S_LIVES,spritegetvalue(2,S_LIVES) - 1);

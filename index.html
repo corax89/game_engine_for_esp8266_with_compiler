@@ -16,8 +16,13 @@
 		<button onclick="listing();">listing</button>
 		<button onclick="debugVars();">debug</button>
 		<button onclick="viewSettings();">settings</button>
-		<button onclick="viewHelp();">help</button>
-		<a href="soundEditor.html"  target="_blank" id="gamelist">sound</a>
+		<button onclick="viewHelp();">help</button>	
+		<div class="drop-menu hrefb">utilities &#9776;
+			<ul class="sub-menu">
+				<li><a href="soundEditor.html"  target="_blank" class="hrefb">rtttl editor</a></li>
+				<li><a href="imageConverter.html"  target="_blank" class="hrefb">image converter</a></li>
+			</ul>
+		</div>
 		<select id="lang" onchange="language=this.value">
 		  <option value="eng">ENG</option>
 		  <option value="rus">RUS</option>
@@ -83,7 +88,7 @@
 				<option value="11">dragon</option>
 			</select>
 			<button onclick="loadExample();">load example</button>
-			<a href="gamelist/index.html" style="animation: colorRotate 3s linear 0s 5;" target="_blank" id="gamelist">List of games</a>
+			<a href="gamelist/index.html" style="animation: colorRotate 3s linear 0s 5;" target="_blank" class="hrefb">List of games</a>
 		</div>
 	</div>
 	<div class="header">information</div>
