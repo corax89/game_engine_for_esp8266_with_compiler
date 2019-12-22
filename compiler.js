@@ -970,11 +970,18 @@ function compile(t) {
 			//массив уже заполнен, считаем количество элементов
 			else if (thisToken == '{') {
 				while (thisToken && thisToken != '}') {
+					var minus = false;
 					getToken();
 					removeNewLine();
 					if (!thisToken)
 						return;
+					if(thisToken == '-'){
+						minus = true;
+						getToken();
+					}
 					if (isNumber(parseInt(thisToken))) {
+						if(minus)
+							buf += '-';
 						if (thisToken.indexOf('.') > -1 && type == 'fixed') {
 							buf += Math.floor(parseFloat(thisToken) * (1 << MULTIPLY_FP_RESOLUTION_BITS)) + ',';
 						} else
@@ -2016,6 +2023,12 @@ function compile(t) {
 	dataAsm = [];
 	dataAsm.push('_putimagerle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWRLE R1 \n RET');
 	registerFunction('putimagerle', 'void', ['int', 'a', 'int', 'x', 'int', 'y', 'int', 'w', 'int', 'h'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_setclip: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SETCLIP R1 \n RET');
+	registerFunction('setclip', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_memcpy: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n MEMCPY R1 \n RET');
+	registerFunction('memcpy', 'void', ['int', 'a1', 'int', 'a2', 'int', 'size'], 1, dataAsm, false, 0);
 	dataAsm = [];
 	dataAsm.push('_setparticle: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n SPART R1 \n RET');
 	registerFunction('setparticle', 'void', ['int', 'gravity', 'int', 'count', 'int', 'time'], 1, dataAsm, false, 0);

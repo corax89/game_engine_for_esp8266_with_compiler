@@ -73,6 +73,8 @@ img, canvas{
 		<label for="Choice1">standart palette</label>
 		<input type="radio" id="pChoice2" name="palette" value="1" onchange="drawPalette();quantization()">
 		<label for="Choice2">original palette</label>
+		<input type="checkbox" id="checkRle" onclick="isRle = this.checked;quantization()">
+		<label for="checkRle" id="checkRleLabel">RLE</label>
 		<canvas id="cpalette" width="16" height="1" style="width: 320px"></canvas>
 		<input id="hexpalette" style="width: 320px">
 	</div>
@@ -84,6 +86,7 @@ img, canvas{
 		[119, 119, 119], [143, 171, 98], [58, 191, 209], [187, 187, 187]
 	];
 	var imageloaded = false;
+	var isRle = false;
 	var usedpalette = 0;
 	var newpalette = [];
 	var dropArea = document.getElementById('drop-area');
@@ -104,6 +107,61 @@ img, canvas{
 	['dragleave', 'drop'].forEach(function (eventName){
 	  dropArea.addEventListener(eventName, unhighlight, false);
 	});
+	function RLE(d) {
+		var i = 1;
+		var repeat = false;
+		var pos = 0;
+		var c = d[0];
+		var l = 1;
+		var out = [];
+		if (c == d[1])
+			repeat = true;
+		else {
+			out.push(0x81);
+			out.push(d[0]);
+		}
+		while (i != d.length) {
+			if (repeat) {
+				if (d[i] == c) {
+					l++;
+					if (i == d.length - 1) {
+						out.push(l);
+						out.push(c);
+						l = 1;
+						c = d[i];
+					} else if (l > 126) {
+						out.push(l - 1);
+						out.push(c);
+						l = 1;
+					}
+				} else {
+					out.push(l);
+					out.push(c);
+					l = 1;
+					c = d[i];
+					if (c != d[i + 1]) {
+						repeat = false;
+						pos = out.length;
+						out.push(0x80);
+						i--;
+						c = d[i];
+					}
+				}
+			} else {
+				if (d[i] == c) {
+					repeat = true;
+					i--;
+					out.pop();
+				} else {
+					out[pos]++;
+					out.push(d[i]);
+					c = d[i];
+				}
+			}
+			i++;
+		}
+		return out;
+	}
 	function rgbtohex(r, g, b){
 		var r5 = Math.floor(r * 31.0 / 255.0 + 0.5);
 		var g6 = Math.floor(g * 63.0 / 255.0 + 0.5);
@@ -161,24 +219,32 @@ img, canvas{
 			var imageData = ctx.getImageData(0, 0, width, height);
 			var data = imageData.data;
 			var outarray = document.getElementById('outarray');
-			var out = '';
-			var n = '';
+			var arr = [];
+			var out = '{';
+			var n = -1;
 			for (var i = 0; i < data.length; i += 4) {
 			  var newc = getcolor(data[i], data[i + 1], data[i + 2]);
 			  data[i]     = newc[0]; // red
 			  data[i + 1] = newc[1]; // green
 			  data[i + 2] = newc[2]; // blue
 			  data[i + 3] = 255;	 // alpha
-			  if(!n)
-				n = newc[3].toString(16);
+			  if(n < 0)
+				n = newc[3];
 			  else{
-				n += newc[3].toString(16);
-				out += ',0x' + n;
-				n = '';
+				n = n * 16 + newc[3];
+				arr.push(n);
+				n = -1;
 			  }
 			}
+			if(isRle)
+				arr = RLE(arr);
+			for (i = 0; i < arr.length; i++)
+				out += '0x' + arr[i].toString(16) + ',';
+			out = out.substring(0, out.length - 1)
+				out += '};';
 			ctx.putImageData(imageData, 0, 0);
-			outarray.value = out.slice(1);
+			outarray.value = out;
+			document.getElementById('dsize').innerHTML = 'size ' +  width + 'x' + height + ' length ' + arr.length + ' byte';
 		}
 	}
 	function highlight(e) {
@@ -244,7 +310,7 @@ img, canvas{
 			width = img.naturalWidth;
 			height = img.naturalHeight;
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			if(!(width < 128 && height < 128)){
+			if(!(width <= 128 && height <= 128)){
 				width = 128;
 				height = 128;
 			}
@@ -253,7 +319,6 @@ img, canvas{
 			createPalette();
 			drawPalette();
 			quantization();
-			document.getElementById('dsize').innerHTML = width + 'x' + height;
 		}
 	  }
 	}

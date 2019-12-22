@@ -215,6 +215,8 @@
 				void setcolor(int);
 				void scroll(int dir);
 				void putpixel(int x, int y);
+				void setclip(int x, int y, int width, 
+				 int height);
 				void getsprite(int n, int address);
 				void putsprite(int n, int x, int y);
 				void spritesetvalue(int n, int type,
@@ -241,6 +243,8 @@
 				 int y, int w, int h);
 				*int malloc(int);
 				void free(*int);
+				void memcpy(*int array1, *int array2, 
+				 int size);
 				void setparticle(int gravity, int count,
 				 int time);
 				void setemitter(int time, int dir,

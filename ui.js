@@ -623,6 +623,10 @@ function Display() {
 	var isDebug = false;
 	var isDrawKeyboard = false;
 	var isChangePalette = false;
+	var clipx0 = 0;
+	var clipx1 = 128;
+	var clipy0 = 0;
+	var clipy1 = 128;
 	
 	function init() {
 		width = canvas.getBoundingClientRect().width;
@@ -715,6 +719,13 @@ function Display() {
 		isDebug = true;
 	}
 
+	function setClip(x0, y0, x1, y1){
+	  clipx0 = (x0 >= 0 && x0 < 127) ? x0 : 0;
+	  clipy0 = (y0 >= 0 && y0 < 127) ? y0 : 0;
+	  clipx1 = (x0 + x1 > 0 && x0 + x1 <= 128) ? x0 + x1 : 128;
+	  clipy1 = (y0 + y1 > 0 && y0 + y1 <= 128) ? y0 + y1 : 128;
+	}
+	
 	function updatePixel(x, y) {
 		canvasArray[x * 128 + y] = displayArray[x * 128 + y];
 
@@ -722,7 +733,7 @@ function Display() {
 
 	function drawPixel(color, x, y) {
 		cpuLostCycle += 0.1;
-		if (x >= 0 && x < 128 && y >= 0 && y < 128)
+		if (x >= clipx0 && x < clipx1 && y >= clipy0 && y < clipy1)
 			canvasArray[x * 128 + y] = color;
 	}
 
@@ -732,7 +743,7 @@ function Display() {
 	}
 
 	function plot(color, x, y) {
-		if (x >= 0 && x < 128 && y >= 0 && y < 128) {
+		if (x >= clipx0 && x < clipx1 && y >= clipy0 && y < clipy1) {
 			drawPixel(color, x, y);
 			displayArray[x * 128 + y] = color & 0x0f;
 		}
@@ -819,6 +830,7 @@ function Display() {
 		clearScreen: clearScreen,
 		drawLed: drawLed,
 		char: char,
+		setClip: setClip,
 		updatePixel: updatePixel,
 		drawPixel: drawPixel,
 		drawSpritePixel: drawSpritePixel,

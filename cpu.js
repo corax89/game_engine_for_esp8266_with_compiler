@@ -723,7 +723,7 @@ function Cpu() {
 			}
 		}
 	}
-
+	
 	function drawImage(a, x1, y1, w, h) {
 		var color;
 		if (x1 > 0x7fff)
@@ -1232,6 +1232,15 @@ function Cpu() {
 			return i;
 		}
 		return 0;
+	}
+	
+	function copyMem(to_adr, from_adr, num_bytes) {
+		to_adr &= 0xffff;
+		from_adr &= 0xffff;
+		num_bytes &= 0xffff;
+		for (var i = 0; i < num_bytes; i++) {
+			mem[to_adr++] = mem[from_adr++];
+		}
 	}
 
 	function step() {
@@ -1849,6 +1858,11 @@ function Cpu() {
 				else if (r2 == 0x30) {
 					reg[r1] = Math.floor(Math.cos(reg[r1] / 57) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
 				}
+				// MEMCPY R		C3 4R
+				else if (r2 == 0x40) {
+					adr = reg[r1];
+					copyMem(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+				}
 				break;
 			case 0xC4:
 				// MULF R,R		C4 RR
@@ -2075,8 +2089,13 @@ function Cpu() {
 					else
 						drawImage1bit(readInt(r2 + 8), readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
+				case 0xB0:
+					// SETCLIP R	D4 BR
+					r1 = o2 & 0xf;
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y0, x0
+					display.setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+					break;
 				}
-				break;
 			case 0xD5:
 				// LDSPRT R,R		D5RR
 				r1 = (o2 & 0xf0) >> 4; //номер спрайта

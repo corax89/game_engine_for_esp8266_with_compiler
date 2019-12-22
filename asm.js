@@ -627,6 +627,10 @@ function asm(s) {
 				out.push(0xD4); // DRWBIT R	D4AR
 				out.push(0xA0 + getRegister(a[i + 1]));
 				return;
+			case 'SETCLIP':
+				out.push(0xD4); // SETCLIP R	D4BR
+				out.push(0xB0 + getRegister(a[i + 1]));
+				return;
 			case 'DRTILE':
 				out.push(0xDA); // DRTILE R,R		DA RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));
@@ -771,6 +775,10 @@ function asm(s) {
 			case 'COS':
 				out.push(0xC3); // COS R				C3 3R
 				out.push(0x30 + (getRegister(a[i + 1])));
+				return;
+			case 'MEMCPY':
+				out.push(0xC3); // MEMCPY R				C3 4R
+				out.push(0x40 + (getRegister(a[i + 1])));
 				return;
 			case 'MULF':
 				out.push(0xC4); // MULF R,R				C4 RR
