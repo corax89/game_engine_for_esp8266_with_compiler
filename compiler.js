@@ -216,6 +216,7 @@ function compile(t) {
 	var lastEndString = 0; //указатель на токен, являющийся последним в предыдущей строке
 	var labelNumber = 0; //номер ссылки, необходим для создания уникальных имен ссылок
 	var localStackLength = 0; //используется в функциях для работы с локальными переменными относительно указателя стека
+	var blockStack = []; // stack for break and continue
 	var switchStack = []; //указывает на последний switch, необходимо для обработки break
 	var typeOnStack = []; //тип значения в регистре
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
@@ -339,7 +340,7 @@ function compile(t) {
 				er = "expected opening bracket in construction " + par;
 				break;
 			case 14:
-				er = "no switch design";
+				er = par + " not inside switch/for/while block";
 				break;
 			case 15:
 				er = "colon is expected";
@@ -1548,6 +1549,7 @@ function compile(t) {
 		if (thisToken != '(')
 			putError(lineCount, 13, 'while'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции while");
 		asm.push('start_while_' + labe + ':');
+		blockStack.push('while_' + labe);
 		skipBracket();
 		registerCount--;
 		asm.push(' CMP R' + registerCount + ',0 \n JZ end_while_' + labe);
@@ -1568,6 +1570,7 @@ function compile(t) {
 		getToken();
 		removeNewLine();
 		asm.push(' JMP start_while_' + labe + ' \nend_while_' + labe + ':');
+		blockStack.pop();
 		previousToken();
 	}
 
@@ -1592,6 +1595,7 @@ function compile(t) {
 		getToken();
 		//проверка будет выполнятся каждую итерацию
 		asm.push('start_for_' + labe + ':');
+		blockStack.push('for_'+labe);
 		execut();
 		while (thisToken != ';') {
 			getToken();
@@ -1624,6 +1628,7 @@ function compile(t) {
 			}
 		}
 		//теперь транслируем третий параметр
+		asm.push('next_for_' + labe + ':');
 		memToken = thisTokenNumber;
 		thisTokenNumber = startToken;
 		registerCount = 1;
@@ -1632,6 +1637,7 @@ function compile(t) {
 		//и восстанавливаем позицию транслирования
 		thisTokenNumber = memToken;
 		asm.push(' JMP start_for_' + labe + ' \nend_for_' + labe + ':');
+		blockStack.pop();
 		registerCount = 1;
 	}
 
@@ -1669,6 +1675,7 @@ function compile(t) {
 			block: asm.length,
 			labe: labe
 		});
+		blockStack.push('switch_' + labe);
 		asm.push(' ');
 		asm.push(' JMP end_switch_' + labe);
 		getToken();
@@ -1680,6 +1687,7 @@ function compile(t) {
 		}
 		asm.push('end_switch_' + labe + ':');
 		switchStack.pop();
+		blockStack.pop();
 		getToken();
 		removeNewLine();
 	}
@@ -1695,7 +1703,7 @@ function compile(t) {
 		if (switchStack.length > 0)
 			lastSwitch = switchStack[switchStack.length - 1];
 		else
-			putError(lineCount, 14, ''); //info("" + lineCount + " отсутствует конструкция switch ");
+			putError(lineCount, 14, 'case'); //info("" + lineCount + " отсутствует конструкция switch ");
 		getToken();
 		if (isNumber(thisToken)) {
 			asm[lastSwitch.block] += 'CMP R1,' + parseInt(thisToken) + ' \n JZ case_' + labe + '\n ';
@@ -1727,15 +1735,27 @@ function compile(t) {
 	}
 	//break в данный момент работает только для прерывания switch, нужно доработать
 	function breakToken() {
-		var lastSwitch = {
-			block: 0,
-			labe: 0
-		};
-		if (switchStack.length > 0) {
-			lastSwitch = switchStack[switchStack.length - 1];
-			asm.push(' JMP end_switch_' + lastSwitch.labe);
-		} else
-			putError(lineCount, 14, ''); //info("" + lineCount + " отсутствует конструкция switch ");
+		if (blockStack.length > 0) {
+			asm.push(' JMP end_' + blockStack[blockStack.length -1]);
+		} else {
+			putError(lineCount, 14, 'break');
+		}
+	}
+
+	function continueToken() {
+		if (blockStack.length > 0) {
+			var i = blockStack.length - 1;
+			while (i >= 0) {
+				if (blockStack[i].startsWith('for_')) {
+					asm.push(' JMP next_' + blockStack[i]);
+					return;
+				} else if (blockStack[i].startsWith('while_')) {
+					asm.push(' JMP start_' + blockStack[i]);
+					return;
+				}
+			}
+		}
+		putError(lineCount, 14, 'continue');
 	}
 	//обработка объявления типа, предполагаем что за ним следует объявление переменной или функции
 	function typeToken() {
@@ -1950,6 +1970,8 @@ function compile(t) {
 			caseToken();
 		} else if (thisToken == 'default') {
 			defaultToken();
+		} else if (thisToken == 'continue') {
+			continueToken();
 		} else if (thisToken == 'break') {
 			breakToken();
 		} else if (thisToken == 'unsigned') {

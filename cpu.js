@@ -25,6 +25,7 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var dataName = 0;
+	var clipx0, clipx1, clipy0 , clipy1;
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 
 	function init() {
@@ -173,52 +174,59 @@ function Cpu() {
 			for (var j = y; j < y + h; j++)
 				display.plot(c, i, j);
 	}
+	
+	function setClip(x0, y0, x1, y1){
+	  clipx0 = (x0 >= 0 && x0 < 127) ? x0 : 0;
+	  clipy0 = (y0 >= 0 && y0 < 127) ? y0 : 0;
+	  clipx1 = (x0 + x1 > 0 && x0 + x1 <= 128) ? x0 + x1 : 128;
+	  clipy1 = (y0 + y1 > 0 && y0 + y1 <= 128) ? y0 + y1 : 128;
+	}
 
 	function scrollScreen(step, direction) {
 		var bufPixel,
 		n;
 		if (direction == 2) {
-			for (var y = 0; y < 128; y++) {
-				bufPixel = display.getPixel(0, y);
-				for (var x = 1; x < 128; x++)
+			for (var y = clipy0; y < clipy1; y++) {
+				bufPixel = display.getPixel(clipx0, y);
+				for (var x = clipx0 + 1; x < clipx1; x++)
 					display.plot(display.getPixel(x, y), x - 1, y);
-				display.plot(bufPixel, 127, y);
+				display.plot(bufPixel, clipx1 - 1, y);
 			}
 			for (n = 0; n < 32; n++)
 				if (_spr[n].isscrolled != 0)
 					_spr[n].x -= 4;
 		} else if (direction == 1) {
-			for (var x = 0; x < 128; x++) {
-				bufPixel = display.getPixel(x, 0);
-				for (var y = 1; y < 128; y++)
+			for (var x = clipx0; x < clipx1; x++) {
+				bufPixel = display.getPixel(x, clipy0);
+				for (var y = clipy0 + 1; y < clipy1; y++)
 					display.plot(display.getPixel(x, y), x, y - 1);
-				display.plot(bufPixel, x, 127);
+				display.plot(bufPixel, x, clipy1 - 1);
 			}
 			for (n = 0; n < 32; n++)
 				if (_spr[n].isscrolled != 0)
 					_spr[n].y -= 4;
 		} else if (direction == 0) {
-			for (var y = 0; y < 128; y++) {
-				bufPixel = display.getPixel(127, y);
-				for (var x = 127; x > 0; x--)
+			for (var y = clipy0; y < clipy1; y++) {
+				bufPixel = display.getPixel(clipx1 - 1, y);
+				for (var x = clipx1 - 1; x > clipx0; x--)
 					display.plot(display.getPixel(x - 1, y), x, y);
-				display.plot(bufPixel, 0, y);
+				display.plot(bufPixel, clipx0, y);
 			}
 			for (n = 0; n < 32; n++)
 				if (_spr[n].isscrolled != 0)
 					_spr[n].x += 4;
 		} else {
-			for (var x = 0; x < 128; x++) {
-				bufPixel = display.getPixel(x, 127);
-				for (var y = 127; y > 0; y--)
+			for (var x = clipx0; x < clipx1; x++) {
+				bufPixel = display.getPixel(x, clipx1 - 1);
+				for (var y = clipy1 - 1; y > clipy0; y--)
 					display.plot(display.getPixel(x, y - 1), x, y);
-				display.plot(bufPixel, x, 0);
+				display.plot(bufPixel, x, clipy0);
 			}
 			for (n = 0; n < 32; n++)
 				if (_spr[n].isscrolled != 0)
 					_spr[n].y += 4;
 		}
-		if (tile.adr > 0)
+		if (tile.adr > 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128))
 			tileDrawLine(step, direction);
 	}
 
@@ -2094,6 +2102,7 @@ function Cpu() {
 					r1 = o2 & 0xf;
 					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y0, x0
 					display.setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+					setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				}
 			case 0xD5:

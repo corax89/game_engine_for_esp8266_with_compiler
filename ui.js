@@ -623,10 +623,7 @@ function Display() {
 	var isDebug = false;
 	var isDrawKeyboard = false;
 	var isChangePalette = false;
-	var clipx0 = 0;
-	var clipx1 = 128;
-	var clipy0 = 0;
-	var clipy1 = 128;
+	var clipx0, clipx1, clipy0 , clipy1;
 	
 	function init() {
 		width = canvas.getBoundingClientRect().width;
@@ -650,6 +647,10 @@ function Display() {
 	}
 
 	function reset() {
+		clipx0 = 0;
+		clipx1 = 128;
+		clipy0 = 0;
+		clipy1 = 128;
 		ctx.textAlign = "start";
 		ctx.textBaseline = "hanging";
 		ctx.font = pixelSize * 8 + "px monospace";
