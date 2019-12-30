@@ -107,6 +107,7 @@ function Cpu() {
 			charArray[i] = '';
 		for (i = 0; i < 8; i++)
 			timers[i] = 0;
+		setClip(0, 0, 128, 128);
 	}
 	//загрузка программы
 	function load(a) {
@@ -2105,6 +2106,7 @@ function Cpu() {
 					setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				}
+				break;
 			case 0xD5:
 				// LDSPRT R,R		D5RR
 				r1 = (o2 & 0xf0) >> 4; //номер спрайта

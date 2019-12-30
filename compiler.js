@@ -115,6 +115,11 @@ function tokenize(s) {
 				tokens[thisToken - 1] += '=';
 				break;
 			}
+		case '.':
+			if (s[i + 1] >= '0' && s[i + 1] <= '9' && s[i] == '.') {
+				tokens[thisToken] += s[i];
+				break;
+			}
 		case '+':
 		case '-':
 		case '*':
@@ -211,6 +216,8 @@ function compile(t) {
 	var varInRegister; //локальная переменная в регистре
 	var isIntoFunction = false; //находимся ли мы в теле функции
 	var functionVarTable = []; //таблица переменных, указанных в объявлении текущей обрабатываемой функции
+	var structArr = []; //массив структур
+	var newType = []; //массив для вновь определенных типов
 	var lineCount = -1; //номер текущей строки
 	var registerCount = 1; //указатель на используемый в данный момент регистор процессора
 	var lastEndString = 0; //указатель на токен, являющийся последним в предыдущей строке
@@ -451,6 +458,45 @@ function compile(t) {
 			asm.push(' ITOF R' + r);
 			typeOnStack[r] = 'fixed';
 		}
+	}
+
+	function addStruct() {
+		var name,
+		count = 0,
+		size = 0,
+		vars = [];
+		getToken();
+		name = thisToken;
+		if (!newType.indexOf(name > -1))
+			putError(lineCount, 0, ''); //info("" + lineCount + " функция уже объявлена??");
+		else
+			newType.push(name);
+		getToken();
+		if (thisToken == '{') {
+			getToken();
+			removeNewLine();
+			while (thisToken && thisToken != '}') {
+				vars[count] = [];
+				if (thisToken && thisToken == '}')
+					break;
+				vars[count][0] = thisToken;
+				isType(thisToken);
+				getToken();
+				vars[count][1] = thisToken;
+				vars[count][2] = (vars[count][0] == 'char') ? 1 : 2;
+				vars[count][3] = size;
+				size += vars[count][2];
+				getToken();
+				if (thisToken != ';')
+					break;
+				getToken();
+				removeNewLine();
+				count++;
+			}
+			structArr.push([name, size, count, vars]);
+		} else
+			putError(lineCount, 4, ''); //info("" + lineCount + " ожидалась фигурная открывающая скобка");
+		//console.log(structArr);
 	}
 
 	//регистрация функции: имя, тип возвращаемых данных, операнды, объявлена ли функция, исходный код, нужно ли вставлять функцию вместо перехода
@@ -737,12 +783,32 @@ function compile(t) {
 			localVarTable.push(type);
 			localVarTable.push(thisToken);
 		} else {
-			varTable.push({
-				name: thisToken,
-				type: type,
-				length: 1
-			});
-			asm.push(' _' + thisToken + ' word ? ');
+			if(isVar(thisToken))
+				putError(lineCount, 0, thisToken);
+			if (newType.indexOf(type) > -1) {
+				var len = 0;
+				for (var i = 0; i < structArr.length; i++) {
+					if (structArr[i][0] == thisToken) {
+						len = structArr[i][1];
+						break;
+					}
+				}
+				varTable.push({
+					name: thisToken,
+					type: type,
+					length: len,
+					length2: false
+				});
+				asm.push(' _' + thisToken + ' byte ' + len + ' dup(?)');
+			} else {
+				varTable.push({
+					name: thisToken,
+					type: type,
+					length: 1,
+					length2: false
+				});
+				asm.push(' _' + thisToken + ' word ? ');
+			}
 		}
 	}
 	//возвращаем тип и имя переменной, если такая существует
@@ -754,7 +820,8 @@ function compile(t) {
 		return {
 			name: 'null',
 			type: 'void',
-			length: 1
+			length: 1,
+					length2: false
 		}
 	}
 	//обрабатываем переменные, данные которых содержатся на стеке
@@ -947,12 +1014,17 @@ function compile(t) {
 	//добавляем массив
 	function addArray(type) {
 		var name = lastToken;
+		var arraylen2d = false;
 		var length = 1;
 		var buf = '';
 		getToken();
 		//количество элементов не указано
 		if (thisToken == ']') {
 			getToken();
+			if(thisToken == '['){
+				getToken();
+				getToken();
+			}
 			if (thisToken != '=')
 				putError(lineCount, 10, ''); //info("" + lineCount + " не указана длина массива");
 			else
@@ -965,23 +1037,31 @@ function compile(t) {
 				varTable.push({
 					name: name,
 					type: type,
-					length: length
+					length: length,
+					length2: false
 				});
 			}
 			//массив уже заполнен, считаем количество элементов
 			else if (thisToken == '{') {
+				var brcount = 0;
 				while (thisToken && thisToken != '}') {
 					var minus = false;
 					getToken();
 					removeNewLine();
+					if(thisToken == '{'){
+						brcount++;
+						arraylen2d = 1;
+						getToken();
+					}
+					removeNewLine();
 					if (!thisToken)
 						return;
-					if(thisToken == '-'){
+					if (thisToken == '-') {
 						minus = true;
 						getToken();
 					}
 					if (isNumber(parseInt(thisToken))) {
-						if(minus)
+						if (minus)
 							buf += '-';
 						if (thisToken.indexOf('.') > -1 && type == 'fixed') {
 							buf += Math.floor(parseFloat(thisToken) * (1 << MULTIPLY_FP_RESOLUTION_BITS)) + ',';
@@ -992,39 +1072,68 @@ function compile(t) {
 					else
 						buf += '0,';
 					length++;
+					if(arraylen2d)
+						arraylen2d++;
 					getToken();
 					removeNewLine();
+					if (thisToken == '}' && brcount > 0){
+						brcount--;
+						getToken();
+						removeNewLine();
+					}
 					if (!(thisToken == '}' || thisToken == ','))
 						putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 				}
-				if (type == 'int' || type == 'fixed')
+				if(arraylen2d)
+						arraylen2d--;
+				if (type == 'int' || type == 'fixed'){
 					dataAsm.push('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
-				else if (type == 'char')
+				}
+				else if (type == 'char'){
 					dataAsm.push('_' + name + ': \n DB ' + buf.substring(0, buf.length - 1));
+				}
 				varTable.push({
 					name: name,
 					type: type,
-					length: length
+					length: length,
+					length2: arraylen2d
 				});
 			}
 		}
 		//количество элементов указано
 		else if (isNumber(thisToken)) {
+			var length2 = false;
 			length = thisToken * 1 + 1;
+			getToken();
+			if (thisToken != ']')
+				putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
+			getToken();
+			if (thisToken == '[') {
+				getToken();
+				if (isNumber(thisToken)) {
+					length2 = thisToken * 1;
+					length = length * length2;
+					getToken();
+					if (thisToken != ']')
+						putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
+					getToken();
+				} else
+					putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
+			}
 			var newArr = '';
-			if (type == 'char')
+			if (isStruct(type)) {
+				var l = structArr[newType.indexOf(type)][1];
+				newArr = (' _' + name + ' byte ' + (length * l) + ' dup(?)');
+			} else if (type == 'char')
 				newArr = (' _' + name + ' byte ' + length + ' dup(?)');
 			else
 				newArr = (' _' + name + ' word ' + length + ' dup(?)');
 			varTable.push({
 				name: name,
 				type: type,
-				length: length
+				length: length,
+				length2: length2
 			});
-			getToken();
-			if (thisToken != ']')
-				putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
-			getToken();
 			if (thisToken == '=') {
 				getToken();
 				if (thisToken != '{')
@@ -1063,7 +1172,8 @@ function compile(t) {
 				varTable.push({
 					name: name,
 					type: type,
-					length: length
+					length: length,
+					length2: false
 				});
 			}
 			dataAsm.push(newArr);
@@ -1097,11 +1207,189 @@ function compile(t) {
 		}
 		if (['int', '*int', 'char', '*char', 'fixed', '*fixed', 'void', '*void'].indexOf(t) > -1)
 			return true;
+		if (newType.indexOf(t) > -1)
+			return true;
+		return false;
+	}
+	//проверка, является ли токен структорой
+	function isStruct(t) {
+		if (newType.indexOf(t) > -1)
+			return true;
 		return false;
 	}
 	//проверка, является ли токен t числом
 	function isNumber(t) {
 		return !isNaN(parseFloat(t)) && isFinite(t);
+	}
+	//сохраняем значение структуры
+	function structAssigment(thisVar, struct, pos, isArray) {
+		getToken();
+		if(thisToken == '{'){
+			if (isArray) {
+				asm.push(' LDC R' + (registerCount + 2) + ',' + pos[1]);
+				asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
+				asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
+			}
+			var spos = 0;
+			while (thisToken && thisToken != '}') {
+				var buf = '', minus = false;
+				getToken();
+				removeNewLine();
+				if (!thisToken)
+					return;
+				if (thisToken == '-') {
+					minus = true;
+					getToken();
+				}
+				if (isNumber(parseInt(thisToken))) {
+					if (minus)
+						buf += '-';
+					if (thisToken.indexOf('.') > -1 && struct[spos][0] == 'fixed') {
+						buf += Math.floor(parseFloat(thisToken) * (1 << MULTIPLY_FP_RESOLUTION_BITS));
+					} else
+						buf += parseInt(thisToken);
+				} else if (isVar(thisToken))
+					buf += '_' + thisToken;
+				asm.push(' LDI R' + registerCount + ',' + buf);
+				if(struct[spos][0] == 'char'){
+					asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount - 1) + '),R' + registerCount);
+					asm.push(' INC R' + (registerCount - 1) + ',1');
+				}
+				else {
+					asm.push(' STI (_' + thisVar.name + ' + R' + (registerCount - 1) + '),R' + registerCount);
+					asm.push(' INC R' + (registerCount - 1) + ',2');
+				}
+				spos++;
+				getToken();
+				removeNewLine();
+				if (!(thisToken == '}' || thisToken == ','))
+					putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
+			}
+			asm.pop();
+		}
+		else{
+			execut();
+			if (getRangOperation(thisToken) > 0)
+				execut();
+			getToken();
+			if (getRangOperation(thisToken) > 0)
+				execut();
+			registerCount--;
+			typeCastToFirst(registerCount, thisVar.type);
+			asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
+			if (isArray) {
+				asm.push(' LDC R' + (registerCount + 2) + ',' + struct[1]);
+				asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
+				asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
+			}
+			if (thisVar.type == 'char')
+				asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
+			else
+				asm.push(' STI (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
+		}
+	}
+	//загружаем значение структуры
+	function structLoad(thisVar, struct, pos, isArray) {
+		typeOnStack[registerCount] = thisVar.type;
+		asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
+		if (isArray) {
+			asm.push(' LDC R' + (registerCount + 2) + ',' + struct[1]);
+			asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
+			asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
+		}
+		if (thisVar.type == 'char')
+			asm.push(' LDC R' + (registerCount - 1) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+		else
+			asm.push(' LDI R' + (registerCount - 1) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+
+	}
+	//обрабатываем структуру
+	function structToken() {
+		var v = getVar(thisToken);
+		var s = [];
+		var m = [];
+		s = structArr[newType.indexOf(v.type)];
+		var members = s[3];
+		getToken();
+		if (thisToken == '.') {
+			getToken();
+			for (var i = 0; i < members.length; i++) {
+				if (members[i][1] == thisToken) {
+					m = members[i];
+					break;
+				}
+			}
+			getToken();
+			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
+				previousToken();
+				structLoad(v, s, m[3], false);
+			}
+			//присваивание значения переменной
+			else
+				structAssigment(v, s, m[3], false);
+		} else if (thisToken == '[') {
+			//вычисление номера ячейки массива
+			getToken();
+			while (thisToken != ']') {
+				if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
+					putError(thisLine, 18, '');
+					return;
+				}
+				execut();
+				if (getRangOperation(thisToken) == 0 && thisToken != ']') {
+					getToken();
+					execut();
+				}
+			}
+			typeCastToFirst(registerCount - 1, 'int');
+			getToken();
+			if (thisToken == '[') {
+				//вычисление номера ячейки двухмерного массива
+				if (v.length2) {
+					if (v.length2 < 255)
+						asm.push(' LDC R' + registerCount + ',' + v.length2);
+					else
+						asm.push(' LDI R' + registerCount + ',' + v.length2);
+					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
+				}
+				getToken();
+				while (thisToken != ']') {
+					if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
+						putError(thisLine, 18, '');
+						return;
+					}
+					execut();
+					if (getRangOperation(thisToken) == 0 && thisToken != ']') {
+						getToken();
+						execut();
+					}
+				}
+				typeCastToFirst(registerCount - 1, 'int');
+				asm.push(' ADD R' + (registerCount - 2) + ',R' + (registerCount - 1));
+				registerCount--;
+				getToken();
+			}
+			if (thisToken == '.') {
+				getToken();
+				for (var i = 0; i < members.length; i++) {
+					if (members[i][1] == thisToken) {
+						m = members[i];
+						break;
+					}
+				}
+				getToken();
+				//загрузка ячейки массива
+				if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
+					previousToken();
+					structLoad(v, s, m[3], true);
+				}
+				//сохранение ячейки массива
+				else
+					structAssigment(v, s, m[3], true);
+			}
+			else if (thisToken == '=')
+				structAssigment(v, members, s, true);
+		}
 	}
 	//обрабатываем переменную
 	function varToken() {
@@ -1109,6 +1397,10 @@ function compile(t) {
 		var point = false;
 		var op;
 		var thisLine = lineCount;
+		if (isStruct(v.type)) {
+			structToken();
+			return;
+		}
 		if (lastToken == '*' && registerCount == 1)
 			point = true;
 		getToken();
@@ -1127,10 +1419,36 @@ function compile(t) {
 					execut();
 				}
 			}
+			typeCastToFirst(registerCount - 1, 'int');
 			getToken();
+			if (thisToken == '[') {
+				//вычисление номера ячейки двухмерного массива
+				if (v.length2) {
+					if (v.length2 < 255)
+						asm.push(' LDC R' + registerCount + ',' + v.length2);
+					else
+						asm.push(' LDI R' + registerCount + ',' + v.length2);
+					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
+				}
+				getToken();
+				while (thisToken != ']') {
+					if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
+						putError(thisLine, 18, '');
+						return;
+					}
+					execut();
+					if (getRangOperation(thisToken) == 0 && thisToken != ']') {
+						getToken();
+						execut();
+					}
+				}
+				typeCastToFirst(registerCount - 1, 'int');
+				asm.push(' ADD R' + (registerCount - 2) + ',R' + (registerCount - 1));
+				registerCount--;
+				getToken();
+			}
 			//загрузка ячейки массива
 			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
-				typeCastToFirst(registerCount - 1, 'int');
 				previousToken();
 				if (v.type == 'char' || v.type == '*char') {
 					if (v.type == '*char' && !point) {
@@ -1251,6 +1569,7 @@ function compile(t) {
 		if (localVarTable.indexOf(variable) > -1) {
 			previousToken();
 			localVarToken();
+			return;
 		} else {
 			var v = getVar(variable);
 			getToken();
@@ -1595,7 +1914,7 @@ function compile(t) {
 		getToken();
 		//проверка будет выполнятся каждую итерацию
 		asm.push('start_for_' + labe + ':');
-		blockStack.push('for_'+labe);
+		blockStack.push('for_' + labe);
 		execut();
 		while (thisToken != ';') {
 			getToken();
@@ -1736,7 +2055,7 @@ function compile(t) {
 	//break в данный момент работает только для прерывания switch, нужно доработать
 	function breakToken() {
 		if (blockStack.length > 0) {
-			asm.push(' JMP end_' + blockStack[blockStack.length -1]);
+			asm.push(' JMP end_' + blockStack[blockStack.length - 1]);
 		} else {
 			putError(lineCount, 14, 'break');
 		}
@@ -1776,22 +2095,29 @@ function compile(t) {
 			return;
 		}
 		getToken();
-		//вызываем регестрацию функции
+		//вызываем регистрацию функции
 		if (thisToken == '(') {
 			previousToken();
 			addFunction(type, 0);
 		} else if (thisToken == '[') {
 			addArray(type);
 		}
-		//объявление переменных одного типа через запятую, присваивание при этом не поддерживается
-		else if (thisToken == ',') {
+		//объявление переменных одного типа через запятую
+		else if (thisToken == ',' || thisToken == '=') {
 			previousToken();
-			addVar(type);
-			getToken();
+			previousToken();
 			while (thisToken && thisToken != ';') {
 				getToken();
+				removeNewLine();
+				var newVar = thisToken;
 				addVar(type);
 				getToken();
+				
+				if(thisToken == '='){
+					assigment();
+					getToken();
+				}
+				removeNewLine();
 				if (!(thisToken == ',' || thisToken == ';'))
 					putError(lineCount, 17, ''); //info("" + lineCount + " неподдерживаемое объявление переменных");
 			}
@@ -1956,6 +2282,8 @@ function compile(t) {
 			asm.push(' LDC R' + registerCount + ',0');
 		} else if (thisToken == 'return') {
 			returnToken();
+		} else if (thisToken == 'struct') {
+			addStruct();
 		} else if (thisToken == 'if') {
 			ifToken();
 		} else if (thisToken == 'else') {

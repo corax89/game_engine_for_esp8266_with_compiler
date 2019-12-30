@@ -294,7 +294,7 @@ function highliteasm(code) {
 		return f + '~~~S' + l + '~~~';
 	})
 	// Выделяем ключевые слова
-	.replace(/(mov|ldi|ldial|ldc|sti|stial|stc|pop|popn|push|pushn|jmp|jz|jnz|jc|jnc|call|ret|add|and|sub|mul|div|cmp|inc|dec|ldf|hlt)([^a-z0-9\$_])/gi,
+	.replace(/(mov|ldi|ldial|ldc|sti|stial|stc|pop|popn|push|pushn|jmp|jz|jnz|jc|jnc|call|ret|add|and|sub|mul|div|cmp|inc|dec|ldf|hlt|ftoi|itof)([^a-z0-9\$_])/gi,
 		'<span class="kwrd">$1</span>$2')
 	// Выделяем скобки
 	.replace(/(\(|\))/gi,
