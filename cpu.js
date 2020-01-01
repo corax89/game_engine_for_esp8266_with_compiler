@@ -177,10 +177,14 @@ function Cpu() {
 	}
 	
 	function setClip(x0, y0, x1, y1){
-	  clipx0 = (x0 >= 0 && x0 < 127) ? x0 : 0;
-	  clipy0 = (y0 >= 0 && y0 < 127) ? y0 : 0;
-	  clipx1 = (x0 + x1 > 0 && x0 + x1 <= 128) ? x0 + x1 : 128;
-	  clipy1 = (y0 + y1 > 0 && y0 + y1 <= 128) ? y0 + y1 : 128;
+		if (x0 > 0x7fff)
+			x0 -= 0x10000;
+		if (y0 > 0x7fff)
+			y0 -= 0x10000;
+		clipx0 = (x0 >= 0 && x0 < 127) ? x0 : 0;
+		clipy0 = (y0 >= 0 && y0 < 127) ? y0 : 0;
+		clipx1 = (clipx0 + x1 > 0 && clipx0 + x1 <= 128) ? clipx0 + x1 : 128;
+		clipy1 = (clipy0 + y1 > 0 && clipy0 + y1 <= 128) ? clipy0 + y1 : 128;
 	}
 
 	function scrollScreen(step, direction) {

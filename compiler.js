@@ -783,7 +783,7 @@ function compile(t) {
 			localVarTable.push(type);
 			localVarTable.push(thisToken);
 		} else {
-			if(isVar(thisToken))
+			if (isVar(thisToken))
 				putError(lineCount, 0, thisToken);
 			if (newType.indexOf(type) > -1) {
 				var len = 0;
@@ -821,7 +821,7 @@ function compile(t) {
 			name: 'null',
 			type: 'void',
 			length: 1,
-					length2: false
+			length2: false
 		}
 	}
 	//обрабатываем переменные, данные которых содержатся на стеке
@@ -1017,11 +1017,13 @@ function compile(t) {
 		var arraylen2d = false;
 		var length = 1;
 		var buf = '';
+		if(isVar(name))
+			putError(lineCount, 0, name);
 		getToken();
 		//количество элементов не указано
 		if (thisToken == ']') {
 			getToken();
-			if(thisToken == '['){
+			if (thisToken == '[') {
 				getToken();
 				getToken();
 			}
@@ -1048,7 +1050,7 @@ function compile(t) {
 					var minus = false;
 					getToken();
 					removeNewLine();
-					if(thisToken == '{'){
+					if (thisToken == '{') {
 						brcount++;
 						arraylen2d = 1;
 						getToken();
@@ -1072,11 +1074,11 @@ function compile(t) {
 					else
 						buf += '0,';
 					length++;
-					if(arraylen2d)
+					if (arraylen2d)
 						arraylen2d++;
 					getToken();
 					removeNewLine();
-					if (thisToken == '}' && brcount > 0){
+					if (thisToken == '}' && brcount > 0) {
 						brcount--;
 						getToken();
 						removeNewLine();
@@ -1084,12 +1086,11 @@ function compile(t) {
 					if (!(thisToken == '}' || thisToken == ','))
 						putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 				}
-				if(arraylen2d)
-						arraylen2d--;
-				if (type == 'int' || type == 'fixed'){
+				if (arraylen2d)
+					arraylen2d--;
+				if (type == 'int' || type == 'fixed') {
 					dataAsm.push('_' + name + ': \n DW ' + buf.substring(0, buf.length - 1));
-				}
-				else if (type == 'char'){
+				} else if (type == 'char') {
 					dataAsm.push('_' + name + ': \n DB ' + buf.substring(0, buf.length - 1));
 				}
 				varTable.push({
@@ -1224,7 +1225,7 @@ function compile(t) {
 	//сохраняем значение структуры
 	function structAssigment(thisVar, struct, pos, isArray) {
 		getToken();
-		if(thisToken == '{'){
+		if (thisToken == '{') {
 			if (isArray) {
 				asm.push(' LDC R' + (registerCount + 2) + ',' + pos[1]);
 				asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
@@ -1232,7 +1233,8 @@ function compile(t) {
 			}
 			var spos = 0;
 			while (thisToken && thisToken != '}') {
-				var buf = '', minus = false;
+				var buf = '',
+				minus = false;
 				getToken();
 				removeNewLine();
 				if (!thisToken)
@@ -1251,11 +1253,10 @@ function compile(t) {
 				} else if (isVar(thisToken))
 					buf += '_' + thisToken;
 				asm.push(' LDI R' + registerCount + ',' + buf);
-				if(struct[spos][0] == 'char'){
+				if (struct[spos][0] == 'char') {
 					asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount - 1) + '),R' + registerCount);
 					asm.push(' INC R' + (registerCount - 1) + ',1');
-				}
-				else {
+				} else {
 					asm.push(' STI (_' + thisVar.name + ' + R' + (registerCount - 1) + '),R' + registerCount);
 					asm.push(' INC R' + (registerCount - 1) + ',2');
 				}
@@ -1266,8 +1267,7 @@ function compile(t) {
 					putError(lineCount, 11, ''); //info("" + lineCount + " неправильное объявление массива");
 			}
 			asm.pop();
-		}
-		else{
+		} else {
 			execut();
 			if (getRangOperation(thisToken) > 0)
 				execut();
@@ -1386,8 +1386,7 @@ function compile(t) {
 				//сохранение ячейки массива
 				else
 					structAssigment(v, s, m[3], true);
-			}
-			else if (thisToken == '=')
+			} else if (thisToken == '=')
 				structAssigment(v, members, s, true);
 		}
 	}
@@ -2112,8 +2111,8 @@ function compile(t) {
 				var newVar = thisToken;
 				addVar(type);
 				getToken();
-				
-				if(thisToken == '='){
+
+				if (thisToken == '=') {
 					assigment();
 					getToken();
 				}
