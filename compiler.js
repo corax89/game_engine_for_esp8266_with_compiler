@@ -229,6 +229,8 @@ function compile(t) {
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 	var longArg = false;
 	var lastNewLine = -1;
+	var findLoopCompile = 0;
+	var lastLoopToken = 0;
 
 	function putError(line, error, par) {
 		var er = 'uncown';
@@ -378,6 +380,15 @@ function compile(t) {
 	}
 	//получаем следующий токен, возвращаем false если следующего токена не существует
 	function getToken() {
+		findLoopCompile++;
+		if(lastLoopToken + 10 < thisTokenNumber){
+			lastLoopToken = thisTokenNumber;
+			findLoopCompile = 0;
+		}
+		if(findLoopCompile > 1000){
+			thisTokenNumber = 100000000;
+			return false;
+		}
 		lastToken = thisToken;
 		if (thisTokenNumber < t.length) {
 			thisToken = t[thisTokenNumber];
@@ -2341,7 +2352,7 @@ function compile(t) {
 	registerFunction('spritespeedy', 'void', ['int', 'n', 'int', 's'], 1, 'LDC R15,3 \n SSPRTV R%2,R15,R%1', true, 0);
 	registerFunction('spritegetvalue', 'int', ['int', 'n', 'int', 'type'], 1, 'SPRGET R%2,R%1', true, 0);
 	registerFunction('spritesetvalue', 'void', ['int', 'n', 'int', 'type', 'int', 'value'], 1, 'SSPRTV R%3,R%2,R%1', true, 0);
-	registerFunction('setimagesize', 'void', ['int', 's'], 1, 'ISIZE R%1', true, 0);
+	registerFunction('setimagesize', 'void', ['fixed', 's'], 1, 'ISIZE R%1', true, 0);
 	registerFunction('setledcolor', 'void', ['int', 'c'], 1, 'SETLED R%1', true, 0);
 	registerFunction('tone', 'void', ['int', 'freq', 'int', 'time'], 1, 'PLAYTN R%2,R%1', true, 0);
 	registerFunction('loadrtttl', 'void', ['int', 'adr', 'int', 'loop'], 1, 'LOADRT R%2,R%1', true, 0);

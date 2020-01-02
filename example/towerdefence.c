@@ -65,18 +65,24 @@ int field[] = {
 }
 
 char istower(int n){
-	if(field[n] == t11)
+	if(field[n] == t11){
 		return 1;	
-	if(field[n] == t12)
-		return 2;		
-	if(field[n] == t21)
-		return 3;	
-	if(field[n] == t22)
+	}
+	if(field[n] == t12){
+		return 2;
+	}	
+	if(field[n] == t21){
+		return 3;
+	}
+	if(field[n] == t22){
 		return 4;
-	if(field[n] == t31)
+	}
+	if(field[n] == t31){
 		return 5;
-	if(field[n] == t32)
+	}
+	if(field[n] == t32){
 		return 6;
+	}
 	return false;
 }
 
@@ -108,9 +114,11 @@ void init(){
 	putsprite(0, 0, 0);
 	loadtile(field, 16, 16, 8, 7);
 	drawtile(0,0);
-	for(i = 0; i < 56; i++) //clear tower
-		if(istower(i))
+	for(i = 0; i < 56; i++){ //clear tower
+		if(istower(i)){
 			field[i] = gr;
+		}
+	}
 	settimer(1,3000);
 	newwave();
 }
@@ -118,8 +126,9 @@ void init(){
 void loose(){
 	setimagesize(8);
 	putimagerle(gameover, 0, 0, 16, 16);
-	for(i = 0; i < 16; i++)
+	for(i = 0; i < 16; i++){
 		spritesetvalue(i, S_LIVES,0);
+	}
 	while(getkey() == 0){}
 	init();
 }
@@ -127,18 +136,21 @@ void loose(){
 void nextcadr(){
 	if(gettimer(0) == 0){
 		cadr = 1 - cadr;
-		if(monsterlives % 3 == 0)
+		if(monsterlives % 3 == 0){
 			for(i = 1; i <= maxmonster; i++){
 				getsprite(i, monster1[cadr]);
 			}
-		else if(monsterlives % 3 == 1)
+		}
+		else if(monsterlives % 3 == 1){
 			for(i = 1; i <= maxmonster; i++){
 				getsprite(i, monster2[cadr]);
 			}
-		else if(monsterlives % 3 == 2)
+		}
+		else if(monsterlives % 3 == 2){
 			for(i = 1; i <= maxmonster; i++){
 				getsprite(i, monster3[cadr]);
 			}
+		}
 		drawtile(0,0);
 		settimer(0,300);
 	}
@@ -203,12 +215,15 @@ void step(){
 					}
 				}
 				else{
-					if(nextstep[d] == 0 || nextstep[d] == 4)
+					if(nextstep[d] == 0 || nextstep[d] == 4){
 						spritesetvalue(d, S_X, spritegetvalue(d, S_X) - s*2);
-					else if(nextstep[d] == 2)
+					}
+					else if(nextstep[d] == 2){
 						spritesetvalue(d, S_X, spritegetvalue(d, S_X) + s*2);
-					else
+					}
+					else{
 						spritesetvalue(d, S_Y, spritegetvalue(d, S_Y) - s*2);
+					}
 				}
 			}
 		}
@@ -251,12 +266,15 @@ void step(){
 char updatetower(){
 	pos = x + y * 8;
 	if(gold >= 50){
-		if(field[pos] == t11)
+		if(field[pos] == t11){
 			field[pos] = t12;
-		else if(field[pos] == t21)
+		}
+		else if(field[pos] == t21){
 			field[pos] = t22;
-		else if(field[pos] == t31)
+		}
+		else if(field[pos] == t31){
 			field[pos] = t32;
+		}
 		gold -= 50;
 	}
 }
@@ -282,22 +300,28 @@ void newtower(){
 
 void drawmenu(){
 	setcolor(1);
-	if(gold >= 20)
+	if(gold >= 20){
 		putimage(menuon[0], 1, 120, 7, 7);
-	else
+	}
+	else{
 		putimage(menuoff[0], 1, 120, 7, 7);
+	}
 	gotoxy(2,15);
 	putn(20);
-	if(gold >= 30)
+	if(gold >= 30){
 		putimage(menuon[1], 26, 120, 7, 7);
-	else
+	}
+	else{
 		putimage(menuoff[1], 26, 120, 7, 7);
+	}
 	gotoxy(6,15);
 	putn(30);
-	if(gold >= 30)
+	if(gold >= 30){
 		putimage(menuon[2], 51, 120, 7, 7);
-	else
+	}
+	else{
 		putimage(menuoff[2], 51, 120, 7, 7);
+	}
 	gotoxy(10,15);
 	putn(30);
 	gotoxy(13,15);
@@ -310,20 +334,24 @@ void action(){
 	key = getkey();
 	if(key != prevkey){
 		if(key == KEY_LEFT){
-			if(x > 0)
+			if(x > 0){
 				x--;
+			}
 		}
 		else if(key == KEY_RIGHT){
-			if(x < 7)
+			if(x < 7){
 				x++;
+			}
 		}
 		if(key == KEY_UP){
-			if(y > 0)
+			if(y > 0){
 				y--;
+			}
 		}
 		else if(key == KEY_DOWN){
-			if(y < 6)
+			if(y < 6){
 				y++;
+			}
 		}
 		else if(key == KEY_A){
 			if(istower(x + y * 8) & 1){
@@ -336,16 +364,20 @@ void action(){
 		else if(key == KEY_B){
 			putimage(scursor, 5 + mpos * 25, 113, 7, 4);
 			mpos++;
-			if(mpos >= 3)
+			if(mpos >= 3){
 				mpos = 0;
+			}
 			putimage(mcursor, 5 + mpos * 25, 113, 7, 4);
 		}
-		if(istower(x + y * 8) & 1)
+		if(istower(x + y * 8) & 1){
 			getsprite(0, cursorup);
-		else if(istower(x + y * 8))
+		}
+		else if(istower(x + y * 8)){
 			getsprite(0, cursoroff);
-		else
+		}
+		else{
 			getsprite(0, cursor);
+		}
 		putsprite(0, x * 16, y * 16);
 	}
 	prevkey = key;
@@ -358,10 +390,12 @@ void main(){
 		step();
 		action();
 		drawmenu();
-		if(monstercount <= 0 && addmonster <= 0)
+		if(monstercount <= 0 && addmonster <= 0){
 			newwave();
-		if(lives <= 0)
+		}
+		if(lives <= 0){
 			loose();
+		}
 		delayredraw();
 	}
 }	

@@ -25,7 +25,10 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var dataName = 0;
-	var clipx0, clipx1, clipy0 , clipy1;
+	var clipx0,
+	clipx1,
+	clipy0,
+	clipy1;
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
 
 	function init() {
@@ -175,8 +178,8 @@ function Cpu() {
 			for (var j = y; j < y + h; j++)
 				display.plot(c, i, j);
 	}
-	
-	function setClip(x0, y0, x1, y1){
+
+	function setClip(x0, y0, x1, y1) {
 		if (x0 > 0x7fff)
 			x0 -= 0x10000;
 		if (y0 > 0x7fff)
@@ -348,7 +351,7 @@ function Cpu() {
 		emitter.color = c;
 		emitter.timer = emitter.time;
 	}
-	
+
 	function setEmitterSize(w, h, s) {
 		emitter.width = w * 2;
 		emitter.height = h * 2;
@@ -362,7 +365,7 @@ function Cpu() {
 			r = Math.round(r);
 		return r;
 	}
-	
+
 	function largeParticle(x0, y0, r, c) {
 		var x = 0;
 		var dx = 1;
@@ -395,7 +398,7 @@ function Cpu() {
 			display.drawSpritePixel(c, x0 + r, y0 - x);
 		}
 	}
-	
+
 	function redrawParticle() {
 		var n,
 		i;
@@ -420,9 +423,9 @@ function Cpu() {
 		}
 		for (n = 0; n < maxParticles; n++)
 			if (particles[n].time > 0) {
-				if(particles[n].size < 1)
+				if (particles[n].size < 1)
 					display.drawSpritePixel(particles[n].color, Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1));
-				else{
+				else {
 					largeParticle(Math.floor(particles[n].x >> 1), Math.floor(particles[n].y >> 1), particles[n].size, particles[n].color);
 				}
 				particles[n].time -= 50;
@@ -736,7 +739,7 @@ function Cpu() {
 			}
 		}
 	}
-	
+
 	function drawImage(a, x1, y1, w, h) {
 		var color;
 		if (x1 > 0x7fff)
@@ -820,36 +823,40 @@ function Cpu() {
 				i++;
 			}
 	}
-	//функция рисования картинки, если ее размер отличается от 1
+
 	function drawImageS(a, x1, y1, w, h) {
-		var color,
-		jx,
-		jy;
-		var s = imageSize;
+		var p,
+		x2,
+		y2,
+		hx2,
+		color,
+		s;
+		s = imageSize;
 		if (x1 > 0x7fff)
 			x1 -= 0xffff;
 		if (y1 > 0x7fff)
 			y1 -= 0xffff;
-		for (var y = 0; y < h; y++)
-			for (var x = 0; x < w; x++) {
-				color = (readMem(a) & 0xf0) >> 4;
-				if (color > 0)
-					for (jx = 0; jx < s; jx++)
-						for (jy = 0; jy < s; jy++)
-							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
-				x++;
-				color = (readMem(a) & 0xf);
-				if (color > 0)
-					for (jx = 0; jx < s; jx++)
-						for (jy = 0; jy < s; jy++)
-							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
-				a++;
+		for (var yi = 0; yi < ((h * s) >> MULTIPLY_FP_RESOLUTION_BITS); yi++) {
+			y2 = Math.floor(((yi << MULTIPLY_FP_RESOLUTION_BITS) + 1) / s);
+			for (var xi = 0; xi < ((w * s) >> MULTIPLY_FP_RESOLUTION_BITS); xi++) {
+				x2 = Math.floor(((xi << MULTIPLY_FP_RESOLUTION_BITS) + 1) / s);
+				hx2 = Math.floor(x2 / 2);
+				if (x2 & 1) {
+					p = readMem(a + hx2 + Math.floor((y2 * w) / 2));
+					color = (p & 0x0f);
+				} else {
+					p = readMem(a + hx2 + Math.floor((y2 * w) / 2));
+					color = (p & 0xf0) >> 4;
+				}
+				if (color)
+					display.plot(color, x1 + xi, y1 + yi);
 			}
+		}
 	}
 
 	function drawImageRLES(a, x1, y1, w, h) {
 		var i = 0;
-		var s = imageSize;
+		var s = Math.floor(imageSize >> MULTIPLY_FP_RESOLUTION_BITS);
 		var repeat = readMem(a);
 		a++;
 		var color1 = (readMem(a) & 0xf0) >> 4;
@@ -891,34 +898,30 @@ function Cpu() {
 			}
 	}
 
-	function drawImage1bitS(a, x1, y1, w, h) {
-		var i = 0;
-		var bit,
-		jx,
-		jy;
-		var s = imageSize;
-		if (x1 > 0x7fff)
-			x1 -= 0xffff;
-		if (y1 > 0x7fff)
-			y1 -= 0xffff;
-		for (var y = 0; y < h; y++)
-			for (var x = 0; x < w; x++) {
-				if (i % 8 == 0) {
-					bit = readMem(a);
-					a++;
-				}
-				if (bit & 0x80) {
-					for (jx = 0; jx < s; jx++)
-						for (jy = 0; jy < s; jy++)
-							display.plot(color, x1 + x * s + jx, y1 + y * s + jy);
-				} else {
-					for (jx = 0; jx < s; jx++)
-						for (jy = 0; jy < s; jy++)
-							display.plot(bgcolor, x1 + x * s + jx, y1 + y * s + jy);
-				}
-				bit = bit << 1;
-				i++;
+	function drawImage1bitS(a, x, y, w, h) {
+		var p,
+		x2,
+		y2,
+		hx2,
+		s,
+		c;
+		s = imageSize;
+		if (x > 0x7fff)
+			x -= 0xffff;
+		if (y > 0x7fff)
+			y -= 0xffff;
+		for (var yi = 0; yi < ((h * s) >> MULTIPLY_FP_RESOLUTION_BITS); yi++) {
+			y2 = Math.floor(((yi << MULTIPLY_FP_RESOLUTION_BITS) + 1) / s);
+			for (var xi = 0; xi < ((w * s) >> MULTIPLY_FP_RESOLUTION_BITS); xi++) {
+				x2 = Math.floor(((xi << MULTIPLY_FP_RESOLUTION_BITS) + 1) / s);
+				p = readMem(a + Math.floor(x2 / 8 + (y2 * w) / 8));
+				c = (1 << (7 - (Math.floor(x2 + y2 * w) & 7)));
+				if (p & c)
+					display.plot(color, x + xi, y + yi);
+				else
+					display.plot(bgcolor, x + xi, y + yi);
 			}
+		}
 	}
 
 	function drawFVLine(x, y1, y2) {
@@ -1246,7 +1249,7 @@ function Cpu() {
 		}
 		return 0;
 	}
-	
+
 	function copyMem(to_adr, from_adr, num_bytes) {
 		to_adr &= 0xffff;
 		from_adr &= 0xffff;
@@ -1985,14 +1988,15 @@ function Cpu() {
 				case 0xB0:
 					//PUTF R   	  D1BR
 					r1 = (o2 & 0xf);
-					var s,u;
+					var s,
+					u;
 					var tb = [0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023];
 					s = reg[r1];
 					if (s < 32768)
 						u = (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
-					else{
+					else {
 						s = ((~s) & 0xffff) + 1;
-						u = '-' + (Math.floor( s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
+						u = '-' + (Math.floor(s / (1 << MULTIPLY_FP_RESOLUTION_BITS))).toString(10);
 					}
 					u += '.';
 					for (i = 0; i < 3; i++) {
@@ -2064,7 +2068,7 @@ function Cpu() {
 				case 0x50:
 					// ISIZE			D45R
 					r1 = o2 & 0xf;
-					imageSize = reg[r1] & 31;
+					imageSize = reg[r1];
 					break;
 				case 0x60:
 					// DLINE			D46R
