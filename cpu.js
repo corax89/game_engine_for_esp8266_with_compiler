@@ -350,6 +350,7 @@ function Cpu() {
 		emitter.y = y << 1;
 		emitter.color = c;
 		emitter.timer = emitter.time;
+		updateEmitter();
 	}
 
 	function setEmitterSize(w, h, s) {
@@ -366,17 +367,36 @@ function Cpu() {
 		return r;
 	}
 
+	function updateEmitter(){
+		var i = emitter.count;
+		for (var n = 0; n < maxParticles; n++) {
+			if (i == 0)
+				break;
+			if (particles[n].time <= 0) {
+				i--;
+				particles[n].time = emitter.timeparticle;
+				particles[n].x = emitter.x + randomD(0, emitter.width);
+				particles[n].y = emitter.y + randomD(0, emitter.height);
+				particles[n].size = emitter.size;
+				particles[n].color = emitter.color;
+				particles[n].speedx = randomD(emitter.speedx, emitter.speedx1);
+				particles[n].speedy = randomD(emitter.speedy, emitter.speedy1);
+				particles[n].gravity = emitter.gravity;
+			}
+		}
+	}
+	
+	function drawSprFHLine(x1, x2, y, c){
+	  for(var  i = x1; i <= x2; i++)
+		display.drawSpritePixel(c, i, y);
+	}
+	
 	function largeParticle(x0, y0, r, c) {
 		var x = 0;
 		var dx = 1;
 		var dy = r + r;
 		var p =  - (r >> 1);
-		// These are ordered to minimise coordinate changes in x or y
-		// drawPixel can then send fewer bounding box commands
-		display.drawSpritePixel(c, x0 + r, y0);
-		display.drawSpritePixel(c, x0 - r, y0);
-		display.drawSpritePixel(c, x0, y0 - r);
-		display.drawSpritePixel(c, x0, y0 + r);
+		drawSprFHLine(x0 - r, x0 + r, y0, c);
 		while (x < r) {
 			if (p >= 0) {
 				dy -= 2;
@@ -386,16 +406,10 @@ function Cpu() {
 			dx += 2;
 			p += dx;
 			x++;
-			// These are ordered to minimise coordinate changes in x or y
-			// drawPixel can then send fewer bounding box commands
-			display.drawSpritePixel(c, x0 + x, y0 + r);
-			display.drawSpritePixel(c, x0 - x, y0 + r);
-			display.drawSpritePixel(c, x0 - x, y0 - r);
-			display.drawSpritePixel(c, x0 + x, y0 - r);
-			display.drawSpritePixel(c, x0 + r, y0 + x);
-			display.drawSpritePixel(c, x0 - r, y0 + x);
-			display.drawSpritePixel(c, x0 - r, y0 - x);
-			display.drawSpritePixel(c, x0 + r, y0 - x);
+			drawSprFHLine(x0 - r, x0 + r, y0 + x, c);
+			drawSprFHLine(x0 - r, x0 + r, y0 - x, c);
+			drawSprFHLine(x0 - x, x0 + x, y0 + r, c);
+			drawSprFHLine(x0 - x, x0 + x, y0 - r, c);
 		}
 	}
 
@@ -404,22 +418,7 @@ function Cpu() {
 		i;
 		if (emitter.timer > 0) {
 			emitter.timer -= 50;
-			i = emitter.count;
-			for (var n = 0; n < maxParticles; n++) {
-				if (i == 0)
-					break;
-				if (particles[n].time <= 0) {
-					i--;
-					particles[n].time = emitter.timeparticle;
-					particles[n].x = emitter.x + randomD(0, emitter.width);
-					particles[n].y = emitter.y + randomD(0, emitter.height);
-					particles[n].size = emitter.size;
-					particles[n].color = emitter.color;
-					particles[n].speedx = randomD(emitter.speedx, emitter.speedx1);
-					particles[n].speedy = randomD(emitter.speedy, emitter.speedy1);
-					particles[n].gravity = emitter.gravity;
-				}
-			}
+			updateEmitter();
 		}
 		for (n = 0; n < maxParticles; n++)
 			if (particles[n].time > 0) {

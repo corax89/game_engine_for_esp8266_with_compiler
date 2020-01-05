@@ -167,7 +167,7 @@ char getnearest(int x, int y, int d){
 }
 
 void step(){
-	char tower,col,d,s;
+	char tower,col,d,s,jx,jy;
 	int l;
 	if(gettimer(1) == 0){
 		if(addmonster > 0){
@@ -186,8 +186,8 @@ void step(){
 		if(tower){
 			col = ((tower - 1) / 2) * 2 + random(1);
 			setcolor(colors[col]);
-			char jx = (i % 8) * 16 + 8;
-			char jy = (i / 8) * 16 + 4;
+			jx = (i % 8) * 16 + 8;
+			jy = (i / 8) * 16 + 4;
 			if(tower == 1 || tower == 5){
 				d = getnearest(jx, jy, 30);
 				s = 1;

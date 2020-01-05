@@ -93,15 +93,23 @@ void run(){
 				if(mem[mempos] != 0){
 					bracketcount = 1;
 					while(bracketcount){
-						screenpos--;
-						if(screenpos < 0)
+						if(screenpos > 0){
+							screenpos--;
+						}
+						else{
 							return;
+						}
 						if(screen[screenpos] == ']')
 							bracketcount++;
 						else if(screen[screenpos] == '[')
 							bracketcount--;
 					}
-					screenpos--;
+					if(screenpos > 0){
+						screenpos--;
+					}
+					else{
+						return;
+					}
 				}
 				break;
 			default:
