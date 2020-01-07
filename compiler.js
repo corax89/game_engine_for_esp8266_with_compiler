@@ -121,6 +121,7 @@ function tokenize(s) {
 				break;
 			}
 		case '+':
+		case '~':
 		case '-':
 		case '*':
 		case '%':
@@ -1784,6 +1785,12 @@ function compile(t) {
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
 			execut();
 	}
+	
+	function notToken(){
+		getToken();
+		execut();
+		asm.push(' NOT R' + (registerCount - 1) + ',R' + registerCount);
+	}
 	//сравнение
 	function compare() {
 		var operation = thisToken;
@@ -1901,6 +1908,41 @@ function compile(t) {
 		asm.push(' JMP start_while_' + labe + ' \nend_while_' + labe + ':');
 		blockStack.pop();
 		previousToken();
+	}
+	
+	function doWhileToken() {
+		var labe = labelNumber;
+		labelNumber++;
+		asm.push('start_dowhile_' + labe + ':');
+		blockStack.push('dowhile_' + labe);
+		registerCount = 1;
+		getToken();
+		removeNewLine();
+		if (thisToken == '{') {
+			skipBrace();
+		} else {
+			execut();
+			if (isVar(thisToken)) {
+				getToken();
+				execut();
+			}
+			if (thisToken == ')')
+				getToken();
+		}
+		registerCount = 1;
+		getToken();
+		removeNewLine();
+		if (thisToken != 'while')
+			putError(lineCount, 1, 'do ... while');
+		getToken();
+		if (thisToken != '(')
+			putError(lineCount, 13, 'while'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции while");
+		skipBracket();
+		registerCount--;
+		asm.push(' CMP R' + registerCount + ',0 \n JZ end_dowhile_' + labe);
+		getToken();
+		asm.push(' JMP start_dowhile_' + labe + ' \nend_dowhile_' + labe + ':');
+		blockStack.pop();
 	}
 
 	function forToken() {
@@ -2279,6 +2321,8 @@ function compile(t) {
 			getToken();
 		} else if (thisToken == '=' || thisToken == '+=' || thisToken == '-=' || thisToken == '*=' || thisToken == '/=') {
 			assigment();
+		} else if (thisToken == '~') {
+			notToken();
 		} else if (thisToken == ';') {
 			return;
 		} else if (thisToken == '{') {
@@ -2300,6 +2344,8 @@ function compile(t) {
 			return;
 		} else if (thisToken == 'while') {
 			whileToken();
+		} else if (thisToken == 'do') {
+			doWhileToken();
 		} else if (thisToken == 'for') {
 			forToken();
 		} else if (thisToken == 'switch') {
@@ -2312,12 +2358,25 @@ function compile(t) {
 			continueToken();
 		} else if (thisToken == 'break') {
 			breakToken();
+		} else if (thisToken == 'goto') {
+			getToken();
+			asm.push('JMP label_' + thisToken + ':');
+			getToken();
+			removeNewLine();
 		} else if (thisToken == 'unsigned') {
 			putError(lineCount, 19, 'switch'); //info("" + lineCount + "предупреждение, unsigned не реализовано " + thisToken);
 			return;
 		} else if (thisToken[0] == '"') {
 			stringToken();
 		} else {
+			getToken();
+			if(thisToken == ':'){
+				asm.push('label_' + lastToken + ':');
+				return;
+			}
+			else
+				previousToken();
+			removeNewLine();
 			if (thisToken.length > 0)
 				putError(lineCount, 20, thisToken); //info("" + lineCount + " неизвестный токен " + thisToken);
 		}

@@ -515,6 +515,10 @@ function asm(s) {
 				out.push(0xAD); //SQRT R				AD 1R
 				out.push(0x10 + (getRegister(a[i + 1]) & 0xf));
 				return;
+			case 'NOT':
+				out.push(0xAD); //NOT R				AD 2R
+				out.push(0x20 + (getRegister(a[i + 1]) & 0xf));
+				return;
 			case 'CLS':
 				out.push(0xD0); // CLS				D000
 				out.push(0x00);

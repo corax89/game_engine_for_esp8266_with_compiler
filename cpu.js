@@ -1785,6 +1785,12 @@ function Cpu() {
 					n = setFlags(n);
 					reg[r1] = n;
 				}
+				// NOT R		AD 2R
+				else if (r2 == 0x20) {
+					n = (~reg[r1]) & 0xffff;
+					n = setFlags(n);
+					reg[r1] = n;
+				}
 				break;
 			case 0xAE:
 				// ANDL R,R		AE RR
