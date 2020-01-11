@@ -640,9 +640,9 @@ function Display() {
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor((e.offsetX == undefined ? e.layerX : e.offsetX) / (rect.width / 128));
 		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 160)) - 16;
-		ctx.fillStyle = "black";
+		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
-		ctx.fillStyle = "white";
+		ctx.fillStyle = "#111";
 		ctx.fillText("x " + x + "; y " + y, 1, 1);
 	}
 
@@ -654,7 +654,7 @@ function Display() {
 		ctx.textAlign = "start";
 		ctx.textBaseline = "hanging";
 		ctx.font = pixelSize * 8 + "px monospace";
-		ctx.fillStyle = "black";
+		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, 0, width + 20, height + 20);
 		for (var i = 0; i < 20480; i++) {
 			displayArray[i] = 0;
@@ -662,10 +662,12 @@ function Display() {
 			canvasArray2[i] = 0;
 		}
 		cpuLostCycle += 2000;
-		ctx.fillStyle = "black";
+		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, (128 + 16) * pixelSize, pixelSize * 128, pixelSize * 16);
-		ctx.fillStyle = "white";
+		ctx.fillStyle = "#111";
 		ctx.fillText("KEY_A - z, KEY_B - space", 1, (128 + 17) * pixelSize);
+		ctx.fillStyle = "rgb(0, 0, 0)";
+		ctx.fillRect(0, 16 * pixelSize, pixelSize * 128, pixelSize * 128);
 		for (var i = 0; i < 16; i++) {
 			palette[i] = bpalette[i];
 			sprtpalette[i] = bpalette[i];
