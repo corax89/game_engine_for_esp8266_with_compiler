@@ -227,8 +227,11 @@ textarea:focus {
 	width: 97%;
 	word-wrap: break-word;
 }
-#alert>b {
+#alert > b {
 	color: #F11;
+}
+#alert i {
+	color: #333;
 }
 #consoleInput {
 	border: 1px solid #516399;

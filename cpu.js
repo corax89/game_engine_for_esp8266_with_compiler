@@ -52,6 +52,8 @@ function Cpu() {
 				address: 0,
 				x: 255,
 				y: 255,
+				previousx: 255,
+				previousy: 255,
 				speedx: 0,
 				speedy: 0,
 				height: 8,
@@ -201,8 +203,10 @@ function Cpu() {
 				display.plot(bufPixel, clipx1 - 1, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0)
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
 					_spr[n].x -= 4;
+					_spr[n].previousx -= 4;
+				}
 		} else if (direction == 1) {
 			for (var x = clipx0; x < clipx1; x++) {
 				bufPixel = display.getPixel(x, clipy0);
@@ -211,8 +215,10 @@ function Cpu() {
 				display.plot(bufPixel, x, clipy1 - 1);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0)
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
 					_spr[n].y -= 4;
+					_spr[n].previousy -= 4;
+				}
 		} else if (direction == 0) {
 			for (var y = clipy0; y < clipy1; y++) {
 				bufPixel = display.getPixel(clipx1 - 1, y);
@@ -221,8 +227,10 @@ function Cpu() {
 				display.plot(bufPixel, clipx0, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0)
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
 					_spr[n].x += 4;
+					_spr[n].previousx += 4;
+				}
 		} else {
 			for (var x = clipx0; x < clipx1; x++) {
 				bufPixel = display.getPixel(x, clipx1 - 1);
@@ -231,8 +239,10 @@ function Cpu() {
 				display.plot(bufPixel, x, clipy0);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0)
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
 					_spr[n].y += 4;
+					_spr[n].previousy += 4;
+				}
 		}
 		if (tile.adr > 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128))
 			tileDrawLine(step, direction);
@@ -329,6 +339,8 @@ function Cpu() {
 			_spr[n].y = Math.floor((y1 - 0x10000) << 2);
 		else
 			_spr[n].y = Math.floor(y1 << 2);
+		_spr[n].previousx = _spr[n].x;
+		_spr[n].previousy = _spr[n].y;
 	}
 
 	function setParticle(g, c, t) {
@@ -638,10 +650,13 @@ function Cpu() {
 		x0,
 		y0,
 		adr;
-		for (n = 0; n < 32; n++)
+		for (n = 0; n < 32; n++){
 			_spr[n].collision = (-1) & 0xffff;
+		}
 		for (n = 0; n < 32; n++) {
 			if (_spr[n].lives > 0) {
+				var oldx = (_spr[n].x - _spr[n].speedx) >> 2;
+				var oldy = (_spr[n].y - _spr[n].speedy) >> 2;
 				for (i = 0; i < n; i++) {
 					if (_spr[i].lives > 0)
 						if (_spr[n].x < _spr[i].x + (_spr[i].width << 2) &&
@@ -677,23 +692,38 @@ function Cpu() {
 						x0 = Math.floor(_spr[n].x >> 2);
 						y0 = Math.floor(_spr[n].y >> 2);
 						if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+						 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
 							_spr[n].y = _spr[n].y - _spr[n].speedy;
-							y0 = Math.floor(_spr[n].y >> 2);
-							if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-								 || getTileInXY(x0, y0 + _spr[n].height)
-								 || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
-								_spr[n].x = _spr[n].x - _spr[n].speedx;
-							}
-							_spr[n].speedy = Math.floor(_spr[n].speedy / 2 - _spr[n].gravity);
-							_spr[n].speedx = Math.floor(_spr[n].speedx / 2);
+							_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;						
 							x0 = Math.floor(_spr[n].x >> 2);
 							y0 = Math.floor(_spr[n].y >> 2);
-							if (getTileInXY(x0, y0 + _spr[n].height)
-								 || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
-								_spr[n].y--;
-							}
-						}
+							if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								_spr[n].y = _spr[n].y - _spr[n].speedy;
+								_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;
+								y0 = _spr[n].y >> 2;
+								if(getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+								  || getTileInXY(x0 , y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)){
+									_spr[n].x = _spr[n].x - _spr[n].speedx;
+									_spr[n].speedx = Math.floor((_spr[n].x - (_spr[n].x - _spr[n].speedx)) / 2);
+								  }
+								x0 = _spr[n].x >> 2;
+								y0 = _spr[n].y >> 2;
+								if(getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+								  || getTileInXY(x0 , y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)){
+									_spr[n].x = _spr[n].previousx;
+									_spr[n].y = _spr[n].previousy;
+								  }
+								else{
+								  _spr[n].previousx = _spr[n].x;
+								  _spr[n].previousy = _spr[n].y;
+								}
+							  }
+						 }
+						  else{
+							_spr[n].previousx = _spr[n].x;
+							_spr[n].previousy = _spr[n].y;
+						  }
 					}
 				}
 			}

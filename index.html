@@ -174,91 +174,94 @@
         <div class="content_wind">
 			<a href="https://corax89.github.io/esp8266Game/user_guide/index.html"  target="_blank">Click here to open the full guide.</a>
 			<pre id = "help_hl" style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;height: 31em;overflow: auto;'>
-				char putchar(char);
-				int puts(char[]);
-				int putn(int);
-				int printf(char[], arg-list);
-				int random(int max);
-				int getchar();
-				int getkey();
-				/*key is KEY_UP, KEY_LEFT,
-				 KEY_DOWN, KEY_RIGHT, KEY_A, KEY_B*/
-				int getpixel(int x, int y);
-				int spritegetvalue(int n, int type);
-				/*type is 
-				 S_X, S_Y, S_SPEEDX, S_SPEEDY, 
-				 S_WIDTH, S_HEIGHT, S_IS_ONEBIT,
-				 S_ANGLE, S_LIVES, S_COLLISION,
-				 S_SOLID, S_GRAVITY, S_ON_COLLISION,
-				 S_ON_EXIT_SCREEN, S_IS_SCROLLED,
-				 S_FLIP_HORIZONTAL*/
-				int angbetweenspr(int n1, int n2);
-				int gettimer(int n);
-				int getspriteinxy(int x,
-				 int y);
-				int gettileinxy(int x,
-				 int y);
-				int distance(int x1, int y1, int x2, 
-				 int y2);
-				int savedata(int name, int array, 
-				 int count);
-				int loaddata(int name, int array);
-				void settimer(int n, int time);
-				void tone(int freq, int delay);
-				void loadrtttl(int address, int isLoop);
-				void playrtttl();
-				void pausertttl();
-				void stoprtttl();
-				void delayredraw();
-				void clearscreen();
-				void setpallette(int n, int r5g6b5);
-				void setcolor(int);
-				void scroll(int dir);
-				void putpixel(int x, int y);
-				void setclip(int x, int y, int width, 
-				 int height);
-				void getsprite(int n, int address);
-				void putsprite(int n, int x, int y);
-				void spritesetvalue(int n, int type,
-				 int value);
-				void spritespeed(int n, int speed,
-				 int direction);
-				void setimagesize(fixed size);
-				void gotoxy(int x, int y);
-				void line(int x, int y, int x1, int y1);
-				void rect(int x, int y, int x1, int y1);
-				void fillrect(int x, int y, int x1, 
-				 int y1);
-				void triangle(int x, int y, int x1, 
-				 int y1, int x2, int y2);
-				void filltriangle(int x, int y, int x1, 
-				 int y1, int x2, int y2);
-				void circle(int x, int y, int r);
-				void fillcircle(int x, int y, int r);
-				void putimage(int address, int x,
-				 int y, int w, int h);
-				void putimage1bit(int address, int x,
-				 int y, int w, int h);
-				void putimagerle(int address, int x,
-				 int y, int w, int h);
-				*int malloc(int);
-				void free(*int);
-				void memcpy(*int array1, *int array2, 
-				 int size);
-				void setparticle(int gravity, int count,
-				 int time);
-				void setemitter(int time, int dir,
-				 int dir1, int speed);
-				void emittersize(int width, int height,
-				 int size);
-				void drawparticle(int x, int y,
-				 int color);
-				void loadtile(int adress, int imgwidth,
-				 int imgheight, int width, int height);
-				void drawtile(int x, int y);
-				 int gettileinxy(int x, int y);
-				fixed sin(int angle);
-				fixed cos(int angle);
+				// screen
+			void setimagesize(fixed size);
+			void setclip(int x, int y, int width, int height);
+			void gotoxy(int x, int y);
+			void scroll(int dir);
+			void delayredraw();
+			void clearscreen();
+
+			// image
+			void putimage(int address, int x, int y, int w, int h);
+			void putimage1bit(int address, int x, int y, int w, int h);
+			void putimagerle(int address, int x, int y, int w, int h);
+
+			// color & palette
+			void setpallette(int n, int r5g6b5);
+			void setcolor(int);
+
+			// sprite
+			int spritegetvalue(int n, int type);
+			void spritesetvalue(int n, int type, int value);
+			int angbetweenspr(int n1, int n2);
+			void getsprite(int n, int address);
+			void putsprite(int n, int x, int y);
+			void spritespeed(int n, int speed, int direction);
+			int getspriteinxy(int x, int y);
+			/*type is 
+			 S_X, S_Y, S_SPEEDX, S_SPEEDY, S_WIDTH, S_HEIGHT, S_IS_ONEBIT,
+			 S_ANGLE, S_LIVES, S_COLLISION, S_SOLID, S_GRAVITY, S_ON_COLLISION,
+			 S_ON_EXIT_SCREEN, S_IS_SCROLLED, S_FLIP_HORIZONTAL*/
+
+			// geometry
+			void putpixel(int x, int y);
+			int getpixel(int x, int y);
+			void line(int x, int y, int x1, int y1);
+			void rect(int x, int y, int x1, int y1);
+			void fillrect(int x, int y, int x1,  int y1);
+			void triangle(int x, int y, int x1, int y1, int x2, int y2);
+			void filltriangle(int x, int y, int x1, int y1, int x2, int y2);
+			void circle(int x, int y, int r);
+			void fillcircle(int x, int y, int r);
+
+			// text
+			char putchar(char);
+			int puts(char[]);
+			int putn(int);
+			int printf(char[], arg-list);
+			int getchar();
+
+			// tile map
+			void loadtile(int adress, int imgwidth, int imgheight, int width, int height);
+			void drawtile(int x, int y);
+			int gettileinxy(int x, int y); 
+
+			// particles
+			void setparticle(int gravity, int count, int time);
+			void setemitter(int time, int dir, int dir1, int speed);
+			void emittersize(int width, int height, int size);
+			void drawparticle(int x, int y, int color);
+
+			// input
+			int getkey();
+			/*key is KEY_UP, KEY_LEFT,
+			 KEY_DOWN, KEY_RIGHT, KEY_A, KEY_B*/
+
+			// time
+			void settimer(int n, int time);
+			int gettimer(int n);
+
+			// data
+			int savedata(int name, int array, int count);
+			int loaddata(int name, int array);
+
+			// sounds & music
+			void tone(int freq, int delay);
+			void loadrtttl(int address, int isLoop);
+			void playrtttl();
+			void pausertttl();
+			void stoprtttl();
+
+			// mathematics
+			fixed sin(int angle);
+			fixed cos(int angle);
+			int distance(int x1, int y1, int x2,  int y2);
+
+			// memory
+			*int malloc(int);
+			void free(*int);
+			void memcpy(*int array1, *int array2, int size);
 			</pre>
         </div>
     </div>

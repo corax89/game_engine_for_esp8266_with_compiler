@@ -1357,13 +1357,6 @@ function compile(t) {
 			getToken();
 			if (thisToken == '[') {
 				//вычисление номера ячейки двухмерного массива
-				if (v.length2) {
-					if (v.length2 < 255)
-						asm.push(' LDC R' + registerCount + ',' + v.length2);
-					else
-						asm.push(' LDI R' + registerCount + ',' + v.length2);
-					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
-				}
 				getToken();
 				while (thisToken != ']') {
 					if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
@@ -1377,6 +1370,13 @@ function compile(t) {
 					}
 				}
 				typeCastToFirst(registerCount - 1, 'int');
+				if (v.length2) {
+					if ((v.length / v.length2) - 1 < 255)
+						asm.push(' LDC R' + registerCount + ',' + ((v.length / v.length2) - 1));
+					else
+						asm.push(' LDI R' + registerCount + ',' + ((v.length / v.length2) - 1));
+					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
+				}
 				asm.push(' ADD R' + (registerCount - 2) + ',R' + (registerCount - 1));
 				registerCount--;
 				getToken();
@@ -1434,13 +1434,6 @@ function compile(t) {
 			getToken();
 			if (thisToken == '[') {
 				//вычисление номера ячейки двухмерного массива
-				if (v.length2) {
-					if (v.length2 < 255)
-						asm.push(' LDC R' + registerCount + ',' + v.length2);
-					else
-						asm.push(' LDI R' + registerCount + ',' + v.length2);
-					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
-				}
 				getToken();
 				while (thisToken != ']') {
 					if (!thisToken || ('}]),:'.indexOf(thisToken) > -1)) {
@@ -1454,6 +1447,13 @@ function compile(t) {
 					}
 				}
 				typeCastToFirst(registerCount - 1, 'int');
+				if (v.length2) {
+					if ((v.length / v.length2) - 1 < 255)
+						asm.push(' LDC R' + registerCount + ',' + ((v.length / v.length2) - 1));
+					else
+						asm.push(' LDI R' + registerCount + ',' + ((v.length / v.length2) - 1));
+					asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
+				}
 				asm.push(' ADD R' + (registerCount - 2) + ',R' + (registerCount - 1));
 				registerCount--;
 				getToken();

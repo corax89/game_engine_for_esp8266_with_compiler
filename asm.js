@@ -830,9 +830,9 @@ function asm(s) {
 			}
 		}
 	}
-	info("program size " + out.length + " bytes");
-	info("variables occupy " + variableAdress + " bytes");
-	info("total occupied memory " + (out.length + variableAdress) + " bytes");
+	info("<i>program size " + out.length + " bytes</i>");
+	info("<i>variables occupy " + variableAdress + " bytes</i>");
+	info("<i>total occupied memory " + (out.length + variableAdress) + " bytes</i>");
 	display.reset();
 	cpu.init();
 	cpu.load(out);
