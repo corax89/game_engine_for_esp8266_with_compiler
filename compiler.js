@@ -2060,7 +2060,7 @@ function compile(t) {
 		switchStack.pop();
 		blockStack.pop();
 		getToken();
-		removeNewLine();
+		//removeNewLine();
 	}
 
 	function caseToken() {

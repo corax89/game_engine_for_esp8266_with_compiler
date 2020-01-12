@@ -256,17 +256,17 @@
 			int getpixel(int x, int y);
 			void line(int x, int y, int x1, int y1);
 			void rect(int x, int y, int x1, int y1);
-			void fillrect(int x, int y, int x1,  int y1);
+			void fillrect(int x, int y, int x1, int y1);
 			void triangle(int x, int y, int x1, int y1, int x2, int y2);
 			void filltriangle(int x, int y, int x1, int y1, int x2, int y2);
-			void circle(int x, int y, int r);
-			void fillcircle(int x, int y, int r);
+			void circle(int x, int y, int radius);
+			void fillcircle(int x, int y, int radius);
 
 			// text
-			char putchar(char);
-			int puts(char[]);
-			int putn(int);
-			int printf(char[], arg-list);
+			char putchar(char c);
+			int puts(char[] message);
+			int putn(int number);
+			int printf(char[] formatString, arg-list...);
 			int getchar();
 
 			// tile map
@@ -288,6 +288,7 @@
 			// time
 			void settimer(int n, int time);
 			int gettimer(int n);
+			/* n: 0 - 7 */
 
 			// data
 			int savedata(int name, int array, int count);
@@ -306,8 +307,8 @@
 			int distance(int x1, int y1, int x2,  int y2);
 
 			// memory
-			*int malloc(int);
-			void free(*int);
+			*int malloc(int size);
+			void free(*int array);
 			void memcpy(*int array1, *int array2, int size);
 			</pre>
         </div>

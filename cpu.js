@@ -1024,10 +1024,10 @@ function Cpu() {
 		var p =  - (r >> 1);
 		// These are ordered to minimise coordinate changes in x or y
 		// drawPixel can then send fewer bounding box commands
-		setPix(x0 + r, y0, color);
-		setPix(x0 - r, y0, color);
-		setPix(x0, y0 - r, color);
-		setPix(x0, y0 + r, color);
+		display.plot(color, x0 + r, y0);
+		display.plot(color, x0 - r, y0);
+		display.plot(color, x0, y0 - r);
+		display.plot(color, x0, y0 + r);
 		while (x < r) {
 			if (p >= 0) {
 				dy -= 2;
@@ -1039,14 +1039,14 @@ function Cpu() {
 			x++;
 			// These are ordered to minimise coordinate changes in x or y
 			// drawPixel can then send fewer bounding box commands
-			setPix(x0 + x, y0 + r, color);
-			setPix(x0 - x, y0 + r, color);
-			setPix(x0 - x, y0 - r, color);
-			setPix(x0 + x, y0 - r, color);
-			setPix(x0 + r, y0 + x, color);
-			setPix(x0 - r, y0 + x, color);
-			setPix(x0 - r, y0 - x, color);
-			setPix(x0 + r, y0 - x, color);
+			display.plot(color, x0 + x, y0 + r);
+			display.plot(color, x0 - x, y0 + r);
+			display.plot(color, x0 - x, y0 - r);
+			display.plot(color, x0 + x, y0 - r);
+			display.plot(color, x0 + r, y0 + x);
+			display.plot(color, x0 - r, y0 + x);
+			display.plot(color, x0 - r, y0 - x);
+			display.plot(color, x0 + r, y0 - x);
 		}
 	}
 
