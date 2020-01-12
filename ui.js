@@ -35,11 +35,12 @@ var selectedArray = '';
 var timerstart = new Date().getTime(),
 timertime = 0;
 
+sourceArea.addEventListener("click", testForImageArray, true);
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keypress", keyPressHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 setup_mouse("div_wind1", "drag_wind1");
-sourceArea.addEventListener("click", testForImageArray, false);
+sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
 
 (function () {
 	var url = window.location.href.toString();
