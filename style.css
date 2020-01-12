@@ -244,6 +244,13 @@ textarea:focus {
 	height: 1.5em;
 	width: 90%;
 }
+#floatButton{
+	position: fixed;
+    top: 1px;
+    left: 1px;
+	border: 3px solid gray
+	display: none;
+}
 .drop-menu {
 	display: inline-block;
 	cursor: pointer;

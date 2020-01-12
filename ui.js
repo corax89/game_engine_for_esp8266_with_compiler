@@ -31,6 +31,7 @@ var fileType = 'html';
 var fileName = '';
 var fileAuthor = '';
 var fileIco = '';
+var selectedArray = '';
 var timerstart = new Date().getTime(),
 timertime = 0;
 
@@ -38,7 +39,7 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keypress", keyPressHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 setup_mouse("div_wind1", "drag_wind1");
-input.onclick = input.onkeydown = input.onkeyup = input.onkeypress = input.oncut = input.onpaste = inputOnKey;
+sourceArea.addEventListener("click", testForImageArray, false);
 
 (function () {
 	var url = window.location.href.toString();
@@ -267,6 +268,56 @@ function keyUpHandler(e) {
 		globalJKey &= ~16;
 		break;
 	}
+}
+
+function testForImageArray(e){
+	var b = document.getElementById("floatButton");
+	var position = getCaretPos(sourceArea);
+	var str = sourceArea.value;
+	var left = 0;
+	var right = str.length;
+	var word;
+	b.style.left = (e.clientX - 50) + 'px';
+	b.style.top = (e.clientY - 40) + 'px';
+	b.style.display = 'none';
+	for(var i = position; i >= 0 ; i--){
+		if(' \n\r\t({[]});'.indexOf(str[i]) > -1){
+			left = i + 1;
+			break;
+		}
+	}
+	for(i = position; i < str.length; i++){
+		if(' \n\r\t({[]});'.indexOf(str[i]) > -1){
+			right = i;
+			break;
+		}
+	}
+	if(left < right){
+		word = str.substring(left,right);
+		if(!word.match(/[^,0-9a-fA-FxX\s]/)){
+			selectedArray = word;
+			b.style.display = 'block';
+		}
+	}
+}
+
+function getCaretPos(obj) {
+  obj.focus();
+  if (document.selection) { // IE
+    var sel = document.selection.createRange();
+    var clone = sel.duplicate();
+    sel.collapse(true);
+    clone.moveToElementText(obj);
+    clone.setEndPoint('EndToEnd', sel);
+    return clone.text.length;
+  } else if (obj.selectionStart!==false) return obj.selectionStart; // Gecko
+  else return 0;
+}
+
+function loadArrayAsImage(){
+	document.getElementById("spriteLoadArea").value = selectedArray;
+	spriteEditor.edit();
+	document.getElementById('spriteLoad').style.height = '10em';
 }
 
 function highliteasm(code) {

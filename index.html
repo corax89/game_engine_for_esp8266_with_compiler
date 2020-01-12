@@ -221,7 +221,7 @@
         <div class="content_wind">
 			<a href="https://corax89.github.io/esp8266Game/user_guide/index.html"  target="_blank">Click here to open the full guide.</a>
 			<pre id = "help_hl" style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;height: 31em;overflow: auto;'>
-				// screen
+			// screen
 			void setimagesize(fixed size);
 			void setclip(int x, int y, int width, int height);
 			void gotoxy(int x, int y);
@@ -236,7 +236,8 @@
 
 			// color & palette
 			void setpallette(int n, int r5g6b5);
-			void setcolor(int);
+			void setcolor(int color);
+			setbgcolor(int color);
 
 			// sprite
 			int spritegetvalue(int n, int type);
@@ -354,6 +355,9 @@
 				onclick="saveSettings()">ok</button>
         </div>
     </div>
+	<div id="floatButton">
+		<button onclick="loadArrayAsImage()">open as image</button>
+	</div>
 	<a href="https://github.com/corax89/game_engine_for_esp8266_with_compiler" class="github-corner" aria-label="View source on GitHub">
 		<svg width="65" height="65" viewBox="0 0 250 250" style="fill:#516399; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
 			<path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
