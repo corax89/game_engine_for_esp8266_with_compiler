@@ -266,7 +266,7 @@ function SpriteEditor() {
 			spriteheight++;
 			spritewidth++;
 			document.getElementById("spriteInfo").innerHTML = (spritewidth + spritewidth % 2) + 'x' + spriteheight;
-			imgwidth = Math.floor(spritewidth / 2);
+			imgwidth = Math.floor((spritewidth + spritewidth % 2) / 2);
 		}
 		if (x >= 0 && x < 32 && y >= 0 && y < 32) {
 			if (x != lastx || y != lasty) {
