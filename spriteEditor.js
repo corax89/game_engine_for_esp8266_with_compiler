@@ -36,6 +36,7 @@ function SpriteEditor() {
 		w = parseInt(w, 10);
 		if(isNaN(w) || w < 1 || w > 32)
 			w = 8;
+		w += w % 2;
 		a = a.replace(/[{}]/g, '');
 		a = a.split(',');
 		for (var i = 0; i < 32; i++) {
@@ -57,7 +58,12 @@ function SpriteEditor() {
 					break;
 			}
 		}
-		imgwidth = w;
+		data = [];
+		for (i = 0; i < y; i++)
+			for (j = 0; j < w; j++) {
+				data.push(((sprite[j][i] & 0xf) << 4) + (sprite[++j][i] & 0xf));
+			}
+		imgwidth = Math.floor(w / 2);
 		redraw();
 		updateText();
 	}
@@ -262,11 +268,11 @@ function SpriteEditor() {
 				for (j = 0; j <= spritewidth; j++) {
 					data.push(((sprite[j][i] & 0xf) << 4) + (sprite[++j][i] & 0xf));
 				}
-			imgwidth = Math.floor((spritewidth + spritewidth % 2) / 2);
-			updateText();
 			spriteheight++;
 			spritewidth++;
+			imgwidth = Math.floor((spritewidth + spritewidth % 2) / 2);
 			document.getElementById("spriteInfo").innerHTML = (spritewidth + spritewidth % 2) + 'x' + spriteheight;
+			updateText();
 		}
 		if (x >= 0 && x < 32 && y >= 0 && y < 32) {
 			if (x != lastx || y != lasty) {
