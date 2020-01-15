@@ -32,13 +32,20 @@ var fileName = '';
 var fileAuthor = '';
 var fileIco = '';
 var selectedArray = '';
+var colorHighliteTimer;
+var isHighliteColor = true;
 var timerstart = new Date().getTime(),
 timertime = 0;
 
 sourceArea.addEventListener("click", testForImageArray, true);
+sourceArea.onscroll     = function(ev){ lineCount(); handleScroll();};
+sourceArea.onmousedown  = function(ev){ this.mouseisdown = true; }
+sourceArea.onmouseup    = function(ev){ this.mouseisdown=false; lineCount()};
+sourceArea.onmousemove  = function(ev){ if (this.mouseisdown) lineCount()};
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keypress", keyPressHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
 sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
 
@@ -58,6 +65,7 @@ sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.o
 				break;
 			}
 			input.value = file;
+			pixelColorHighlight();
 			setTimeout(lineCount, 300);
 		});
 	}
@@ -69,8 +77,10 @@ window.addEventListener("unload", function() {
 
 document.addEventListener("DOMContentLoaded", function() {
 	var s = localStorage.getItem('save_source_code');
-    if(s && s.length > 2)
+    if(s && s.length > 2){
 		sourceArea.value = s;
+		pixelColorHighlight();
+	}
 });
 
 function saveIco(a){
@@ -282,13 +292,13 @@ function testForImageArray(e){
 	b.style.top = (e.clientY - 40) + 'px';
 	b.style.display = 'none';
 	for(var i = position; i >= 0 ; i--){
-		if(' \n\r\t({[]});'.indexOf(str[i]) > -1){
+		if('{};'.indexOf(str[i]) > -1){
 			left = i + 1;
 			break;
 		}
 	}
 	for(i = position; i < str.length; i++){
-		if(' \n\r\t({[]});'.indexOf(str[i]) > -1){
+		if('{};'.indexOf(str[i]) > -1){
 			right = i;
 			break;
 		}
@@ -455,12 +465,7 @@ function lineCount(){
 		}
 	}
 	catch(e){ console.log(e); }
- };
-	
-sourceArea.onscroll     = function(ev){ lineCount() };
-sourceArea.onmousedown  = function(ev){ this.mouseisdown = true; }
-sourceArea.onmouseup    = function(ev){ this.mouseisdown=false; lineCount() };
-sourceArea.onmousemove  = function(ev){ if (this.mouseisdown) lineCount() };
+};
 
 function inputOnKey(e) {
 	if (e.keyCode === 9) { // была нажата клавиша TAB
@@ -494,6 +499,7 @@ function inputOnKey(e) {
 
 		}
 		setTimeout(lineCount, 300);
+		pixelColorHighlight();
 		// предотвратим потерю фокуса
 		return false;
 	} else if (e.keyCode === 13) {
@@ -528,6 +534,7 @@ function inputOnKey(e) {
 		this.value = val.substring(0, start) + '\n' + txt + val.substring(end);
 		this.selectionStart = start + txt.length + 1;
 		this.selectionEnd = start + txt.length + 1;
+		pixelColorHighlight();
 		return false;
 	} else if (e.keyCode === 125) {
 		if (e.type == 'keyup')
@@ -541,9 +548,45 @@ function inputOnKey(e) {
 		this.value = val.substring(0, start) + '}' + val.substring(end);
 		this.selectionStart = start + 1;
 		this.selectionEnd = start + 1;
+		pixelColorHighlight();
 		return false;
 	}
+	pixelColorHighlight();
 	e.stopPropagation();
+}
+
+function handleScroll() {
+	var h = document.getElementById("inputImgHighlite");
+	h.scrollTo(sourceArea.scrollLeft, sourceArea.scrollTop);
+}
+
+function pixelColorHighlight(){
+	var h = document.getElementById("inputImgHighlite");
+	clearTimeout(colorHighliteTimer);
+	if(isHighliteColor){
+		h.style.display = "block";
+		colorHighliteTimer = setTimeout(function(){
+			var s = sourceArea.value.replace(/</g, '>');
+			h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})[,}]*/g, function (str, c, offset, s) {
+				if(c.length == 1){
+					return '<pc class="pc' + parseInt(c, 16) + '">0x0,</pc>';
+				}
+				else{
+					c = parseInt(c, 16);
+					return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0,</pc>';
+				}
+			});
+		}, 300);
+		h.style.width = sourceArea.offsetWidth + 'px';
+		h.style.height = sourceArea.offsetHeight + 'px';
+	}
+	else
+		h.style.display = "none";
+}
+
+function changeHighlightColors(check){
+	isHighliteColor = check;
+	pixelColorHighlight();
 }
 
 function listing() {
@@ -717,7 +760,7 @@ function Display() {
 		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, (128 + 16) * pixelSize, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "#111";
-		ctx.fillText("KEY_A - z, KEY_B - space", 1, (128 + 17) * pixelSize);
+		ctx.fillText("KEY_A - z, KEY_B - space", 1, (128 + 16) * pixelSize);
 		ctx.fillStyle = "rgb(0, 0, 0)";
 		ctx.fillRect(0, 16 * pixelSize, pixelSize * 128, pixelSize * 128);
 		for (var i = 0; i < 16; i++) {

@@ -70,6 +70,7 @@
 			<tr><td style="border:1px #345 solid; border-right:0px; vertical-align:top; width:1px;">
 				<canvas width="48" height="511" id="inputCanvas"></canvas></td>
 				<td style="border:1px #345 solid; border-left:0px; vertical-align:top; width:100%">
+				<pre id="inputImgHighlite"></pre>
 				<textarea id="input" cols="80"></textarea>
 				</td></tr></table></div>
 			</div>
@@ -87,8 +88,9 @@
 				<option value="10">mines</option>
 				<option value="11">dragon</option>
 			</select>
-			<button onclick="loadExample();">load example</button>
+			<button onclick="loadExample();pixelColorHighlight()">load example</button>
 			<a href="gamelist/index.html" style="animation: colorRotate 3s linear 0s 5;" target="_blank" class="hrefb">List of games</a>
+			<label style="user-select:none;"><input type="checkbox" onclick="changeHighlightColors(this.checked)" style="height:1em;" id="hcolorsCheckbox" checked>highlight colors</label>
 		</div>
 	</div>
 	<div class="header">information</div>
@@ -152,37 +154,38 @@
 					</svg>
 				</button>
 			</div>
+			<br>
 			<button onclick="spriteEditor.clear();">cls</button>
-			<button onclick = "spriteEditor.scroll(0);" style = "width: 1.8em;">
+			<button onclick = "spriteEditor.scroll(0);" style = "width: 1.7em;">
 				<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32">
 				<title>arrow-right</title>
 				<path fill="white" d="M31 16l-15-15v9h-16v12h16v9z"></path>
 				</svg>
 			</button>
-			<button onclick = "spriteEditor.scroll(1);" style = "width: 1.8em;">
+			<button onclick = "spriteEditor.scroll(1);" style = "width: 1.7em;">
 				<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32">
 				<title>arrow-up</title>
 				<path fill="white" d="M16 1l-15 15h9v16h12v-16h9z"></path>
 				</svg>
 			</button>
-			<button onclick = "spriteEditor.scroll(2);" style = "width: 1.8em;">
+			<button onclick = "spriteEditor.scroll(2);" style = "width: 1.7em;">
 				<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32">
 				<title>arrow-left</title>
 				<path fill="white" d="M1 16l15 15v-9h16v-12h-16v-9z"></path>
 				</svg>
 			</button>
-			<button onclick = "spriteEditor.scroll(3);" style = "width: 1.8em;">
+			<button onclick = "spriteEditor.scroll(3);" style = "width: 1.7em;">
 				<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32">
 				<title>arrow-down</title>
 				<path fill="white" d="M16 31l15-15h-9v-16h-12v16h-9z"></path>
 				</svg>
 			</button>
 			<input type="checkbox" id="check1bit" onclick="spriteEditor.set1bit(this.checked)">
-			<label for="check1bit" id="check1bitLabel">1 BIT</label>
+			<label for="check1bit" id="check1bitLabel"  style="font-size:11px;">1 BIT</label>
 			<input type="checkbox" id="checkRle" onclick="spriteEditor.setRle(this.checked)">
-			<label for="checkRle" id="checkRleLabel">RLE 100%</label>
+			<label for="checkRle" id="checkRleLabel"  style="font-size:11px;">RLE 100%</label>
 			<b id="selectColor">[]</b>
-			<b id="spriteInfo"></b>
+			<b id="spriteInfo" style="font-size:12px;"></b>
 			<input style="width:5em" id="r5g6b5HEXinput">
 			<input type="range" min="0" max="31" step="1" value="1" id="r5g6b5Rinput" onchange="spriteEditor.changePaletteColor()"> 
 			<input type="range" min="0" max="63" step="1" value="1" id="r5g6b5Ginput" onchange="spriteEditor.changePaletteColor()"> 
