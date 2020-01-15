@@ -262,11 +262,11 @@ function SpriteEditor() {
 				for (j = 0; j <= spritewidth; j++) {
 					data.push(((sprite[j][i] & 0xf) << 4) + (sprite[++j][i] & 0xf));
 				}
+			imgwidth = Math.floor((spritewidth + spritewidth % 2) / 2);
 			updateText();
 			spriteheight++;
 			spritewidth++;
 			document.getElementById("spriteInfo").innerHTML = (spritewidth + spritewidth % 2) + 'x' + spriteheight;
-			imgwidth = Math.floor((spritewidth + spritewidth % 2) / 2);
 		}
 		if (x >= 0 && x < 32 && y >= 0 && y < 32) {
 			if (x != lastx || y != lasty) {
