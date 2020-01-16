@@ -367,9 +367,18 @@ function getCaretPos(obj) {
 }
 
 function loadArrayAsImage(){
+	var sc = selectedArray.split('\n');
 	document.getElementById("spriteLoadArea").value = selectedArray;
-	spriteEditor.edit();
-	document.getElementById('spriteLoad').style.height = '10em';
+	if(sc.length > 1){
+		var w = sc[1].split(',').length * 2 - 2;
+		document.getElementById("spriteLoadWidth").value = w;
+		spriteEditor.edit();
+		spriteEditor.load();
+	}
+	else{
+		spriteEditor.edit();
+		document.getElementById('spriteLoad').style.height = '10em';
+	}
 }
 
 function highliteasm(code) {
@@ -607,13 +616,13 @@ function pixelColorHighlight(){
 		h.style.display = "block";
 		colorHighliteTimer = setTimeout(function(){
 			var s = sourceArea.value.replace(/</g, '>');
-			h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})[,}]*/g, function (str, c, offset, s) {
+			h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})( *)[,}]*( *)/g, function (str, c, a, b, offset, s) {
 				if(c.length == 1){
 					return '<pc class="pc' + parseInt(c, 16) + '">0x0,</pc>';
 				}
 				else{
 					c = parseInt(c, 16);
-					return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0,</pc>';
+					return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0' + a + ',' + b + '</pc>' ;
 				}
 			});
 		}, 300);

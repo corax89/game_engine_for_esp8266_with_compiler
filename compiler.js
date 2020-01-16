@@ -6,11 +6,11 @@ function tokenize(s) {
 	var lastDefine,
 	l;
 	var tokenReplace = [
-		'S_X', 0, 'S_Y', 1, 'S_SPEEDX', 2, 'S_SPEEDY', 3, 'S_WIDTH', 4, 'S_HEIGHT', 5,
-		'S_ANGLE', 6, 'S_LIVES', 7, 'S_COLLISION', 8, 'S_SOLID', 9, 'S_GRAVITY', 10,
-		'S_ON_COLLISION', 11, 'S_ON_EXIT_SCREEN', 12, 'S_IS_SCROLLED', 13, 'S_IS_ONEBIT', 14,
-		'S_FLIP_HORIZONTAL', 15,
-		'KEY_UP', 1, 'KEY_LEFT', 4, 'KEY_DOWN', 2, 'KEY_RIGHT', 8, 'KEY_A', 16, 'KEY_B', 32
+		's_x', 0, 's_y', 1, 's_speedx', 2, 's_speedy', 3, 's_width', 4, 's_height', 5,
+		's_angle', 6, 's_lives', 7, 's_collision', 8, 's_solid', 9, 's_gravity', 10,
+		's_on_collision', 11, 's_on_exit_screen', 12, 's_is_scrolled', 13, 's_is_onebit', 14,
+		's_flip_horizontal', 15,
+		'key_up', 1, 'key_left', 4, 'key_down', 2, 'key_right', 8, 'key_a', 16, 'key_b', 32
 	];
 	//упрощенный вариант #define
 	function define(s) {
@@ -191,7 +191,7 @@ function tokenize(s) {
 			}
 			break;
 		default:
-			tokens[thisToken] += s[i];
+			tokens[thisToken] += s[i].toLowerCase();
 		}
 	}
 	for (var i = 0; i < tokens.length; i++) {

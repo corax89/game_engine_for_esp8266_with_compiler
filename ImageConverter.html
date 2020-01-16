@@ -236,10 +236,18 @@ img, canvas{
 				n = -1;
 			  }
 			}
-			if(isRle)
+			if(isRle){
 				arr = RLE(arr);
-			for (i = 0; i < arr.length; i++)
-				out += '0x' + arr[i].toString(16) + ',';
+				for (i = 0; i < arr.length; i++)
+					out += '0x' + arr[i].toString(16) + ',';
+			}
+			else{
+				for (i = 0; i < arr.length; i++){
+					if(i % Math.floor(width / 2) == 0)
+						out += '\n';
+					out += '0x' + (arr[i] >> 4).toString(16) + '' + (arr[i] & 0xf).toString(16) + ', ';
+				}
+			}
 			out = out.substring(0, out.length - 1)
 				out += '};';
 			ctx.putImageData(imageData, 0, 0);
