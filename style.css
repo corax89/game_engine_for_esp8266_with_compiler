@@ -48,6 +48,7 @@ textarea:focus {
 	border: 1px solid;
     margin-top: 0.7em;
     width: 10em;
+	height: 6em;
 	image-rendering: optimizeSpeed;             /* Older versions of FF          */
 	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
 	image-rendering: -webkit-optimize-contrast; /* Safari                        */
@@ -402,6 +403,7 @@ textarea:focus {
 	image-rendering: pixelated;                 /* Awesome future-browsers       */
 	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 	width: 22em;
+	height: 22em;
 	float: left;
 }
 #pixelpanel {
