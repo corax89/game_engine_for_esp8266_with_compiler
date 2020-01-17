@@ -65,7 +65,7 @@ textarea:focus {
 	padding: 2.5px;
 }
 #container {
-	height: 44em;
+	height: 50em;
 	overflow: hidden;
 	position: relative;
 }
@@ -73,19 +73,21 @@ textarea:focus {
 	float: left;
 	height: 41em;
 	padding: 2px;
-	width: 54em;
+	width: 19em;
+	margin-right: 1em;
+	transition: all 0.3s ease;
 }
 #wrap-right {
 	height: 39em;
-	margin-left: 54em;
 	padding: 2px;
 }
 #monitor {
 	border: 1px solid #516399;
 	background-color: rgb(235, 235, 228);
-	width: 53em;
+	width: 100%;
 	height: 23.2em;
 	overflow: hidden;
+	transition: all 0.3s ease;
 }
 #monitor:focus {
 	outline: 3px solid #516399;
@@ -94,11 +96,20 @@ textarea:focus {
 	background-color: #eee;
 	color: #516399;
 }
-#memoryPreviev {
+#memoryPreview {
 	float: left;
 	height: 24em;
 	text-align: center;
-	width: 21em;
+	width: 0;
+	overflow: hidden;
+	transition: all 0.3s ease;
+}
+#cpuPreview {
+	float: left;
+	height: 24em;
+	text-align: center;
+	width: 0;
+	overflow: hidden;
 }
 #areaMemoryPrewiew {
 	font-family: monospace;
@@ -190,9 +201,10 @@ textarea:focus {
 #ram {
 	border: 1px solid #516399;
 	color: #516399;
-	height: 15em;
+	height: 6em;
 	resize: none;
-	width: 53em;
+	width: 100%;
+	display: none;
 }
 #soundCheckbox{
 	display: inline-block;
@@ -223,12 +235,12 @@ textarea:focus {
 	height: 21em;
 	width: 13em;
 }
-#alert {
+#alert, #control {
 	border: 1px solid #516399;
 	max-height: 8em;
 	min-height: 2em;
 	overflow: auto;
-	width: 97%;
+	width: 100%;
 	word-wrap: break-word;
 }
 #alert > b {
@@ -269,6 +281,10 @@ textarea:focus {
     padding: 0px;
     white-space: pre;
     overflow: auto;
+}
+.bigButton {
+	width: 52px;
+	height: 50px;
 }
 .drop-menu {
 	display: inline-block;
@@ -566,7 +582,7 @@ textarea:focus {
 }
 @media screen and (max-width: 60em) {
 	#menu {
-		height: 4em;
+		height: 5em;
 		width: 70%;
 	}
 	#ram {
@@ -576,17 +592,6 @@ textarea:focus {
 	}
 	#container {
 		overflow: auto;
-	}
-	#wrap-right {
-		height: 41em;
-		margin-left: 0;
-		padding: 2px;
-	}
-	#wrap-left {
-		height: 54em;
-	}
-	#monitor {
-		width:30em;
 	}
 	#memoryPreviev {
 		float:none;

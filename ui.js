@@ -23,6 +23,7 @@ var delta_x = 0;
 var delta_y = 0;
 var file = '';
 var isDebug = false;
+var viewDebug = false;
 var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
@@ -190,6 +191,24 @@ function loadSettings(){
 			document.getElementById("fileIco").value = fileIco;
 		}
 	}
+}
+
+function viewDebugPanel(){
+	if(viewDebug){
+		document.getElementById("ram").style.display = "none";
+		document.getElementById("memoryPreview").style.width = "0";
+		document.getElementById("cpuPreview").style.width = "0";
+		document.getElementById("wrap-left").style.width = "19em";
+		viewDebug = false;
+	}
+	else{
+		document.getElementById("ram").style.display = "block";
+		document.getElementById("memoryPreview").style.width = "21em";
+		document.getElementById("cpuPreview").style.width = "11em";
+		document.getElementById("wrap-left").style.width = "54em";
+		viewDebug = true;
+	}
+	pixelColorHighlight();
 }
 
 function setup_mouse(id_div_wind, id_div_drag) {
@@ -615,6 +634,9 @@ function pixelColorHighlight(){
 	if(isHighliteColor){
 		h.style.display = "block";
 		colorHighliteTimer = setTimeout(function(){
+			var h = document.getElementById("inputImgHighlite");
+			h.style.width = sourceArea.offsetWidth + 'px';
+			h.style.height = sourceArea.offsetHeight + 'px';
 			var s = sourceArea.value.replace(/</g, '>');
 			h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})( *)[,}]*( *)/g, function (str, c, a, b, offset, s) {
 				if(c.length == 1){
@@ -625,7 +647,7 @@ function pixelColorHighlight(){
 					return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0' + a + ',' + b + '</pc>' ;
 				}
 			});
-		}, 300);
+		}, 400);
 		h.style.width = sourceArea.offsetWidth + 'px';
 		h.style.height = sourceArea.offsetHeight + 'px';
 	}
