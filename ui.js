@@ -5,6 +5,7 @@ var alertArea = document.getElementById("alert");
 var debugArea = document.getElementById("debug");
 var debugVarArea = document.getElementById("debugVariable");
 var debugSprArea = document.getElementById("debugSprite");
+var canvas = document.getElementById("screen");
 var memoryPage = 0; //указывает на одну из 255 страниц памяти по 255 байт для отображения
 var cpuSpeed = 8000; //количество операций, выполняемых процессором за 16 миллисекунд
 var cpuLostCycle = 0; //сколько циклов должно быть потеряно из-за операций рисования
@@ -48,9 +49,9 @@ sourceArea.onscroll     = function(ev){
 sourceArea.onmousedown  = function(ev){ this.mouseisdown = true; }
 sourceArea.onmouseup    = function(ev){ this.mouseisdown=false; lineCount()};
 sourceArea.onmousemove  = function(ev){ if (this.mouseisdown) lineCount()};
-document.addEventListener("keydown", keyDownHandler, false);
+canvas.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keypress", keyPressHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
+canvas.addEventListener("keyup", keyUpHandler, false);
 window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
 sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
@@ -275,17 +276,6 @@ function keyPressHandler(e) {
 }
 
 function keyDownHandler(e) {
-	/*
-	Bit[0] – Up (Вверх)
-	Bit[1] — Down (Вниз)
-	Bit[2] — Left (Влево)
-	Bit[3] — Right (Вправо)
-	Bit[4] — Select (Выбор)
-	Bit[5] — Start (Старт)
-	Bit[6] — A
-	Bit[7] — B
-	 */
-	
 	switch (e.keyCode) {
 	case 38:
 	case 87:
@@ -310,7 +300,14 @@ function keyDownHandler(e) {
 	case 90: //A - Z
 		globalJKey |= 16;
 		break;
+	case 16:
+		globalJKey |= 64;
+		break;
+	case 13:
+		globalJKey |= 128;
+		break;
 	}
+	e.preventDefault();
 }
 
 function keyUpHandler(e) {
@@ -338,7 +335,14 @@ function keyUpHandler(e) {
 	case 90: //A - Z
 		globalJKey &= ~16;
 		break;
+	case 16: //select - shift
+		globalJKey &= ~64;
+		break;
+	case 13: //start - enter
+		globalJKey &= ~128;
+		break;
 	}
+	e.preventDefault();
 }
 
 function testForImageArray(e){
@@ -785,7 +789,6 @@ function Display() {
 	var width;
 	var height;
 	var pixelSize = 2;
-	var canvas = document.getElementById("screen");
 	var isDebug = false;
 	var isDrawKeyboard = false;
 	var isChangePalette = false;

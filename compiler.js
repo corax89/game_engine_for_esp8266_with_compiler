@@ -10,7 +10,8 @@ function tokenize(s) {
 		's_angle', 6, 's_lives', 7, 's_collision', 8, 's_solid', 9, 's_gravity', 10,
 		's_on_collision', 11, 's_on_exit_screen', 12, 's_is_scrolled', 13, 's_is_onebit', 14,
 		's_flip_horizontal', 15,
-		'key_up', 1, 'key_left', 4, 'key_down', 2, 'key_right', 8, 'key_a', 16, 'key_b', 32
+		'key_up', 1, 'key_left', 4, 'key_down', 2, 'key_right', 8, 'key_a', 16, 'key_b', 32,
+		'key_select', 64, 'key_start', 128
 	];
 	//упрощенный вариант #define
 	function define(s) {

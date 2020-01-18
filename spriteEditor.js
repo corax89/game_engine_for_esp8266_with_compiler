@@ -348,9 +348,10 @@ function SpriteEditor() {
 			for (i = 0; i < data.length; i++){
 				if(i % imgwidth == 0)
 					spr += '\n';
-				spr += '0x' + (data[i] >> 4).toString(16) + '' + (data[i] & 0xf).toString(16) + ', ';
+				spr += '0x' + (data[i] >> 4).toString(16) + '' + (data[i] & 0xf).toString(16);
+				if(i < data.length - 1)
+					spr += ', ';
 			}
-			spr = spr.substring(0, spr.length - 1);
 			spr += '\n};';
 			document.getElementById("checkRleLabel").innerHTML = 'RLE 100%';
 		}
