@@ -41,17 +41,25 @@ timertime = 0;
 var lineCountTimer;
 
 sourceArea.addEventListener("click", testForImageArray, true);
-sourceArea.onscroll     = function(ev){ 
+sourceArea.onscroll = function (ev) {
 	handleScroll();
 	clearTimeout(lineCountTimer);
 	lineCountTimer = requestAnimationFrame(lineCount);
 };
-sourceArea.onmousedown  = function(ev){ this.mouseisdown = true; }
-sourceArea.onmouseup    = function(ev){ this.mouseisdown=false; lineCount()};
-sourceArea.onmousemove  = function(ev){ if (this.mouseisdown) lineCount()};
-canvas.addEventListener("keydown", keyDownHandler, false);
+sourceArea.onmousedown = function (ev) {
+	this.mouseisdown = true;
+}
+sourceArea.onmouseup = function (ev) {
+	this.mouseisdown = false;
+	lineCount()
+};
+sourceArea.onmousemove = function (ev) {
+	if (this.mouseisdown)
+		lineCount()
+};
+document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keypress", keyPressHandler, false);
-canvas.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
 window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
 sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
@@ -84,49 +92,52 @@ sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.o
 
 // MIT license
 
-(function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
- 
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
- 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-}());
+(function () {
+	var lastTime = 0;
+	var vendors = ['ms', 'moz', 'webkit', 'o'];
+	for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+		window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+		window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+			 || window[vendors[x] + 'CancelRequestAnimationFrame'];
+	}
+
+	if (!window.requestAnimationFrame)
+		window.requestAnimationFrame = function (callback, element) {
+			var currTime = new Date().getTime();
+			var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+			var id = window.setTimeout(function () {
+					callback(currTime + timeToCall);
+				},
+					timeToCall);
+			lastTime = currTime + timeToCall;
+			return id;
+		};
+
+	if (!window.cancelAnimationFrame)
+		window.cancelAnimationFrame = function (id) {
+			clearTimeout(id);
+		};
+}
+	());
 
 if (typeof document.getElementById("inputImgHighlite").scrollTo !== 'function') {
 	isHighliteColor = false;
 	document.getElementById("highliteColorCheckbox").style.display = 'none';
 }
 
-window.addEventListener("unload", function() {
-  localStorage.setItem('save_source_code', sourceArea.value);
+window.addEventListener("unload", function () {
+	localStorage.setItem('save_source_code', sourceArea.value);
 });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
 	var s = localStorage.getItem('save_source_code');
-    if(s && s.length > 2){
+	if (s && s.length > 2) {
 		sourceArea.value = s;
 		pixelColorHighlight();
 	}
 });
 
-function saveIco(a){
+function saveIco(a) {
 	var i = 0;
 	var out = [];
 	var c = document.getElementById("icon").getContext('2d');
@@ -138,8 +149,8 @@ function saveIco(a){
 	];
 	a = a.replace(/[{}]/g, '');
 	a = a.split(',');
-	for(var y = 0; y < 16; y++){
-		for(var x = 0; x < 24; x++){
+	for (var y = 0; y < 16; y++) {
+		for (var x = 0; x < 24; x++) {
 			out.push(parseInt(a[i]) & 0xff);
 			c.fillStyle = palette[(parseInt(a[i]) & 0xf0) >> 4];
 			c.fillRect(x, y, 1, 1);
@@ -147,14 +158,14 @@ function saveIco(a){
 			c.fillStyle = palette[parseInt(a[i]) & 0xf];
 			c.fillRect(x, y, 1, 1);
 			i++;
-			if(i >= a.length)
+			if (i >= a.length)
 				return out;
 		}
 	}
-	return out;	
+	return out;
 }
 
-function saveSettings(){
+function saveSettings() {
 	var s = sourceArea.value;
 	fileName = document.getElementById("fileName").value;
 	fileAuthor = document.getElementById("fileAuthor").value;
@@ -170,19 +181,18 @@ function saveSettings(){
 	settings.author = fileAuthor;
 	settings.image = fileIco;
 	var sourceSettings = JSON.stringify(settings);
-	if(s.search( /\/\*settings\*([\s\S]*?)\*\//i ) > -1){
-		sourceArea.value = s.replace( /\/\*settings\*([\s\S]*?)\*\//i, '/*settings*' + sourceSettings + '*/');
-	}
-	else
+	if (s.search(/\/\*settings\*([\s\S]*?)\*\//i) > -1) {
+		sourceArea.value = s.replace(/\/\*settings\*([\s\S]*?)\*\//i, '/*settings*' + sourceSettings + '*/');
+	} else
 		sourceArea.value = '/*settings*' + sourceSettings + '*/\n' + s;
 }
 
-function loadSettings(){
+function loadSettings() {
 	var s = sourceArea.value;
-	var fs = s.match( /\/\*settings\*([\s\S]*?)\*\//i );
-	if(fs){
+	var fs = s.match(/\/\*settings\*([\s\S]*?)\*\//i);
+	if (fs) {
 		var sourceSettings = fs[1];
-		if(sourceSettings.length > 5){
+		if (sourceSettings.length > 5) {
 			var settings = JSON.parse(sourceSettings);
 			fileName = settings.name;
 			fileAuthor = settings.author;
@@ -194,15 +204,14 @@ function loadSettings(){
 	}
 }
 
-function viewDebugPanel(){
-	if(viewDebug){
+function viewDebugPanel() {
+	if (viewDebug) {
 		document.getElementById("ram").style.display = "none";
 		document.getElementById("memoryPreview").style.width = "0";
 		document.getElementById("cpuPreview").style.width = "0";
 		document.getElementById("wrap-left").style.width = "19em";
 		viewDebug = false;
-	}
-	else{
+	} else {
 		document.getElementById("ram").style.display = "block";
 		document.getElementById("memoryPreview").style.width = "21em";
 		document.getElementById("cpuPreview").style.width = "11em";
@@ -252,7 +261,7 @@ function motion_wind(obj_event) {
 		x = window.event.clientX;
 		y = window.event.clientY;
 	}
-	if(delta_y + y < 0)
+	if (delta_y + y < 0)
 		obj_wind.style.top = "0px";
 	else
 		obj_wind.style.top = (delta_y + y) + "px";
@@ -271,7 +280,7 @@ function viewDebug(id) {
 
 function keyPressHandler(e) {
 	globalKey = e.keyCode;
-	if(globalKey == 13)
+	if (globalKey == 13)
 		globalKey = 0xA;
 }
 
@@ -307,7 +316,6 @@ function keyDownHandler(e) {
 		globalJKey |= 128;
 		break;
 	}
-	e.preventDefault();
 }
 
 function keyUpHandler(e) {
@@ -342,10 +350,9 @@ function keyUpHandler(e) {
 		globalJKey &= ~128;
 		break;
 	}
-	e.preventDefault();
 }
 
-function testForImageArray(e){
+function testForImageArray(e) {
 	var b = document.getElementById("floatButton");
 	var position = getCaretPos(sourceArea);
 	var str = sourceArea.value;
@@ -355,21 +362,21 @@ function testForImageArray(e){
 	b.style.left = (e.clientX - 50) + 'px';
 	b.style.top = (e.clientY - 40) + 'px';
 	b.style.display = 'none';
-	for(var i = position; i >= 0 ; i--){
-		if('{};'.indexOf(str[i]) > -1){
+	for (var i = position; i >= 0; i--) {
+		if ('{};'.indexOf(str[i]) > -1) {
 			left = i + 1;
 			break;
 		}
 	}
-	for(i = position; i < str.length; i++){
-		if('{};'.indexOf(str[i]) > -1){
+	for (i = position; i < str.length; i++) {
+		if ('{};'.indexOf(str[i]) > -1) {
 			right = i;
 			break;
 		}
 	}
-	if(left < right){
-		word = str.substring(left,right);
-		if(!word.match(/[^,0-9a-fA-FxX\s]/)){
+	if (left < right) {
+		word = str.substring(left, right);
+		if (!word.match(/[^,0-9a-fA-FxX\s]/)) {
 			selectedArray = word;
 			b.style.display = 'block';
 		}
@@ -377,28 +384,29 @@ function testForImageArray(e){
 }
 
 function getCaretPos(obj) {
-  obj.focus();
-  if (document.selection) { // IE
-    var sel = document.selection.createRange();
-    var clone = sel.duplicate();
-    sel.collapse(true);
-    clone.moveToElementText(obj);
-    clone.setEndPoint('EndToEnd', sel);
-    return clone.text.length;
-  } else if (obj.selectionStart!==false) return obj.selectionStart; // Gecko
-  else return 0;
+	obj.focus();
+	if (document.selection) { // IE
+		var sel = document.selection.createRange();
+		var clone = sel.duplicate();
+		sel.collapse(true);
+		clone.moveToElementText(obj);
+		clone.setEndPoint('EndToEnd', sel);
+		return clone.text.length;
+	} else if (obj.selectionStart !== false)
+		return obj.selectionStart; // Gecko
+	else
+		return 0;
 }
 
-function loadArrayAsImage(){
+function loadArrayAsImage() {
 	var sc = selectedArray.split('\n');
 	document.getElementById("spriteLoadArea").value = selectedArray;
-	if(sc.length > 1){
+	if (sc.length > 1) {
 		var w = sc[1].split(',').length * 2 - 2;
 		document.getElementById("spriteLoadWidth").value = w;
 		spriteEditor.edit();
 		spriteEditor.load();
-	}
-	else{
+	} else {
 		spriteEditor.edit();
 		document.getElementById('spriteLoad').style.height = '10em';
 	}
@@ -514,26 +522,25 @@ function info(s) {
 	out.innerHTML += '<b>' + s + '</b><br>';
 }
 
-function lineCount(){
+function lineCount() {
 	var canvas = document.getElementById("inputCanvas");
-	if (canvas.height != sourceArea.clientHeight) 
+	if (canvas.height != sourceArea.clientHeight)
 		canvas.height = sourceArea.clientHeight; // on resize
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#ebebe4";
-	ctx.fillRect(0, 0, 46, sourceArea.scrollHeight+1);
+	ctx.fillRect(0, 0, 46, sourceArea.scrollHeight + 1);
 	ctx.font = "13px monospace"; // NOTICE: must match TextArea font-size(13px) and lineheight(16) !!!
-	var startIndex = Math.floor(sourceArea.scrollTop / 16,0);
-	var endIndex = startIndex + Math.ceil(sourceArea.clientHeight / 16,0);
-	for (var i = startIndex; i <= endIndex; i++){
-		if (i == thisDebugString){
+	var startIndex = Math.floor(sourceArea.scrollTop / 16, 0);
+	var endIndex = startIndex + Math.ceil(sourceArea.clientHeight / 16, 0);
+	for (var i = startIndex; i <= endIndex; i++) {
+		if (i == thisDebugString) {
 			ctx.fillStyle = "#0f0";
-		}
-		else {
+		} else {
 			ctx.fillStyle = "#516399";
 		}
-		var ph = 12 - sourceArea.scrollTop + (i*16);
-		var text = ''+(0+i);  // line number
-		ctx.fillText(text,40-(text.length*6),ph);
+		var ph = 12 - sourceArea.scrollTop + (i * 16);
+		var text = '' + (0 + i); // line number
+		ctx.fillText(text, 40 - (text.length * 6), ph);
 	}
 };
 
@@ -626,40 +633,38 @@ function inputOnKey(e) {
 }
 
 function handleScroll() {
-	if(isHighliteColor){
+	if (isHighliteColor) {
 		var h = document.getElementById("inputImgHighlite");
 		h.scrollTo(sourceArea.scrollLeft, sourceArea.scrollTop);
 	}
 }
 
-function pixelColorHighlight(){
+function pixelColorHighlight() {
 	var h = document.getElementById("inputImgHighlite");
 	clearTimeout(colorHighliteTimer);
-	if(isHighliteColor){
+	if (isHighliteColor) {
 		h.style.display = "block";
-		colorHighliteTimer = setTimeout(function(){
-			var h = document.getElementById("inputImgHighlite");
-			h.style.width = sourceArea.offsetWidth + 'px';
-			h.style.height = sourceArea.offsetHeight + 'px';
-			var s = sourceArea.value.replace(/</g, '>');
-			h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})( *)[,}]*( *)/g, function (str, c, a, b, offset, s) {
-				if(c.length == 1){
-					return '<pc class="pc' + parseInt(c, 16) + '">0x0,</pc>';
-				}
-				else{
-					c = parseInt(c, 16);
-					return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0' + a + ',' + b + '</pc>' ;
-				}
-			});
-		}, 400);
+		colorHighliteTimer = setTimeout(function () {
+				var h = document.getElementById("inputImgHighlite");
+				h.style.width = sourceArea.offsetWidth + 'px';
+				h.style.height = sourceArea.offsetHeight + 'px';
+				var s = sourceArea.value.replace(/</g, '>');
+				h.innerHTML = s.replace(/0x([0-9a-fA-F]{1,2})( *)[,}]*( *)/g, function (str, c, a, b, offset, s) {
+						if (c.length == 1) {
+							return '<pc class="pc' + parseInt(c, 16) + '">0x0,</pc>';
+						} else {
+							c = parseInt(c, 16);
+							return '<pc class="pc' + (c >> 4) + '">0x0</pc><pc class="pc' + (c & 0xf) + '">0' + a + ',' + b + '</pc>';
+						}
+					});
+			}, 400);
 		h.style.width = sourceArea.offsetWidth + 'px';
 		h.style.height = sourceArea.offsetHeight + 'px';
-	}
-	else
+	} else
 		h.style.display = "none";
 }
 
-function changeHighlightColors(check){
+function changeHighlightColors(check) {
 	isHighliteColor = check;
 	pixelColorHighlight();
 }
@@ -792,8 +797,11 @@ function Display() {
 	var isDebug = false;
 	var isDrawKeyboard = false;
 	var isChangePalette = false;
-	var clipx0, clipx1, clipy0 , clipy1;
-	
+	var clipx0,
+	clipx1,
+	clipy0,
+	clipy1;
+
 	function init() {
 		width = canvas.getBoundingClientRect().width;
 		height = canvas.getBoundingClientRect().height;
@@ -891,7 +899,7 @@ function Display() {
 		isDebug = true;
 	}
 
-	function setClip(x0, y0, x1, y1){
+	function setClip(x0, y0, x1, y1) {
 		if (x0 > 0x7fff)
 			x0 -= 0x10000;
 		if (y0 > 0x7fff)
@@ -901,7 +909,7 @@ function Display() {
 		clipx1 = (x0 + x1 > 0 && x0 + x1 <= 128) ? x0 + x1 : 128;
 		clipy1 = (y0 + y1 > 0 && y0 + y1 <= 128) ? y0 + y1 : 128;
 	}
-	
+
 	function updatePixel(x, y) {
 		canvasArray[x * 128 + y] = displayArray[x * 128 + y];
 
@@ -952,8 +960,7 @@ function Display() {
 		if (isDrawKeyboard) {
 			document.getElementById("viewKeyboard").style.display = "block";
 			isDrawKeyboard = 0;
-		}
-		else{
+		} else {
 			document.getElementById("viewKeyboard").style.display = "none";
 		}
 		for (x = 0; x < 128; x++)
@@ -1034,29 +1041,28 @@ function redraw() {
 function savebin() {
 	var newByteArr = [];
 	loadSettings();
-	if (fileType == 'lge'){
+	if (fileType == 'lge') {
 		if (file.length > 1) {
 			var cfile = compress(file);
-			if(cfile == false){
+			if (cfile == false) {
 				cfile = file;
-				newByteArr = [0x6C,0x67,0x65,0x0,0x5];
-			}
-			else
-				newByteArr = [0x6C,0x67,0x65,0x1,0x5];
-			if(fileIco && fileIco.length > 0){
+				newByteArr = [0x6C, 0x67, 0x65, 0x0, 0x5];
+			} else
+				newByteArr = [0x6C, 0x67, 0x65, 0x1, 0x5];
+			if (fileIco && fileIco.length > 0) {
 				newByteArr[3] += 2;
 				newByteArr[4] += 192;
-				for(var i = 0; i < 192; i++){
-					if(i < fileIco.length)
+				for (var i = 0; i < 192; i++) {
+					if (i < fileIco.length)
 						newByteArr.push(fileIco[i] & 0xFF);
 					else
 						newByteArr.push(0);
 				}
 			}
-			if(fileAuthor && fileAuthor.length > 0){
+			if (fileAuthor && fileAuthor.length > 0) {
 				newByteArr[3] += 4;
 				newByteArr[4] += fileAuthor.length;
-				for(var i = 0; i < fileAuthor.length; i++)
+				for (var i = 0; i < fileAuthor.length; i++)
 					newByteArr.push(fileAuthor[i] & 0xFF);
 			}
 			for (var i = 0; i < cfile.length; i++) {
@@ -1066,23 +1072,23 @@ function savebin() {
 			var blob = new Blob([newFile], {
 					type: "charset=iso-8859-1"
 				});
-			if(fileName.length > 0)
+			if (fileName.length > 0)
 				saveAs(blob, fileName + '.lge');
 			else
 				saveAs(blob, 'rom.lge');
 		}
-	}
-	else if (fileType == 'html'){
+	} else if (fileType == 'html') {
 		if (file.length > 1) {
 			var newFile = saveAsHtml(compress(file), fileIco);
-			var blob = new Blob([newFile], {type: "text/plain;charset=utf-8"});
-			if(fileName.length > 0)
+			var blob = new Blob([newFile], {
+					type: "text/plain;charset=utf-8"
+				});
+			if (fileName.length > 0)
 				saveAs(blob, fileName + '.html');
 			else
 				saveAs(blob, 'game.html');
 		}
-	}
-	else{
+	} else {
 		if (file.length > 1) {
 			for (var i = 0; i < file.length; i++) {
 				newByteArr.push(file[i] & 0xFF);
@@ -1096,25 +1102,28 @@ function savebin() {
 	}
 }
 
-function compress(file){
-	var fpos = 0, epos = 0, lopos = 0, len = 0;
+function compress(file) {
+	var fpos = 0,
+	epos = 0,
+	lopos = 0,
+	len = 0;
 	var out = [];
-	var find = function(array, pos) {
+	var find = function (array, pos) {
 		for (var j = Math.max(0, pos - 511); j < pos; j++) {
-		  if ((array[j] === array[pos]) && (array[j + 1] === array[pos + 1]) && (array[j + 2] === array[pos + 2]) && (array[j + 3] === array[pos + 3]))
-			  return j;
+			if ((array[j] === array[pos]) && (array[j + 1] === array[pos + 1]) && (array[j + 2] === array[pos + 2]) && (array[j + 3] === array[pos + 3]))
+				return j;
 		}
-	return -1;
+		return -1;
 	}
-	
+
 	out = file.slice(0, 3);
-	out.splice(0,0,0,3);
+	out.splice(0, 0, 0, 3);
 	lopos = 0;
-	for(var i = 3; i < file.length; i++){
+	for (var i = 3; i < file.length; i++) {
 		fpos = find(file, i);
 		epos = i;
-		if(fpos > -1){
-			while(i < file.length && file[fpos + len] === file[i] && len < 63){
+		if (fpos > -1) {
+			while (i < file.length && file[fpos + len] === file[i] && len < 63) {
 				len++;
 				i++;
 			}
@@ -1125,18 +1134,17 @@ function compress(file){
 			out.push(0);
 			len = 0;
 			i--;
-		}
-		else{
-		  out.push(file[i]);
-		  out[lopos + 1]++;
-			  if(out[lopos + 1] > 255){
-				  out[lopos + 1] = 0;
-				  out[lopos]++;
-			  }
+		} else {
+			out.push(file[i]);
+			out[lopos + 1]++;
+			if (out[lopos + 1] > 255) {
+				out[lopos + 1] = 0;
+				out[lopos]++;
+			}
 		}
 	}
 	console.log("compress rate " + Math.round(100 - out.length / file.length * 100) + "%");
-	if(!compressTest(file, decompress(out))){
+	if (!compressTest(file, decompress(out))) {
 		console.log("error compress");
 		console.log(out);
 		console.log(file);
@@ -1146,24 +1154,26 @@ function compress(file){
 	return out;
 }
 
-function decompress(file){
+function decompress(file) {
 	var out = [];
-	var i = 0, length, position, point;
-	while(i < file.length){
-		if((file[i] & 128) == 0){
+	var i = 0,
+	length,
+	position,
+	point;
+	while (i < file.length) {
+		if ((file[i] & 128) == 0) {
 			length = ((file[i] & 127) << 8) + file[i + 1];
 			i += 2;
-			for( var j = 0; j < length; j ++){
+			for (var j = 0; j < length; j++) {
 				out.push(file[i]);
 				i++;
 			}
-		}
-		else{
+		} else {
 			length = (file[i] & 127) >> 1;
 			position = (((file[i] & 1) << 8) + file[i + 1]);
 			i += 2;
 			point = out.length - position;
-			for( var j = 0; j < length; j ++){
+			for (var j = 0; j < length; j++) {
 				out.push(out[point + j]);
 			}
 		}
@@ -1171,12 +1181,12 @@ function decompress(file){
 	return out;
 }
 
-function compressTest(f1, f2){
-	if(f1.length != f2.length){
+function compressTest(f1, f2) {
+	if (f1.length != f2.length) {
 		return false;
 	}
-	for(var i = 0; i < f1.length; i++){
-		if(f1[i] != f2[i]){
+	for (var i = 0; i < f1.length; i++) {
+		if (f1[i] != f2[i]) {
 			console.log(i, f1[i], f2[i]);
 			return false;
 		}
