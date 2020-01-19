@@ -24,7 +24,7 @@ var delta_x = 0;
 var delta_y = 0;
 var file = '';
 var isDebug = false;
-var viewDebug = false;
+var viewDebugV = false;
 var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
@@ -205,18 +205,18 @@ function loadSettings() {
 }
 
 function viewDebugPanel() {
-	if (viewDebug) {
+	if (viewDebugV) {
 		document.getElementById("ram").style.display = "none";
 		document.getElementById("memoryPreview").style.width = "0";
 		document.getElementById("cpuPreview").style.width = "0";
 		document.getElementById("wrap-left").style.width = "19em";
-		viewDebug = false;
+		viewDebugV = false;
 	} else {
 		document.getElementById("ram").style.display = "block";
 		document.getElementById("memoryPreview").style.width = "21em";
 		document.getElementById("cpuPreview").style.width = "11em";
 		document.getElementById("wrap-left").style.width = "54em";
-		viewDebug = true;
+		viewDebugV = true;
 	}
 	pixelColorHighlight();
 }
@@ -365,12 +365,16 @@ function testForImageArray(e) {
 	for (var i = position; i >= 0; i--) {
 		if ('{};'.indexOf(str[i]) > -1) {
 			left = i + 1;
+			if(str[i] == ';')
+				return;
 			break;
 		}
 	}
 	for (i = position; i < str.length; i++) {
 		if ('{};'.indexOf(str[i]) > -1) {
 			right = i;
+			if(str[i] == ';')
+				return;
 			break;
 		}
 	}
