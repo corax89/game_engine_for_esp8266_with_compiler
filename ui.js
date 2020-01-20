@@ -63,6 +63,47 @@ document.addEventListener("keyup", keyUpHandler, false);
 window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
 sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
+window.addEventListener('load', function(){
+	var c = canvas;
+	var detecttouch = !!('ontouchstart' in window) || !!('ontouchstart' in document.documentElement) || !!window.ontouchstart || !!window.Touch || !!window.onmsgesturechange || (window.DocumentTouch && window.document instanceof window.DocumentTouch);
+	var ismousedown = false;
+	var coordinate = [24, 130, 24, 156, 8, 143, 40, 143, 90, 150, 110, 135];
+	
+	function ontouch(e){
+		var rect = e.target.getBoundingClientRect();
+		var touchobj = e.targetTouches; // reference first touch point (ie: first finger)
+		globalJKey = 0;
+		for (var i = 0; i < touchobj.length; i++) {
+			var touchx  = parseInt((touchobj[i].clientX - rect.left) * 128 / c.clientWidth);
+			var touchy  = parseInt((touchobj[i].clientY - rect.left) * 160 / c.clientHeight) - 16;
+			//console.log(touchx, touchy);
+			for(var j = 0; j < 8; j++){
+				if(touchx > coordinate[j * 2 ] && touchx < coordinate[j * 2] + 10 && touchy > coordinate[j * 2 + 1] - 10 && touchy < coordinate[j * 2 + 1]){
+					globalJKey |= 1 << j;
+				}
+				if(touchy < 100){
+					fullScr();
+				}
+			}
+		  }
+		e.preventDefault();
+	}
+	
+	c.addEventListener('touchstart', ontouch, false);
+	c.addEventListener('touchend', ontouch, false);
+
+}, false);
+	
+function fullScr(){
+	var el = document.getElementById('cont');
+	if(el.webkitRequestFullScreen) {
+	   el.webkitRequestFullScreen();
+	}
+	else {
+	 el.mozRequestFullScreen();
+	}      
+	display.redraw();
+}
 
 (function () {
 	var url = window.location.href.toString();
@@ -956,6 +997,15 @@ function Display() {
 	function viewKeyboard(pos) {
 		isDrawKeyboard = true;
 	}
+	
+	function drawJoy(){
+			var coordinate = [8, 143, 24, 130, 24, 156, 40, 143, 90, 150, 110, 135];
+			ctx.strokeStyle = '#fff';
+			for(var i = 0; i < 8; i++){
+				ctx.rect(coordinate[i * 2] * pixelSize, 50 + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
+			}
+			ctx.stroke();
+		}
 
 	function redraw() {
 		var color,
@@ -967,6 +1017,7 @@ function Display() {
 		} else {
 			document.getElementById("viewKeyboard").style.display = "none";
 		}
+		drawJoy();
 		for (x = 0; x < 128; x++)
 			for (y = 0; y < 128; y++) {
 				if (spriteArray[x * 128 + y] > 0) {

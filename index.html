@@ -56,7 +56,9 @@
 					<button onclick="setMemoryPage('p')">+</button>
 					<textarea id="areaMemoryPrewiew" disabled="disabled"></textarea>
 				</div>
-				<canvas id="screen" width="256" height="320"></canvas>
+				<div id="cont">
+					<canvas id="screen" width="256" height="400" ondblclick="fullScr()"></canvas>
+				</div>
 				<div id="viewKeyboard">print on keyboard</div>
 				<button onclick="listing();">listing</button>
 				<button onclick="debugVars();">debug</button>
@@ -74,7 +76,6 @@
 						<option value="8">500</option>
 						<option value="2">100</option>
 					</select>
-					<label><input type="checkbox" onclick="sound.rtttl.globalSound = this.checked" id="soundCheckbox" checked>sound</label>
 					<textarea id="debug" disabled="disabled"></textarea>
 				</div>				
 			</div>
@@ -98,9 +99,11 @@
 				<option value="11">dragon</option>
 			</select>
 			<button onclick="loadExample();pixelColorHighlight()">load example</button>
+			
+			<a href="gamelist/index.html" style="animation:colorRotate 3s linear 0s 5;display:inline-block;width:7em" target="_blank" class="hrefb">List of games</a>
 			<br>
-			<a href="gamelist/index.html" style="animation: colorRotate 3s linear 0s 5;" target="_blank" class="hrefb">List of games</a>
 			<label id ="highliteColorCheckbox" style="user-select:none;"><input type="checkbox" onclick="changeHighlightColors(this.checked)" style="height:1em;" id="hcolorsCheckbox" checked>highlight colors</label>
+			<label><input type="checkbox" onclick="sound.rtttl.globalSound = this.checked" id="soundCheckbox" checked>sound</label>
 		</div>
 		<div id="wrap-right">
 			<div class="header">source</div>

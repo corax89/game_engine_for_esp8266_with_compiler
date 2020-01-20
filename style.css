@@ -606,3 +606,16 @@ textarea:focus {
 		margin-top:1em;
 	}
 }
+@media all and (display-mode: fullscreen) {
+	#screen { 
+		height: 100%; 
+		top: 50%;
+		left: 50%;
+		margin-right: -50%;
+		position: absolute;
+		transform: translate(-50%, -50%);
+	}
+	@media screen and (orientation: portrait) { 
+	  #screen { height: 40em; }
+	}
+}
