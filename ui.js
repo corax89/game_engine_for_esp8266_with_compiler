@@ -42,7 +42,7 @@ var lineCountTimer;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
-	handleScroll();
+	
 	clearTimeout(lineCountTimer);
 	lineCountTimer = requestAnimationFrame(lineCount);
 };
@@ -587,6 +587,7 @@ function lineCount() {
 		var text = '' + (0 + i); // line number
 		ctx.fillText(text, 40 - (text.length * 6), ph);
 	}
+	handleScroll();
 };
 
 function inputOnKey(e) {
@@ -817,7 +818,7 @@ function run() {
 		isRedraw = false;
 		//выводим отладочную информацию
 		debugCallCount++;
-		if (debugCallCount >= 10) {
+		if (debugCallCount >= 10 && viewDebugV) {
 			document.getElementById('debug').value = cpu.debug();
 			debugCallCount = 0;
 		}
@@ -1000,6 +1001,7 @@ function Display() {
 	
 	function drawJoy(){
 			var coordinate = [8, 143, 24, 130, 24, 156, 40, 143, 90, 150, 110, 135];
+			ctx.beginPath();
 			ctx.strokeStyle = '#fff';
 			for(var i = 0; i < 8; i++){
 				ctx.rect(coordinate[i * 2] * pixelSize, 50 + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
