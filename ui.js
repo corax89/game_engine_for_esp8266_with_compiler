@@ -862,7 +862,7 @@ function Display() {
 	function position(e) {
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor((e.offsetX == undefined ? e.layerX : e.offsetX) / (rect.width / 128));
-		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 160)) - 16;
+		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 200)) - 16;
 		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "#111";
