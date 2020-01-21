@@ -39,6 +39,7 @@ var isHighliteColor = true;
 var timerstart = new Date().getTime(),
 timertime = 0;
 var lineCountTimer;
+var fontSizeInEditor = 13;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
@@ -93,6 +94,24 @@ window.addEventListener('load', function(){
 	c.addEventListener('touchend', ontouch, false);
 
 }, false);
+	
+function addFontSize(isBig){
+	var ih = document.getElementById('inputImgHighlite');
+	if(isBig >= 8 && isBig <= 30){
+		fontSizeInEditor = isBig;
+	}
+	else if(isBig && fontSizeInEditor < 28){
+		fontSizeInEditor += 2;
+	}
+	else if((!isBig) && fontSizeInEditor > 11){
+		fontSizeInEditor -= 2;
+	}
+	sourceArea.style.fontSize = fontSizeInEditor + 'px';
+	sourceArea.style.lineHeight = (fontSizeInEditor + 3) + 'px';
+	ih.style.fontSize = fontSizeInEditor + 'px';
+	ih.style.lineHeight = (fontSizeInEditor + 3) + 'px';
+	lineCount();
+}	
 	
 function fullScr(){
 	var el = document.getElementById('cont');
@@ -168,10 +187,14 @@ if (typeof document.getElementById("inputImgHighlite").scrollTo !== 'function') 
 
 window.addEventListener("unload", function () {
 	localStorage.setItem('save_source_code', sourceArea.value);
+	localStorage.setItem('save_font_size', fontSizeInEditor);
 });
 
 document.addEventListener("DOMContentLoaded", function () {
 	var s = localStorage.getItem('save_source_code');
+	var f = parseInt(localStorage.getItem('save_font_size'), 10);
+	if(f >= 8 && f <= 30)
+		addFontSize(f);
 	if (s && s.length > 2) {
 		sourceArea.value = s;
 		pixelColorHighlight();
@@ -573,19 +596,19 @@ function lineCount() {
 		canvas.height = sourceArea.clientHeight; // on resize
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#ebebe4";
-	ctx.fillRect(0, 0, 46, sourceArea.scrollHeight + 1);
-	ctx.font = "13px monospace"; // NOTICE: must match TextArea font-size(13px) and lineheight(16) !!!
-	var startIndex = Math.floor(sourceArea.scrollTop / 16, 0);
-	var endIndex = startIndex + Math.ceil(sourceArea.clientHeight / 16, 0);
+	ctx.fillRect(0, 0, 52, sourceArea.scrollHeight + 1);
+	ctx.font = fontSizeInEditor + "px monospace"; // NOTICE: must match TextArea font-size(13px) and lineheight(16) !!!
+	var startIndex = Math.floor(sourceArea.scrollTop / (fontSizeInEditor + 3), 0);
+	var endIndex = startIndex + Math.ceil(sourceArea.clientHeight / (fontSizeInEditor + 3), 0);
 	for (var i = startIndex; i <= endIndex; i++) {
 		if (i == thisDebugString) {
 			ctx.fillStyle = "#0f0";
 		} else {
 			ctx.fillStyle = "#516399";
 		}
-		var ph = 12 - sourceArea.scrollTop + (i * 16);
+		var ph = fontSizeInEditor - 1 - sourceArea.scrollTop + (i * (fontSizeInEditor + 3));
 		var text = '' + (0 + i); // line number
-		ctx.fillText(text, 40 - (text.length * 6), ph);
+		ctx.fillText(text, 48 - (text.length * (fontSizeInEditor / 2)), ph);
 	}
 	handleScroll();
 };

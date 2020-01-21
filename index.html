@@ -107,10 +107,12 @@
 		</div>
 		<div id="wrap-right">
 			<div class="header">source</div>
+			<button class="bigButton" style="position:absolute;right:0.3em;top:4em;font-size:28px;" onclick="addFontSize(true);">+</button>
+			<button class="bigButton" style="position:absolute;right:0.3em;top:6em;font-size:28px;" onclick="addFontSize(false);">-</button>
 			<div id="editBlock">
 			<table cellspacing="0" cellpadding="0" style="padding:0px 0px 70px 0px!important;margin:0px 0px 0px 0px!important;font-size:1px;line-height:0px;width:auto;height:100%">
 			<tr><td style="border:1px #345 solid;border-right:0px;vertical-align:top;width:1px;">
-				<canvas width="48" height="511" id="inputCanvas"></canvas></td>
+				<canvas width="52" height="511" id="inputCanvas" style="padding-right:3px;"></canvas></td>
 				<td style="border:1px #345 solid;border-left:0px;vertical-align:top;width:100%;height:100%">
 				<pre id="inputImgHighlite"></pre>
 				<textarea id="input" cols="80"></textarea>
@@ -118,7 +120,6 @@
 			</div>
 		</div>
 	</div>
-	
 	<br>
 	<div class="header" style="display:none">console input</div>
 	<div id="div_wind1" class="div_wind">

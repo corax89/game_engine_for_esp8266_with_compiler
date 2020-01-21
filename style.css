@@ -125,8 +125,7 @@ textarea:focus {
 #editBlock {
 	color: #516399;
 	height: 100%;
-	padding-left: 2px;
-	width: 95%;
+	padding-right: 5em;
 }
 #edit-table {
 	border: none;
@@ -601,9 +600,6 @@ textarea:focus {
 	}
 	#memoryPreviev {
 		float:none;
-	}
-	#editBlock {
-		margin-top:1em;
 	}
 }
 @media all and (display-mode: fullscreen) {
