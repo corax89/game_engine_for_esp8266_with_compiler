@@ -76,13 +76,13 @@ window.addEventListener('load', function(){
 		globalJKey = 0;
 		for (var i = 0; i < touchobj.length; i++) {
 			var touchx  = parseInt((touchobj[i].clientX - rect.left) * 128 / c.clientWidth);
-			var touchy  = parseInt((touchobj[i].clientY - rect.left) * 160 / c.clientHeight) - 16;
-			//console.log(touchx, touchy);
+			var touchy  = parseInt((touchobj[i].clientY - rect.left) * 256 / c.clientHeight) - 40;
+			console.log(touchx, touchy);
 			for(var j = 0; j < 8; j++){
 				if(touchx > coordinate[j * 2 ] && touchx < coordinate[j * 2] + 10 && touchy > coordinate[j * 2 + 1] - 10 && touchy < coordinate[j * 2 + 1]){
 					globalJKey |= 1 << j;
 				}
-				if(touchy < 100){
+				if(touchy < 120){
 					fullScr();
 				}
 			}
@@ -885,7 +885,7 @@ function Display() {
 	function position(e) {
 		var rect = canvas.getBoundingClientRect();
 		var x = Math.floor((e.offsetX == undefined ? e.layerX : e.offsetX) / (rect.width / 128));
-		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 200)) - 16;
+		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 256)) - 16;
 		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "#111";
@@ -1027,7 +1027,7 @@ function Display() {
 			ctx.beginPath();
 			ctx.strokeStyle = '#fff';
 			for(var i = 0; i < 8; i++){
-				ctx.rect(coordinate[i * 2] * pixelSize, 50 + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
+				ctx.rect(coordinate[i * 2] * pixelSize, 30 * pixelSize + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
 			}
 			ctx.stroke();
 		}

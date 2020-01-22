@@ -611,4 +611,13 @@ textarea:focus {
 		position: absolute;
 		transform: translate(-50%, -50%);
 	}
+	@media screen and (orientation: portrait) { 
+	  #screen { width:100%}
+	}
+	@media screen and (orientation: landscape) { 
+	  #screen {
+		height: 160%;
+		top: 84%;
+	  }
+	}
 }
