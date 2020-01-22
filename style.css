@@ -75,7 +75,7 @@ textarea:focus {
 	float: left;
 	height: 47em;
 	padding: 2px;
-	width: 19em;
+	width: 256px;
 	margin-right: 1em;
 	margin-left: 2em;
 	transition: all 0.3s ease;
@@ -610,8 +610,5 @@ textarea:focus {
 		margin-right: -50%;
 		position: absolute;
 		transform: translate(-50%, -50%);
-	}
-	@media screen and (orientation: portrait) { 
-	  #screen { height: 40em; }
 	}
 }

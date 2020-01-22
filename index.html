@@ -11,7 +11,7 @@
 	<div id="menu">
 		<button onclick="onlyAsm();" style="display:none">asm</button>
 		<button onclick="main();">compile</button>
-		<button onclick="savebin();">save</button>
+		<button onclick="savebin();">export</button>
 		<button onclick="spriteEditor.edit()">sprite editor</button>
 		<button onclick="viewSettings();">settings</button>
 		<button onclick="viewHelp();">help</button>	
@@ -99,7 +99,6 @@
 				<option value="11">dragon</option>
 			</select>
 			<button onclick="loadExample();pixelColorHighlight()">load example</button>
-			
 			<a href="gamelist/index.html" style="animation:colorRotate 3s linear 0s 5;display:inline-block;width:7em" target="_blank" class="hrefb">List of games</a>
 			<br>
 			<label id ="highliteColorCheckbox" style="user-select:none;"><input type="checkbox" onclick="changeHighlightColors(this.checked)" style="height:1em;" id="hcolorsCheckbox" checked>highlight colors</label>

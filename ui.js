@@ -273,7 +273,7 @@ function viewDebugPanel() {
 		document.getElementById("ram").style.display = "none";
 		document.getElementById("memoryPreview").style.width = "0";
 		document.getElementById("cpuPreview").style.width = "0";
-		document.getElementById("wrap-left").style.width = "19em";
+		document.getElementById("wrap-left").style.width = "256px";
 		viewDebugV = false;
 	} else {
 		document.getElementById("ram").style.display = "block";
@@ -889,7 +889,7 @@ function Display() {
 		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "#111";
-		ctx.fillText("x " + x + "; y " + y, 1, 1);
+		ctx.fillText('x ' + x + ';y ' + y + ';charX ' + Math.floor(x / 6) + ';charY ' + Math.floor(y / 8), 1, 1);
 	}
 
 	function reset() {
