@@ -24,6 +24,7 @@ var delta_x = 0;
 var delta_y = 0;
 var file = '';
 var isDebug = false;
+var isRun = false;
 var viewDebugV = false;
 var debugCallCount = 0;
 var tickCount = 0;
@@ -77,7 +78,7 @@ window.addEventListener('load', function(){
 		for (var i = 0; i < touchobj.length; i++) {
 			var touchx  = parseInt((touchobj[i].clientX - rect.left) * 128 / c.clientWidth);
 			var touchy  = parseInt((touchobj[i].clientY - rect.left) * 256 / c.clientHeight) - 40;
-			console.log(touchx, touchy);
+			//console.log(touchx, touchy);
 			for(var j = 0; j < 8; j++){
 				if(touchx > coordinate[j * 2 ] && touchx < coordinate[j * 2] + 10 && touchy > coordinate[j * 2 + 1] - 10 && touchy < coordinate[j * 2 + 1]){
 					globalJKey |= 1 << j;
@@ -346,6 +347,8 @@ function keyPressHandler(e) {
 	globalKey = e.keyCode;
 	if (globalKey == 13)
 		globalKey = 0xA;
+	if(isRun)
+		e.preventDefault();
 }
 
 function keyDownHandler(e) {
@@ -373,13 +376,17 @@ function keyDownHandler(e) {
 	case 90: //A - Z
 		globalJKey |= 16;
 		break;
+	case 67: //select - c
 	case 16:
 		globalJKey |= 64;
 		break;
+	case 86: //start - enter
 	case 13:
 		globalJKey |= 128;
 		break;
 	}
+	if(isRun)
+		e.preventDefault();
 }
 
 function keyUpHandler(e) {
@@ -407,13 +414,17 @@ function keyUpHandler(e) {
 	case 90: //A - Z
 		globalJKey &= ~16;
 		break;
+	case 67: //select - c
 	case 16: //select - shift
 		globalJKey &= ~64;
 		break;
+	case 86: //start - enter
 	case 13: //start - enter
 		globalJKey &= ~128;
 		break;
 	}
+	if(isRun)
+		e.preventDefault();
 }
 
 function testForImageArray(e) {
@@ -911,7 +922,7 @@ function Display() {
 		ctx.fillStyle = "rgb(170, 170, 170)";
 		ctx.fillRect(0, (128 + 16) * pixelSize, pixelSize * 128, pixelSize * 16);
 		ctx.fillStyle = "#111";
-		ctx.fillText("KEY_A - z, KEY_B - space", 1, (128 + 16) * pixelSize);
+		ctx.fillText("KEYS:A-z,B-x,select-c,start-v", 1, (128 + 16) * pixelSize);
 		ctx.fillStyle = "rgb(0, 0, 0)";
 		ctx.fillRect(0, 16 * pixelSize, pixelSize * 128, pixelSize * 128);
 		for (var i = 0; i < 16; i++) {
