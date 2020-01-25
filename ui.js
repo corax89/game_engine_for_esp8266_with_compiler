@@ -60,7 +60,6 @@ sourceArea.onmousemove = function (ev) {
 		lineCount()
 };
 document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keypress", keyPressHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
@@ -275,12 +274,14 @@ function viewDebugPanel() {
 		document.getElementById("memoryPreview").style.width = "0";
 		document.getElementById("cpuPreview").style.width = "0";
 		document.getElementById("wrap-left").style.width = "256px";
+		document.getElementById("viewKeyboard").style.left = "6em";
 		viewDebugV = false;
 	} else {
 		document.getElementById("ram").style.display = "block";
 		document.getElementById("memoryPreview").style.width = "21em";
 		document.getElementById("cpuPreview").style.width = "11em";
 		document.getElementById("wrap-left").style.width = "54em";
+		document.getElementById("viewKeyboard").style.left = "27em";
 		viewDebugV = true;
 	}
 	pixelColorHighlight();
@@ -343,14 +344,6 @@ function viewDebug(id) {
 	document.getElementById(id).style.display = "block";
 }
 
-function keyPressHandler(e) {
-	globalKey = e.keyCode;
-	if (globalKey == 13)
-		globalKey = 0xA;
-	if(isRun)
-		e.preventDefault();
-}
-
 function keyDownHandler(e) {
 	switch (e.keyCode) {
 	case 38:
@@ -385,6 +378,9 @@ function keyDownHandler(e) {
 		globalJKey |= 128;
 		break;
 	}
+	globalKey = e.keyCode;
+	if (globalKey == 13)
+		globalKey = 0xA;
 	if(isRun)
 		e.preventDefault();
 }

@@ -137,7 +137,7 @@ textarea:focus {
 }
 #viewKeyboard{
 	position: absolute;
-    left: 27em;
+    left: 6em;
     background-color: rgba(255,255,255,0.7);
     width: 11em;
     height: 3em;
