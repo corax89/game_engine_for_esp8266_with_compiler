@@ -801,7 +801,7 @@ function compile(t) {
 			if (newType.indexOf(type) > -1) {
 				var len = 0;
 				for (var i = 0; i < structArr.length; i++) {
-					if (structArr[i][0] == thisToken) {
+					if (structArr[i][0] == type) {
 						len = structArr[i][1];
 						break;
 					}
@@ -1399,8 +1399,24 @@ function compile(t) {
 				//сохранение ячейки массива
 				else
 					structAssigment(v, s, m[3], true);
-			} else if (thisToken == '=')
+			} else if (thisToken == '='){
 				structAssigment(v, members, s, true);
+			}else{
+				var len = 1;
+				for (var i = 0; i < structArr.length; i++) {
+					if (structArr[i][0] == v.type) {
+						len = structArr[i][1];
+						break;
+					}
+				}
+				asm.push(' LDC R' + registerCount + ',' + len);
+				asm.push(' MUL R' + (registerCount - 1) + ',R' + registerCount);
+				asm.push(' LDI R' + registerCount + ',_' + v.name);
+				asm.push(' ADD R' + (registerCount - 1) + ',R' + (registerCount));
+			}
+		}else{
+			asm.push(' LDI R' + registerCount + ',_' + v.name);
+			registerCount++;
 		}
 	}
 	//обрабатываем переменную
