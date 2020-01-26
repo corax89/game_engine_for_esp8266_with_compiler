@@ -245,7 +245,9 @@ img, canvas{
 				for (i = 0; i < arr.length; i++){
 					if(i % Math.floor(width / 2) == 0)
 						out += '\n';
-					out += '0x' + (arr[i] >> 4).toString(16) + '' + (arr[i] & 0xf).toString(16) + ', ';
+					out += '0x' + (arr[i] >> 4).toString(16) + '' + (arr[i] & 0xf).toString(16);
+					if(i < arr.length - 1)
+						out += ', ';
 				}
 			}
 			out = out.substring(0, out.length - 1)

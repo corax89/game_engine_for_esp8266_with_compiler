@@ -2414,7 +2414,7 @@ function compile(t) {
 	registerFunction('clearscreen', 'int', [], 1, 'CLS', true, 0);
 	registerFunction('setcolor', 'void', ['int', 'c'], 1, 'SFCLR R%1', true, 0);
 	registerFunction('setbgcolor', 'void', ['int', 'c'], 1, 'SBCLR R%1', true, 0);
-	registerFunction('setpallette', 'void', ['int', 'n', 'int', 'c'], 1, 'SPALET R%2,R%1', true, 0);
+	registerFunction('setpalette', 'void', ['int', 'n', 'int', 'c'], 1, 'SPALET R%2,R%1', true, 0);
 	registerFunction('getchar', 'int', [], 1, 'GETK R%0', true, 0);
 	registerFunction('getkey', 'int', [], 1, 'GETJ R%0', true, 0);
 	registerFunction('putpixel', 'void', ['int', 'x', 'int', 'y'], 1, 'PPIX R%2,R%1', true, 0);
