@@ -116,11 +116,12 @@ function addFontSize(isBig){
 function fullScr(){
 	var el = document.getElementById('cont');
 	if(el.webkitRequestFullScreen) {
-	   el.webkitRequestFullScreen();
+		el.webkitRequestFullScreen();
 	}
 	else {
-	 el.mozRequestFullScreen();
-	}      
+		el.mozRequestFullScreen();
+	}
+	startButton();
 	display.redraw();
 }
 
@@ -818,6 +819,16 @@ function setMemoryPage(n) {
 		memoryPage = 0;
 	document.getElementById('memoryPage').value = toHex2(memoryPage);
 	viewMemory();
+}
+
+function startButton(){
+	if(!asmSource)
+		main();
+	isRun=true;
+	timerstart=new Date().getTime();
+	timertime=0;
+	soundTimer=0;
+	run();
 }
 
 function run() {

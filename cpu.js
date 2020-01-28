@@ -25,6 +25,7 @@ function Cpu() {
 	var interruptBuffer = [];
 	var keyPosition = 0;
 	var dataName = 0;
+	var castomfont;
 	var clipx0,
 	clipx1,
 	clipy0,
@@ -108,6 +109,16 @@ function Cpu() {
 			x: 0,
 			y: 0
 		};
+		castomfont = {
+			adress: 0,
+			start: 0,
+			end: 255,
+			imgwidth: 0,
+			imgheight: 0,
+			charwidth: 6,
+			charheight: 8,
+			columns: 0
+		}
 		for (i = 0; i < 420; i++)
 			charArray[i] = '';
 		for (i = 0; i < 8; i++)
@@ -1208,6 +1219,61 @@ function Cpu() {
 			}
 		}
 	}
+	
+	function drawChar(c, x, y){
+		if(castomfont.adress == 0){
+			for (var i = 0; i < 5; i++) { // Char bitmap = 5 columns
+				var line = font[c * 5 + i];
+				for (var j = 0; j < 8; j++, line >>= 1) {
+					if (line & 1)
+						display.drawPixel(color, x + i, y + j);
+				}
+			}
+		}
+		else if(c <= castomfont.end){
+			if(c < castomfont.start)
+				return;
+			c -= castomfont.start;
+			var pos = (Math.floor(c % castomfont.columns) * castomfont.charwidth + Math.floor(c / castomfont.columns) * (castomfont.charheight * castomfont.imgwidth));
+			for (var j = 0; j < castomfont.charheight; j++) {
+				for (var i = 0; i < castomfont.charwidth; i++) {
+					var line = mem[castomfont.adress + Math.floor((pos + i) / 8)];
+					if (line & (1 << (7 - ((pos + i) & 7))))
+						display.drawPixel(color, x + i, y + j);
+				}
+				pos += castomfont.imgwidth;
+			}
+		}
+	}
+	
+	function drawString(s, x, y){
+		var i = 0;
+		var nx = x;
+		while(s + i < 0xFFFF && mem[s + i] != 0){
+			if(mem[s + i] == 10){
+				nx = x - castomfont.charwidth;;
+				y += castomfont.charheight;
+			}
+			else if(nx > -castomfont.charwidth && nx < 128)
+				drawChar(mem[s + i], nx, y);
+			i++;
+			nx += castomfont.charwidth;
+		}
+	}
+	
+	function fontload(adr, start, end){
+		castomfont.adress = adr;
+		castomfont.start = start & 0xff;
+		castomfont.end = end & 0xff;
+	}
+	
+	function fontsize(imgwidth, imgheight, charwidth, charheight){
+		castomfont.imgwidth = imgwidth;
+		castomfont.imgheight = imgheight;
+		castomfont.charwidth = charwidth & 0xff;
+		castomfont.charheight = charheight & 0xff;
+		castomfont.columns = Math.floor(castomfont.imgwidth / castomfont.charwidth);
+	}
 
 	function randomInteger(min, max) {
 		var r = min - 0.5 + Math.random() * (max - min + 1)
@@ -2037,6 +2103,30 @@ function Cpu() {
 					u = '' + parseFloat(u);
 					for (i = 0; i < u.length; i++)
 						printc(u[i], color, bgcolor);
+					break;
+				case 0xC0:
+					// DRWCHAR R	D1 CR
+					r1 = (o2 & 0xf);
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, char
+					drawChar(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+					break;
+				case 0xD0:
+					// DRWSTR R	D1 DR
+					r1 = (o2 & 0xf);
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, string
+					drawString(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+					break;
+				case 0xE0:
+					// FONTLOAD R	D1 ER
+					r1 = (o2 & 0xf);
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно end, start, adr
+					fontload(readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
+					break;
+				case 0xF0:
+					// FONTSIZE R	D1 FR
+					r1 = (o2 & 0xf);
+					r2 = reg[r1]; //регистр указывает на участок памяти, в котором расположены последовательно fontheight, fontwidth, imgheight, imgwidth
+					fontsize(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
 				}
 				break;

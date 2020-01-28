@@ -75,6 +75,8 @@ img, canvas{
 		<label for="Choice2">original palette</label>
 		<input type="checkbox" id="checkRle" onclick="isRle = this.checked;quantization()">
 		<label for="checkRle" id="checkRleLabel">RLE</label>
+		<input type="checkbox" id="check1bit" onclick="is1bit = this.checked;quantization()">
+		<label for="check1bit" id="check1bitLabel">1bit</label>
 		<canvas id="cpalette" width="16" height="1" style="width: 320px"></canvas>
 		<input id="hexpalette" style="width: 320px">
 	</div>
@@ -87,6 +89,7 @@ img, canvas{
 	];
 	var imageloaded = false;
 	var isRle = false;
+	var is1bit = false;
 	var usedpalette = 0;
 	var newpalette = [];
 	var dropArea = document.getElementById('drop-area');
@@ -159,6 +162,30 @@ img, canvas{
 				}
 			}
 			i++;
+		}
+		return out;
+	}
+	function to1bit(d){
+		out = [];
+		bit = 0;
+		j = 0;
+		for (i = 0; i < d.length; i++) {
+			if ((d[i] & 0xf0) > 0)
+				bit += 1 << (7 - j);
+			j++;
+			if ((d[i] & 0x0f) > 0)
+				bit += 1 << (7 - j);
+			j++;
+			if (j > 7) {
+				out.push(bit);
+				j = 0;
+				bit = 0;
+			}
+		}
+		if (j > 0) {
+			out.push(bit);
+			j = 0;
+			bit = 0;
 		}
 		return out;
 	}
@@ -236,7 +263,12 @@ img, canvas{
 				n = -1;
 			  }
 			}
-			if(isRle){
+			if(is1bit){
+				arr = to1bit(arr);
+				for (i = 0; i < arr.length; i++)
+					out += '0x' + arr[i].toString(16) + ',';
+			}
+			else if(isRle){
 				arr = RLE(arr);
 				for (i = 0; i < arr.length; i++)
 					out += '0x' + arr[i].toString(16) + ',';

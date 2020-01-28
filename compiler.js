@@ -2451,6 +2451,18 @@ function compile(t) {
 	registerFunction('delayredraw', 'void', [], 1, '_delayredraw: \n LDF R1,6\n CMP R1,0\n JZ _delayredraw \n RET', false, 0);
 	registerFunction('distance', 'int', ['int', 'x1', 'int', 'y1', 'int', 'x2', 'int', 'y2'], 1, '_distance: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DISTPP R1 \n RET', false, 0);
 	dataAsm = [];
+	dataAsm.push('_drawchar: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWCHAR R1 \n RET');
+	registerFunction('drawchar', 'void', ['char', 'char', 'int', 'x', 'int', 'y'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_drawstring: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWSTR R1 \n RET');
+	registerFunction('drawstring', 'void', ['int', 'string', 'int', 'x', 'int', 'y'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_loadfont: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n FONTLOAD R1 \n RET');
+	registerFunction('loadfont', 'void', ['int', 'adr', 'int', 'start', 'int', 'end'], 1, dataAsm, false, 0);
+	dataAsm = [];
+	dataAsm.push('_setfontsize: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n FONTSIZE R1 \n RET');
+	registerFunction('setfontsize', 'void', ['int', 'imgwidth', 'int', 'imgheight', 'int', 'charwidth', 'int', 'charheight'], 1, dataAsm, false, 0);
+	dataAsm = [];
 	dataAsm.push('_putimage: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DRWIM R1 \n RET');
 	registerFunction('putimage', 'void', ['int', 'a', 'int', 'x', 'int', 'y', 'int', 'w', 'int', 'h'], 1, dataAsm, false, 0);
 	dataAsm = [];

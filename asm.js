@@ -575,6 +575,22 @@ function asm(s) {
 				out.push(0xD1); // PUTF R			D1BR
 				out.push(0xB0 + getRegister(a[i + 1]));
 				return;
+			case 'DRWCHAR':
+				out.push(0xD1); // DRWXHAR R	D1CR
+				out.push(0xC0 + getRegister(a[i + 1]));
+				return;
+			case 'DRWSTR':
+				out.push(0xD1); // DRWSTRING R	D1DR
+				out.push(0xD0 + getRegister(a[i + 1]));
+				return;
+			case 'FONTLOAD':
+				out.push(0xD1); // FONTLOAD R	D1ER
+				out.push(0xE0 + getRegister(a[i + 1]));
+				return;
+			case 'FONTSIZE':
+				out.push(0xD1); // FONTSIZE R	D1FR
+				out.push(0xF0 + getRegister(a[i + 1]));
+				return;
 			case 'GETK':
 				out.push(0xD2); // GETK R			D20R
 				out.push(0x00 + getRegister(a[i + 1]));
