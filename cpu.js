@@ -2234,6 +2234,12 @@ function Cpu() {
 					display.setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					setClip(readInt(r2 + 6), readInt(r2 + 4), readInt(r2 + 2), readInt(r2));
 					break;
+				case 0xC0:
+					// SETFPS R		D4 CR
+					r1 = o2 & 0xf;
+					if(reg[r1] >= 1 && reg[r1] <= 40)
+						timeForRedraw = Math.floor(1000 / reg[r1]);
+					break;
 				}
 				break;
 			case 0xD5:

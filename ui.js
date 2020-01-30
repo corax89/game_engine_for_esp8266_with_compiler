@@ -41,6 +41,7 @@ var timerstart = new Date().getTime(),
 timertime = 0;
 var lineCountTimer;
 var fontSizeInEditor = 13;
+var timeForRedraw = 48;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
@@ -591,6 +592,7 @@ function main() {
 	compress(file);
 	document.getElementById('disasm').innerHTML = highliteasm(asmSource);
 	document.getElementById('ram').value = toHexA(file);
+	timeForRedraw = 48;
 }
 //вывод информации о ходе сборки
 function info(s) {
@@ -1133,7 +1135,7 @@ function redraw() {
 		display.redraw();
 		cpu.setRedraw();
 		isRedraw = true;
-	}, 48);
+	}, timeForRedraw);
 }
 
 function savebin() {

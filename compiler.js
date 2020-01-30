@@ -2412,6 +2412,7 @@ function compile(t) {
 	registerFunction('gettimer', 'int', ['int', 'n'], 1, 'GTIMER R%1', true, 0);
 	registerFunction('settimer', 'void', ['int', 'n', 'int', 'time'], 1, 'STIMER R%2,R%1', true, 0);
 	registerFunction('clearscreen', 'int', [], 1, 'CLS', true, 0);
+	registerFunction('setframerate', 'void', ['int', 'fps'], 1, 'SETFPS R%1', true, 0);
 	registerFunction('setcolor', 'void', ['int', 'c'], 1, 'SFCLR R%1', true, 0);
 	registerFunction('setbgcolor', 'void', ['int', 'c'], 1, 'SBCLR R%1', true, 0);
 	registerFunction('setpalette', 'void', ['int', 'n', 'int', 'c'], 1, 'SPALET R%2,R%1', true, 0);

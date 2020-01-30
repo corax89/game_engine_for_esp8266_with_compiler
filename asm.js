@@ -640,7 +640,7 @@ function asm(s) {
 				out.push(0x80 + getRegister(a[i + 1]));
 				return;
 			case 'SPRSDS':
-				out.push(0xD4); // SPRSDS R*2			D4 9R
+				out.push(0xD4); // SPRSDS R*2	D4 9R
 				out.push(0x90 + getRegister(a[i + 1]));
 				return;
 			case 'DRWBIT':
@@ -650,6 +650,10 @@ function asm(s) {
 			case 'SETCLIP':
 				out.push(0xD4); // SETCLIP R	D4BR
 				out.push(0xB0 + getRegister(a[i + 1]));
+				return;
+			case 'SETFPS':
+				out.push(0xD4); // SETFPS R		D4CR
+				out.push(0xC0 + getRegister(a[i + 1]));
 				return;
 			case 'DRTILE':
 				out.push(0xDA); // DRTILE R,R		DA RR
