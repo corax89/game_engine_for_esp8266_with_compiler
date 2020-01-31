@@ -214,7 +214,7 @@ function Cpu() {
 				display.plot(bufPixel, clipx1 - 1, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)) {
 					_spr[n].x -= 4;
 					_spr[n].previousx -= 4;
 				}
@@ -226,7 +226,7 @@ function Cpu() {
 				display.plot(bufPixel, x, clipy1 - 1);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)) {
 					_spr[n].y -= 4;
 					_spr[n].previousy -= 4;
 				}
@@ -238,7 +238,7 @@ function Cpu() {
 				display.plot(bufPixel, clipx0, y);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)) {
 					_spr[n].x += 4;
 					_spr[n].previousx += 4;
 				}
@@ -250,7 +250,7 @@ function Cpu() {
 				display.plot(bufPixel, x, clipy0);
 			}
 			for (n = 0; n < 32; n++)
-				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)){
+				if (_spr[n].isscrolled != 0 && (clipx0 == 0 && clipx1 == 128 && clipy0 == 0 && clipy1 == 128)) {
 					_spr[n].y += 4;
 					_spr[n].previousy += 4;
 				}
@@ -390,7 +390,7 @@ function Cpu() {
 		return r;
 	}
 
-	function updateEmitter(){
+	function updateEmitter() {
 		var i = emitter.count;
 		for (var n = 0; n < maxParticles; n++) {
 			if (i == 0)
@@ -408,12 +408,12 @@ function Cpu() {
 			}
 		}
 	}
-	
-	function drawSprFHLine(x1, x2, y, c){
-	  for(var  i = x1; i <= x2; i++)
-		display.drawSpritePixel(c, i, y);
+
+	function drawSprFHLine(x1, x2, y, c) {
+		for (var i = x1; i <= x2; i++)
+			display.drawSpritePixel(c, i, y);
 	}
-	
+
 	function largeParticle(x0, y0, r, c) {
 		var x = 0;
 		var dx = 1;
@@ -661,7 +661,7 @@ function Cpu() {
 		x0,
 		y0,
 		adr;
-		for (n = 0; n < 32; n++){
+		for (n = 0; n < 32; n++) {
 			_spr[n].collision = (-1) & 0xffff;
 		}
 		for (n = 0; n < 32; n++) {
@@ -703,38 +703,36 @@ function Cpu() {
 						x0 = Math.floor(_spr[n].x >> 2);
 						y0 = Math.floor(_spr[n].y >> 2);
 						if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-						 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
 							_spr[n].y = _spr[n].y - _spr[n].speedy;
-							_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;						
+							_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;
 							x0 = Math.floor(_spr[n].x >> 2);
 							y0 = Math.floor(_spr[n].y >> 2);
 							if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
 								_spr[n].y = _spr[n].y - _spr[n].speedy;
 								_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;
 								y0 = _spr[n].y >> 2;
-								if(getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-								  || getTileInXY(x0 , y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)){
+								if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+									 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
 									_spr[n].x = _spr[n].x - _spr[n].speedx;
 									_spr[n].speedx = Math.floor((_spr[n].x - (_spr[n].x - _spr[n].speedx)) / 2);
-								  }
+								}
 								x0 = _spr[n].x >> 2;
 								y0 = _spr[n].y >> 2;
-								if(getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-								  || getTileInXY(x0 , y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)){
+								if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
+									 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
 									_spr[n].x = _spr[n].previousx;
 									_spr[n].y = _spr[n].previousy;
-								  }
-								else{
-								  _spr[n].previousx = _spr[n].x;
-								  _spr[n].previousy = _spr[n].y;
+								} else {
+									_spr[n].previousx = _spr[n].x;
+									_spr[n].previousy = _spr[n].y;
 								}
-							  }
-						 }
-						  else{
+							}
+						} else {
 							_spr[n].previousx = _spr[n].x;
 							_spr[n].previousy = _spr[n].y;
-						  }
+						}
 					}
 				}
 			}
@@ -1219,9 +1217,9 @@ function Cpu() {
 			}
 		}
 	}
-	
-	function drawChar(c, x, y){
-		if(castomfont.adress == 0){
+
+	function drawChar(c, x, y) {
+		if (castomfont.adress == 0) {
 			for (var i = 0; i < 5; i++) { // Char bitmap = 5 columns
 				var line = font[c * 5 + i];
 				for (var j = 0; j < 8; j++, line >>= 1) {
@@ -1229,9 +1227,8 @@ function Cpu() {
 						display.drawPixel(color, x + i, y + j);
 				}
 			}
-		}
-		else if(c <= castomfont.end){
-			if(c < castomfont.start)
+		} else if (c <= castomfont.end) {
+			if (c < castomfont.start)
 				return;
 			c -= castomfont.start;
 			var pos = (Math.floor(c % castomfont.columns) * castomfont.charwidth + Math.floor(c / castomfont.columns) * (castomfont.charheight * castomfont.imgwidth));
@@ -1245,29 +1242,28 @@ function Cpu() {
 			}
 		}
 	}
-	
-	function drawString(s, x, y){
+
+	function drawString(s, x, y) {
 		var i = 0;
 		var nx = x;
-		while(s + i < 0xFFFF && mem[s + i] != 0){
-			if(mem[s + i] == 10){
-				nx = x - castomfont.charwidth;;
+		while (s + i < 0xFFFF && mem[s + i] != 0) {
+			if (mem[s + i] == 10) {
+				nx = x - castomfont.charwidth; ;
 				y += castomfont.charheight;
-			}
-			else if(nx > -castomfont.charwidth && nx < 128)
+			} else if (nx > -castomfont.charwidth && nx < 128)
 				drawChar(mem[s + i], nx, y);
 			i++;
 			nx += castomfont.charwidth;
 		}
 	}
-	
-	function fontload(adr, start, end){
+
+	function fontload(adr, start, end) {
 		castomfont.adress = adr;
 		castomfont.start = start & 0xff;
 		castomfont.end = end & 0xff;
 	}
-	
-	function fontsize(imgwidth, imgheight, charwidth, charheight){
+
+	function fontsize(imgwidth, imgheight, charwidth, charheight) {
 		castomfont.imgwidth = imgwidth;
 		castomfont.imgheight = imgheight;
 		castomfont.charwidth = charwidth & 0xff;
@@ -2237,7 +2233,7 @@ function Cpu() {
 				case 0xC0:
 					// SETFPS R		D4 CR
 					r1 = o2 & 0xf;
-					if(reg[r1] >= 1 && reg[r1] <= 40)
+					if (reg[r1] >= 1 && reg[r1] <= 40)
 						timeForRedraw = Math.floor(1000 / reg[r1]);
 					break;
 				}

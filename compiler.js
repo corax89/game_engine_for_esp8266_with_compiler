@@ -383,11 +383,11 @@ function compile(t) {
 	//получаем следующий токен, возвращаем false если следующего токена не существует
 	function getToken() {
 		findLoopCompile++;
-		if(lastLoopToken + 10 < thisTokenNumber){
+		if (lastLoopToken + 10 < thisTokenNumber) {
 			lastLoopToken = thisTokenNumber;
 			findLoopCompile = 0;
 		}
-		if(findLoopCompile > 1000){
+		if (findLoopCompile > 1000) {
 			thisTokenNumber = 100000000;
 			return false;
 		}
@@ -1030,7 +1030,7 @@ function compile(t) {
 		var arraylen2d = false;
 		var length = 1;
 		var buf = '';
-		if(isVar(name))
+		if (isVar(name))
 			putError(lineCount, 0, name);
 		getToken();
 		//количество элементов не указано
@@ -1399,9 +1399,9 @@ function compile(t) {
 				//сохранение ячейки массива
 				else
 					structAssigment(v, s, m[3], true);
-			} else if (thisToken == '='){
+			} else if (thisToken == '=') {
 				structAssigment(v, members, s, true);
-			}else{
+			} else {
 				var len = 1;
 				for (var i = 0; i < structArr.length; i++) {
 					if (structArr[i][0] == v.type) {
@@ -1414,7 +1414,7 @@ function compile(t) {
 				asm.push(' LDI R' + registerCount + ',_' + v.name);
 				asm.push(' ADD R' + (registerCount - 1) + ',R' + (registerCount));
 			}
-		}else{
+		} else {
 			asm.push(' LDI R' + registerCount + ',_' + v.name);
 			registerCount++;
 		}
@@ -1802,8 +1802,8 @@ function compile(t) {
 		if (!(thisToken == ',' || thisToken == ')' || thisToken == ';'))
 			execut();
 	}
-	
-	function notToken(){
+
+	function notToken() {
 		getToken();
 		execut();
 		asm.push(' NOT R' + (registerCount - 1) + ',R' + registerCount);
@@ -1926,7 +1926,7 @@ function compile(t) {
 		blockStack.pop();
 		previousToken();
 	}
-	
+
 	function doWhileToken() {
 		var labe = labelNumber;
 		labelNumber++;
@@ -2387,11 +2387,10 @@ function compile(t) {
 			stringToken();
 		} else {
 			getToken();
-			if(thisToken == ':'){
+			if (thisToken == ':') {
 				asm.push('label_' + lastToken + ':');
 				return;
-			}
-			else
+			} else
 				previousToken();
 			removeNewLine();
 			if (thisToken.length > 0)

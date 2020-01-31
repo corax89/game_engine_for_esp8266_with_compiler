@@ -266,11 +266,20 @@ textarea:focus {
 	width: 90%;
 }
 #floatButton{
+	background: #516399;
 	position: fixed;
     top: 1px;
     left: 1px;
 	border: 3px solid gray;
 	display: none;
+	height: 2em;
+    width: 2.3em;
+    overflow: hidden;
+	transition: all 0.3s ease;
+}
+#floatButton:hover{
+	text-align: left;
+	width: 14em;
 }
 #inputImgHighlite{
 	position: absolute;

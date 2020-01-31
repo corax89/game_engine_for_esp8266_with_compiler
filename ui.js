@@ -30,7 +30,6 @@ var debugCallCount = 0;
 var tickCount = 0;
 var isRedraw = true;
 var language = 'eng';
-var fileType = 'html';
 var fileName = '';
 var fileAuthor = '';
 var fileIco = '';
@@ -45,7 +44,6 @@ var timeForRedraw = 48;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
-	
 	clearTimeout(lineCountTimer);
 	lineCountTimer = requestAnimationFrame(lineCount);
 };
@@ -65,46 +63,44 @@ document.addEventListener("keyup", keyUpHandler, false);
 window.addEventListener("resize", pixelColorHighlight);
 setup_mouse("div_wind1", "drag_wind1");
 sourceArea.onkeydown = sourceArea.onkeyup = sourceArea.onkeypress = sourceArea.oncut = sourceArea.onpaste = inputOnKey;
-window.addEventListener('load', function(){
+window.addEventListener('load', function () {
 	var c = canvas;
 	var detecttouch = !!('ontouchstart' in window) || !!('ontouchstart' in document.documentElement) || !!window.ontouchstart || !!window.Touch || !!window.onmsgesturechange || (window.DocumentTouch && window.document instanceof window.DocumentTouch);
 	var ismousedown = false;
 	var coordinate = [24, 130, 24, 156, 8, 143, 40, 143, 90, 150, 110, 135];
-	
-	function ontouch(e){
+
+	function ontouch(e) {
 		var rect = e.target.getBoundingClientRect();
 		var touchobj = e.targetTouches; // reference first touch point (ie: first finger)
 		globalJKey = 0;
 		for (var i = 0; i < touchobj.length; i++) {
-			var touchx  = parseInt((touchobj[i].clientX - rect.left) * 128 / c.clientWidth);
-			var touchy  = parseInt((touchobj[i].clientY - rect.left) * 256 / c.clientHeight) - 40;
+			var touchx = parseInt((touchobj[i].clientX - rect.left) * 128 / c.clientWidth);
+			var touchy = parseInt((touchobj[i].clientY - rect.left) * 256 / c.clientHeight) - 40;
 			//console.log(touchx, touchy);
-			for(var j = 0; j < 8; j++){
-				if(touchx > coordinate[j * 2 ] && touchx < coordinate[j * 2] + 10 && touchy > coordinate[j * 2 + 1] - 10 && touchy < coordinate[j * 2 + 1]){
+			for (var j = 0; j < 8; j++) {
+				if (touchx > coordinate[j * 2] && touchx < coordinate[j * 2] + 10 && touchy > coordinate[j * 2 + 1] - 10 && touchy < coordinate[j * 2 + 1]) {
 					globalJKey |= 1 << j;
 				}
-				if(touchy < 120){
+				if (touchy < 120) {
 					fullScr();
 				}
 			}
-		  }
+		}
 		e.preventDefault();
 	}
-	
+
 	c.addEventListener('touchstart', ontouch, false);
 	c.addEventListener('touchend', ontouch, false);
 
 }, false);
-	
-function addFontSize(isBig){
+
+function addFontSize(isBig) {
 	var ih = document.getElementById('inputImgHighlite');
-	if(isBig >= 8 && isBig <= 30){
+	if (isBig >= 8 && isBig <= 30) {
 		fontSizeInEditor = isBig;
-	}
-	else if(isBig && fontSizeInEditor < 28){
+	} else if (isBig && fontSizeInEditor < 28) {
 		fontSizeInEditor += 2;
-	}
-	else if((!isBig) && fontSizeInEditor > 11){
+	} else if ((!isBig) && fontSizeInEditor > 11) {
 		fontSizeInEditor -= 2;
 	}
 	sourceArea.style.fontSize = fontSizeInEditor + 'px';
@@ -112,14 +108,13 @@ function addFontSize(isBig){
 	ih.style.fontSize = fontSizeInEditor + 'px';
 	ih.style.lineHeight = (fontSizeInEditor + 3) + 'px';
 	lineCount();
-}	
-	
-function fullScr(){
+}
+
+function fullScr() {
 	var el = document.getElementById('cont');
-	if(el.webkitRequestFullScreen) {
+	if (el.webkitRequestFullScreen) {
 		el.webkitRequestFullScreen();
-	}
-	else {
+	} else {
 		el.mozRequestFullScreen();
 	}
 	startButton();
@@ -195,7 +190,7 @@ window.addEventListener("unload", function () {
 document.addEventListener("DOMContentLoaded", function () {
 	var s = localStorage.getItem('save_source_code');
 	var f = parseInt(localStorage.getItem('save_font_size'), 10);
-	if(f >= 8 && f <= 30)
+	if (f >= 8 && f <= 30)
 		addFontSize(f);
 	if (s && s.length > 2) {
 		sourceArea.value = s;
@@ -236,12 +231,6 @@ function saveSettings() {
 	fileName = document.getElementById("fileName").value;
 	fileAuthor = document.getElementById("fileAuthor").value;
 	fileIco = saveIco(document.getElementById("fileIco").value);
-	if (document.getElementById('fileTypeChoice2').checked)
-		fileType = 'lge';
-	else if (document.getElementById('fileTypeChoice3').checked)
-		fileType = 'html';
-	else
-		fileType = 'bin';
 	var settings = {};
 	settings.name = fileName;
 	settings.author = fileAuthor;
@@ -383,7 +372,7 @@ function keyDownHandler(e) {
 	globalKey = e.keyCode;
 	if (globalKey == 13)
 		globalKey = 0xA;
-	if(isRun)
+	if (isRun)
 		e.preventDefault();
 }
 
@@ -421,7 +410,7 @@ function keyUpHandler(e) {
 		globalJKey &= ~128;
 		break;
 	}
-	if(isRun)
+	if (isRun)
 		e.preventDefault();
 }
 
@@ -432,13 +421,13 @@ function testForImageArray(e) {
 	var left = 0;
 	var right = str.length;
 	var word;
-	b.style.left = (e.clientX - 50) + 'px';
-	b.style.top = (e.clientY - 40) + 'px';
+	b.style.left = (sourceArea.getBoundingClientRect().left - 50) + 'px';
+	b.style.top = (e.clientY - 10) + 'px';
 	b.style.display = 'none';
 	for (var i = position; i >= 0; i--) {
 		if ('{};'.indexOf(str[i]) > -1) {
 			left = i + 1;
-			if(str[i] == ';')
+			if (str[i] == ';')
 				return;
 			break;
 		}
@@ -446,7 +435,7 @@ function testForImageArray(e) {
 	for (i = position; i < str.length; i++) {
 		if ('{};'.indexOf(str[i]) > -1) {
 			right = i;
-			if(str[i] == ';')
+			if (str[i] == ';')
 				return;
 			break;
 		}
@@ -477,6 +466,7 @@ function getCaretPos(obj) {
 
 function loadArrayAsImage() {
 	var sc = selectedArray.split('\n');
+	document.getElementById("floatButton").style.display = "none";
 	document.getElementById("spriteLoadArea").value = selectedArray;
 	if (sc.length > 1) {
 		var w = sc[1].split(',').length * 2 - 2;
@@ -823,13 +813,13 @@ function setMemoryPage(n) {
 	viewMemory();
 }
 
-function startButton(){
-	if(!asmSource)
+function startButton() {
+	if (!asmSource)
 		main();
-	isRun=true;
-	timerstart=new Date().getTime();
-	timertime=0;
-	soundTimer=0;
+	isRun = true;
+	timerstart = new Date().getTime();
+	timertime = 0;
+	soundTimer = 0;
 	run();
 }
 
@@ -1041,16 +1031,16 @@ function Display() {
 	function viewKeyboard(pos) {
 		isDrawKeyboard = true;
 	}
-	
-	function drawJoy(){
-			var coordinate = [8, 143, 24, 130, 24, 156, 40, 143, 90, 150, 110, 135];
-			ctx.beginPath();
-			ctx.strokeStyle = '#fff';
-			for(var i = 0; i < 8; i++){
-				ctx.rect(coordinate[i * 2] * pixelSize, 30 * pixelSize + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
-			}
-			ctx.stroke();
+
+	function drawJoy() {
+		var coordinate = [8, 143, 24, 130, 24, 156, 40, 143, 90, 150, 110, 135];
+		ctx.beginPath();
+		ctx.strokeStyle = '#fff';
+		for (var i = 0; i < 8; i++) {
+			ctx.rect(coordinate[i * 2] * pixelSize, 30 * pixelSize + coordinate[i * 2 + 1] * pixelSize, pixelSize * 12, pixelSize * 12);
 		}
+		ctx.stroke();
+	}
 
 	function redraw() {
 		var color,
@@ -1138,10 +1128,11 @@ function redraw() {
 	}, timeForRedraw);
 }
 
-function savebin() {
+function savebin(type) {
 	var newByteArr = [];
 	loadSettings();
-	if (fileType == 'lge') {
+	main();
+	if (type == 2) { //lge
 		if (file.length > 1) {
 			var cfile = compress(file);
 			if (cfile == false) {
@@ -1177,7 +1168,7 @@ function savebin() {
 			else
 				saveAs(blob, 'rom.lge');
 		}
-	} else if (fileType == 'html') {
+	} else if (type == 1) { //html
 		if (file.length > 1) {
 			var newFile = saveAsHtml(compress(file), fileIco);
 			var blob = new Blob([newFile], {

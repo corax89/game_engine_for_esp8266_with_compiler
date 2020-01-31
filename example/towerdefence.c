@@ -96,12 +96,12 @@ void newwave(){
 		spritesetvalue(i, S_WIDTH, 10);
 		spritesetvalue(i, S_HEIGHT, 12);
 	} 
-	gold += gold / 10;
+	gold = gold + gold / 10;
 }
 
 void init(){
-	clearscreen(0);
-	setimagesize(1);
+	clearscreen();
+	setimagesize(0);
 	monsterlives = 0;
 	gold = 46;
 	lives = 20;
