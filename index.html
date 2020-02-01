@@ -18,19 +18,16 @@
 				<li><button onclick="savebin(2);">export .lge</button></li>
 			</ul>
 		</div>
+		<button class="only_mobile" onclick="sourceArea.scrollIntoView(true);">source</button>
 		<button onclick="spriteEditor.edit()">sprite editor</button>
+		<button onclick="viewHelp();">help</button>
 		<button onclick="viewSettings();">settings</button>
-		<button onclick="viewHelp();">help</button>	
 		<div class="drop-menu hrefb">utilities &#9776;
 			<ul class="sub-menu">
 				<li><a href="soundEditor.html"  target="_blank" class="hrefb">rtttl editor</a></li>
 				<li><a href="ImageConverter.html"  target="_blank" class="hrefb">image converter</a></li>
 			</ul>
 		</div>
-		<select id="lang" onchange="language=this.value">
-		  <option value="eng">ENG</option>
-		  <option value="rus">RUS</option>
-		</select>
 	</div>
 	<div id="container">
 		<div id="wrap-left">
@@ -357,6 +354,12 @@
         </div>
         <div class="content_wind">
 			<div id="settings">
+				language <br><br>
+				<select id="lang" onchange="language=this.value">
+				  <option value="eng">ENG</option>
+				  <option value="rus">RUS</option>
+				</select>
+				<br><br>
 				Properties <br>
 				<label class="settingslabel" for="fileName">Name</label>
 				<input id="fileName">
@@ -373,7 +376,7 @@
 				<br>
 				24x16
 			</div>
-			<button style="position:absolute;bottom:1em;right:1em;width:3.5em;height:2.5em" 
+			<button style="position:relative;bottom:-0.1em;left:18.6em;width:3.5em;height:2.5em;" 
 				onclick="saveSettings()">apply</button>
         </div>
     </div>

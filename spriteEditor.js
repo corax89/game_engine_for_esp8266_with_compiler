@@ -419,6 +419,7 @@ function SpriteEditor() {
 		d.style.display = "block";
 		d.style.left = window.innerWidth / 7 + 'px';
 		d.style.top = "3em";
+		d.scrollIntoView(true);
 	}
 
 	function selectAll() {

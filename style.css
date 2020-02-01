@@ -341,6 +341,7 @@ textarea:focus {
 .div_wind {
 	position: absolute;
 	box-shadow: 0 0 0.8em rgba(0,0,0,0.8);
+	animation: jello 0.3s;
 }
 .div_drag_wind {
 	cursor: move;
@@ -480,6 +481,9 @@ textarea:focus {
 	resize: none;
 	width: 24em;
 }
+.only_mobile{
+	display: none;
+}
 .header {
 	border: 1px solid #516399;
 	border-bottom: none;
@@ -594,10 +598,34 @@ textarea:focus {
     color: #B48D6C;
   }
 }
+@keyframes jello {
+  10% {
+    transform: skewX(1.6deg) skewY(1.6deg)
+  }
+  40% {
+    transform: skewX(-0.7deg) skewY(-0.7deg)
+  }
+  60% {
+    transform: skewX(0.4deg) skewY(0.4deg)
+  }
+  80% {
+    transform: skewX(-0.2deg) skewY(-0.2deg)
+  }
+  100% {
+    transform: none
+  }
+}
 @media screen and (max-width: 60em) {
+	body{
+		margin-top: 5em;
+	}
 	#menu {
+		top: 0;
 		height: 5em;
-		width: 70%;
+		width: 90%;
+		position: fixed;
+		background: rgba(255,255,255,.6);
+		z-index: 99999;
 	}
 	#ram {
 		height:2em;
@@ -609,6 +637,16 @@ textarea:focus {
 	}
 	#memoryPreviev {
 		float:none;
+	}
+	#help_hl{
+		width: 90%;
+	}
+	.div_wind{
+		width: 100%;
+		position: static;
+	}
+	.only_mobile{
+		display: initial;
 	}
 }
 @media all and (display-mode: fullscreen) {

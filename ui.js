@@ -746,6 +746,7 @@ function listing() {
 	d.style.top = "3em";
 	var d = document.getElementById("disasm");
 	d.value = asmSource;
+	d.scrollIntoView(true);
 }
 
 function debugVars() {
@@ -754,6 +755,7 @@ function debugVars() {
 	d.style.left = window.innerWidth / 7 * 2 + 'px';
 	d.style.top = "3em";
 	isDebug = true;
+	d.scrollIntoView(true);
 }
 
 function viewHelp() {
@@ -761,6 +763,7 @@ function viewHelp() {
 	d.style.display = "block";
 	d.style.left = window.innerWidth / 7 * 3 + 'px';
 	d.style.top = "3em";
+	d.scrollIntoView(true);
 }
 
 function viewSettings() {
@@ -769,6 +772,7 @@ function viewSettings() {
 	d.style.left = window.innerWidth / 7 * 4 + 'px';
 	d.style.top = "3em";
 	loadSettings();
+	d.scrollIntoView(true);
 }
 
 function closewindow(id) {
