@@ -107,7 +107,8 @@ function Cpu() {
 			width: 0,
 			height: 0,
 			x: 0,
-			y: 0
+			y: 0,
+			collisionMap: 0
 		};
 		castomfont = {
 			adress: 0,
@@ -702,26 +703,26 @@ function Cpu() {
 						}
 						x0 = Math.floor(_spr[n].x >> 2);
 						y0 = Math.floor(_spr[n].y >> 2);
-						if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-							 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+						if (getTileInXY(x0, y0, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0, tile.collisionMap)
+							 || getTileInXY(x0, y0 + _spr[n].height, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height, tile.collisionMap)) {
 							_spr[n].y = _spr[n].y - _spr[n].speedy;
 							_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;
 							x0 = Math.floor(_spr[n].x >> 2);
 							y0 = Math.floor(_spr[n].y >> 2);
-							if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-								 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+							if (getTileInXY(x0, y0, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0, tile.collisionMap)
+								 || getTileInXY(x0, y0 + _spr[n].height, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height, tile.collisionMap)) {
 								_spr[n].y = _spr[n].y - _spr[n].speedy;
 								_spr[n].speedy = Math.floor(_spr[n].speedy / 2) - _spr[n].gravity;
 								y0 = _spr[n].y >> 2;
-								if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-									 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								if (getTileInXY(x0, y0, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0, tile.collisionMap)
+									 || getTileInXY(x0, y0 + _spr[n].height, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height, tile.collisionMap)) {
 									_spr[n].x = _spr[n].x - _spr[n].speedx;
 									_spr[n].speedx = Math.floor((_spr[n].x - (_spr[n].x - _spr[n].speedx)) / 2);
 								}
 								x0 = _spr[n].x >> 2;
 								y0 = _spr[n].y >> 2;
-								if (getTileInXY(x0, y0) || getTileInXY(x0 + _spr[n].width, y0)
-									 || getTileInXY(x0, y0 + _spr[n].height) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height)) {
+								if (getTileInXY(x0, y0, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0, tile.collisionMap)
+									 || getTileInXY(x0, y0 + _spr[n].height, tile.collisionMap) || getTileInXY(x0 + _spr[n].width, y0 + _spr[n].height, tile.collisionMap)) {
 									_spr[n].x = _spr[n].previousx;
 									_spr[n].y = _spr[n].previousy;
 								} else {
@@ -739,7 +740,8 @@ function Cpu() {
 		}
 	}
 
-	function getTileInXY(x, y) {
+	function getTileInXY(x, y, addrCmap) {
+		var t;
 		if (x > 0x7fff)
 			x -= 0xffff;
 		if (y > 0x7fff)
@@ -747,14 +749,22 @@ function Cpu() {
 		if (x < tile.x || y < tile.y || x > tile.x + tile.imgwidth * tile.width || y > tile.y + tile.imgheight * tile.height)
 			return 0;
 		var p = (Math.floor((x - tile.x) / tile.imgwidth) + Math.floor((y - tile.y) / tile.imgheight) * tile.width);
-		var t = readInt(tile.adr + p * 2);
+		if(addrCmap > 0 && addrCmap < 0xffff){
+			t = readInt(addrCmap + Math.floor(p / 8)) & (1 << (7 - (p & 7)));
+		}
+		else{
+			t = readInt(tile.adr + p * 2);
+		}
 		return t;
 	}
 
 	function getTile(x, y) {
 		if (x < 0 || x >= tile.width || y < 0 || y >= tile.height)
 			return 0;
-		return readInt(tile.adr + (x + y * tile.width) * 2);
+		if(tile.collisionMap > 0 && tile.collisionMap < 0xffff)
+			return readInt(tile.collisionMap + Math.floor((x + y * tile.width) / 8)) & (1 << (7 - ((x) & 7)));
+		else
+			return readInt(tile.adr + (x + y * tile.width) * 2);
 	}
 
 	function drawTile(x0, y0) {
@@ -2236,6 +2246,11 @@ function Cpu() {
 					if (reg[r1] >= 1 && reg[r1] <= 40)
 						timeForRedraw = Math.floor(1000 / reg[r1]);
 					break;
+				case 0xD0:
+					// SETCTILE R	D4 DR
+					r1 = o2 & 0xf;
+					tile.collisionMap = reg[r1];
+					break;
 				}
 				break;
 			case 0xD5:
@@ -2290,12 +2305,6 @@ function Cpu() {
 				r2 = o2 & 0xf; //y
 				drawTile(reg[r1], reg[r2]);
 				break;
-			case 0xDB:
-				// SPRSPX R,R		DB RR
-				r1 = (o2 & 0xf0) >> 4; //num
-				r2 = o2 & 0xf; //speed y
-
-				break;
 			case 0xDC:
 				// SPRGET R,R		DC RR
 				r1 = (o2 & 0xf0) >> 4; //num
@@ -2333,7 +2342,7 @@ function Cpu() {
 				// GTILEXY R,R			DF RR
 				r1 = (o2 & 0xf0) >> 4;
 				r2 = o2 & 0xf;
-				reg[r1] = getTileInXY(reg[r1], reg[r2]);
+				reg[r1] = getTileInXY(reg[r1], reg[r2], 0);
 				break;
 			}
 			break;

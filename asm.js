@@ -655,6 +655,10 @@ function asm(s) {
 				out.push(0xD4); // SETFPS R		D4CR
 				out.push(0xC0 + getRegister(a[i + 1]));
 				return;
+			case 'SETCTILE':
+				out.push(0xD4); // SETCTILE R	D4DR
+				out.push(0xD0 + getRegister(a[i + 1]));
+				return;
 			case 'DRTILE':
 				out.push(0xDA); // DRTILE R,R		DA RR
 				out.push((getRegister(a[i + 1]) << 4) + (getRegister(a[i + 3])));

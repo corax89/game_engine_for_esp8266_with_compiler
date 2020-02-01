@@ -2438,6 +2438,7 @@ function compile(t) {
 	registerFunction('savedata', 'int', ['int', 'name', 'int', 'array', 'int', 'count'], 1, 'NDATA R%3 \n SDATA R%2,R%1 \n MOV R%3,R%2', true, 0);
 	registerFunction('loaddata', 'int', ['int', 'name', 'int', 'array'], 1, 'NDATA R%2 \n LDATA R%1 \n MOV R%2,R%1', true, 0);
 	registerFunction('drawtile', 'void', ['int', 'x', 'int', 'y'], 1, 'DRTILE R%2,R%1', true, 0);
+	registerFunction('setcollisionmap', 'void', ['int', 'adr'], 1, 'SETCTILE R%1', true, 0);
 	registerFunction('scroll', 'void', ['char', 'direction'], 1, 'SCROLL R%1,R%1', true, 0);
 	registerFunction('gotoxy', 'void', ['int', 'x', 'int', 'y'], 1, 'SETX R%2 \n SETY R%1', true, 0);
 	registerFunction('line', 'void', ['int', 'x', 'int', 'y', 'int', 'x1', 'int', 'y1'], 1, '_line: \n MOV R1,R0 \n LDC R2,2 \n ADD R1,R2 \n DLINE R1 \n RET', false, 0);
