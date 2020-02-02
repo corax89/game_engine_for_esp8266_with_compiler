@@ -11,18 +11,54 @@
 <link rel="stylesheet" type="text/css" href="style.css" />
 	<div id="menu">
 		<button onclick="onlyAsm();" style="display:none">asm</button>
-		<button onclick="main();">compile</button>
-		<div class="drop-menu hrefb">export &#9776;
+		<button onclick="main();">
+			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16">
+				<path fill="white" d="M1 12h4v4H1v-4z"/><path fill="white" d="M6 12h4v4H6v-4z"/><path fill="white" d="M11 12h4v4h-4v-4z"/>
+				<path fill="white" d="M1 7h4v4H1V7z"/><path fill="white" d="M1 2h4v4H1V2z"/><path fill="white" d="M6 7h4v4H6V7z"/>
+				<path fill="white" d="M7 1h4v4H7V1z"/><path fill="white" d="M11 7h4v4h-4V7z"/><path fill="white" d="M13 0h3v3h-3V0z"/>
+			</svg>
+			compile</button>
+		<button class="only_mobile" onclick="sourceArea.scrollIntoView(true);">
+			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 512 512">
+			<path fill="white" d="M398 78c7 0 12-6 12-12V27C410 12 398 0 383 0H122c-3 0-6 1-9 4L11 106c-2 2-4 5-4 9v370C7 500 19 512 34 512h349c15 0 27-12 27-27V296c0-7-6-12-12-12 -7 0-12 6-12 12v189c0 1-1 2-2 2H34c-1 0-2-1-2-2v-358h75c15 0 27-12 27-27V25H383c1 0 2 1 2 2V66C385 73 391 78 398 78zM109 100c0 1-1 2-2 2H49l60-60V100z"/>
+			<path fill="white" d="M493 100l-15-15c-16-16-43-16-59 0L304 201H104c-7 0-12 6-12 12 0 7 6 12 12 12h175l-74 74H104c-7 0-12 6-12 12s6 12 12 12h76l0 0c-2 2-3 3-3 5l-19 69h-54c-7 0-12 6-12 12s6 12 12 12h63c0 0 3 0 3 0 0 0 78-22 78-22 2-1 4-2 5-3l239-239C509 143 509 117 493 100zM185 394l10-36 26 26L185 394zM245 373l-39-39 198-198 39 39L245 373zM475 142l-16 16 -39-39 16-16c7-7 18-7 24 0l15 15C482 125 482 135 475 142z"/>
+			</svg>
+			source
+		</button>
+		<button onclick="spriteEditor.edit()">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 48 48" width="24">
+			<path fill="white" d="M44 32H4v-8c0-2 2-4 4-4h10c0 0 1 0 1 0s0-1 0-1C18 17 18 15 18 14V6c0-3 3-6 6-6s6 3 6 6v8c0 2 0 3-1 5 0 0 0 1 0 1S30 20 30 20H40c2 0 4 2 4 4V32zM6 30h36v-6c0-1-1-2-2-2H30c-1 0-2 0-2-1s-1-2 0-3C28 17 28 15 28 14V6c0-2-2-4-4-4s-4 2-4 4v8c0 1 0 3 1 4 0 1 0 2 0 3S19 22 18 22H8c-1 0-2 1-2 2V30z"/>
+			<path fill="white" d="M41 48H16c0 0-1 0-1 0S15 47 15 47v-4l-2 4C13 48 12 48 12 48H7c-1 0-1 0-1-1V31c0-1 0-1 1-1h34c1 0 1 0 1 1v16C42 48 42 48 41 48zM17 46h23V32H8v14h3l4-7c0 0 1-1 1-1C17 38 17 39 17 39L17 46z"/><path d="M37 48c-1 0-1 0-1-1V37c0-1 0-1 1-1s1 0 1 1v10C38 48 38 48 37 48z"/>
+			<path fill="white" d="M33 48c-1 0-1 0-1-1v-8c0-1 0-1 1-1s1 0 1 1v8C34 48 34 48 33 48z"/><path d="M29 48c-1 0-1 0-1-1v-5c0-1 0-1 1-1s1 0 1 1v5C30 48 30 48 29 48z"/><circle cx="24" cy="6" r="2"/>
+			</svg>
+		sprite</button>
+		<button onclick="viewHelp();">
+		<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 16 16" width="24">
+		<g fill="none"><path fill="white" d="M7 11L7 13 9 13 9 11ZM8 16C4 16 0 12 0 8 0 4 4 0 8 0 12 0 16 4 16 8 16 12 12 16 8 16ZM6 4C5 4 4 5 4 6L6 6C6 6 6 5 7 5 7 5 7 5 8 5 9 5 9 5 9 5 9 5 10 6 10 6 10 6 9 7 9 7L9 7 8 8C8 8 7 8 7 9 7 9 7 9 7 10L9 10C9 10 9 10 9 9 9 9 9 9 10 9L10 8C11 8 11 8 11 7 12 7 12 6 12 6 12 5 12 4 11 4 10 3 9 3 8 3 7 3 6 3 6 4ZM6 4"/></g></svg>
+		help</button>
+		<button onclick="viewSettings();">
+		<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 48 48" width="24">
+		<path path fill="white" d="M11 46L11 46c-1 0-2 0-4-1 0 0-1 0-1-1s0-1 0-1l4-4v-3H8L4 41c0 0-1 0-1 0 0 0-1 0-1-1 -1-3-1-7 2-10 2-2 4-3 6-3 1 0 2 0 3 0l15-15c-1-3 0-7 2-9 2-2 4-3 6-3 1 0 2 0 4 1 0 0 1 0 1 1s0 1 0 1L37 8v3h3l4-4c0 0 1 0 1 0 0 0 1 0 1 1 1 3 1 7-2 10C42 19 39 20 37 20c-1 0-2 0-3 0L20 34c1 3 0 7-2 9C16 45 13 46 11 46zM10 44C10 44 11 44 11 44c2 0 4-1 5-2 2-2 3-5 1-8 0 0 0-1 0-1L33 18c0 0 1 0 1 0C35 18 36 18 37 18c2 0 4-1 5-2 2-2 2-4 2-6l-3 3c0 0 0 0-1 0H36c-1 0-1 0-1-1V7c0 0 0-1 0-1l3-3c0 0-1 0-1 0 -2 0-4 1-5 2 -2 2-3 5-1 8 0 0 0 1 0 1L15 30c0 0-1 0-1 0 -1 0-2-1-3-1 -2 0-4 1-5 2 -2 2-2 4-2 6l3-3c0 0 0 0 1 0h4c1 0 1 0 1 1v4c0 0 0 1 0 1L10 44z"/>
+		<path fill="white" d="M42 46c-1 0-2 0-3-1l-9-9c0 0 0-1 0-1l4-4c0 0 1 0 1 0l9 9C46 40 46 41 46 42c0 1 0 2-1 3C44 46 43 46 42 46zM32 35l8 8c1 1 2 1 3 0C44 43 44 43 44 42s0-1-1-1L35 32 32 35z"/>
+		<rect fill="white" height="2" transform="matrix(0.7071 0.7071 -0.7071 0.7071 15.776 -6.535)" width="16" x="8" y="15"/>
+		<path path fill="white" d="M29 38c0 0-1 0-1 0 0 0 0-1 0-1l8-8c0 0 1 0 1 0s0 1 0 1l-8 8C29 38 29 38 29 38z"/><path fill="white" d="M9 12c0 0-1 0-1 0L2 7C2 6 2 6 2 6s0-1 0-1l3-3c0 0 1 0 1 0l6 6c0 0 0 0 0 1s0 1 0 1l-3 3C9 12 9 12 9 12zM4 6l4 4 1-1L6 4 4 6z"/>
+		<rect fill="white" height="2" transform="matrix(0.7071 0.7071 -0.7071 0.7071 29.3955 -12.1756)" width="10" x="24" y="28"/></svg>
+		settings</button>
+		<div class="drop-menu hrefb">
+			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 1000 1000">
+			<path fill="white" d="M622.5 683.8H408.1c-16.9 0-30.6 13.7-30.6 30.6v61.3c0 16.9 13.7 30.6 30.6 30.6h214.4v153.1L928.7 745 622.5 530.6V683.8L622.5 683.8zM101.9 10C85 10 71.3 23.7 71.3 40.6v918.7c0 16.9 13.7 30.6 30.6 30.6h214.4V867.5H193.8v-735H500v214.4c0 16.9 13.7 30.6 30.6 30.6H745V500h122.5c0-51.6 0-183.8 0-183.8L561.2 10 101.9 10 101.9 10z"/>
+			</svg>
+			export<br>▼
 			<ul class="sub-menu">
 				<li><button onclick="savebin(1);">export .html5</button></li>
 				<li><button onclick="savebin(2);">export .lge</button></li>
 			</ul>
 		</div>
-		<button class="only_mobile" onclick="sourceArea.scrollIntoView(true);">source</button>
-		<button onclick="spriteEditor.edit()">sprite editor</button>
-		<button onclick="viewHelp();">help</button>
-		<button onclick="viewSettings();">settings</button>
-		<div class="drop-menu hrefb">utilities &#9776;
+		<div class="drop-menu hrefb">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 512 512" width="24"><style>.a{fill:#fff;stroke-linejoin:round;stroke:#fff;}</style>
+			<rect height="46" width="46" x="146" y="151" class="a"/><rect height="46" width="46" x="233" y="151" class="a"/><rect height="46" width="46" x="321" y="151" class="a"/><rect height="46" width="46" x="146" y="233" class="a"/><rect height="46" width="46" x="233" y="233" class="a"/><rect height="46" width="46" x="321" y="233" class="a"/><rect height="46" width="46" x="146" y="315" class="a"/><rect height="46" width="46" x="233" y="315" class="a"/>
+			<rect height="46" width="46" x="321" y="315" class="a"/></svg>
+			utilities<br>▼
 			<ul class="sub-menu">
 				<li><a href="soundEditor.html"  target="_blank" class="hrefb">rtttl editor</a></li>
 				<li><a href="ImageConverter.html"  target="_blank" class="hrefb">image converter</a></li>
@@ -109,8 +145,6 @@
 		</div>
 		<div id="wrap-right">
 			<div class="header">source</div>
-			<button class="bigButton" style="position:absolute;right:0.3em;top:4em;font-size:28px;" onclick="addFontSize(true);">+</button>
-			<button class="bigButton" style="position:absolute;right:0.3em;top:6em;font-size:28px;" onclick="addFontSize(false);">-</button>
 			<div id="editBlock">
 			<table cellspacing="0" cellpadding="0" style="padding:0px 0px 70px 0px!important;margin:0px 0px 0px 0px!important;font-size:1px;line-height:0px;width:auto;height:100%">
 			<tr><td style="border:1px #345 solid;border-right:0px;vertical-align:top;width:1px;">
@@ -118,7 +152,12 @@
 				<td style="border:1px #345 solid;border-left:0px;vertical-align:top;width:100%;height:100%">
 				<pre id="inputImgHighlite"></pre>
 				<textarea id="input" cols="80"></textarea>
-				</td></tr></table></div>
+				</td>
+				<td>
+					<button class="bigButton" style="font-size:28px;margin:0.2em;" onclick="addFontSize(true);">+</button>
+					<button class="bigButton" style="font-size:28px;margin:0.2em;" onclick="addFontSize(false);">-</button>			
+				</td>
+				</tr></table></div>
 			</div>
 		</div>
 	</div>
