@@ -2,15 +2,21 @@ html,body,textarea {
 	font-family: monospace;
 	font-size: 13px;
 	font-style: normal;
-	height: 99%;
+	height: 100%;
 	width: 100%;
 	margin: 0;
     padding: 0;
     border: 0;
 }
+body{
+	background-color:#354265;
+	display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 button,input,select {
-	background: #516399;
-	border: 1px solid #bbb;
+	background: #3C456C;
+	border: none;
 	color: #ffffff;
 	font: normal 13px Verdana, Geneva, sans-serif;
 	font-style: normal;
@@ -59,7 +65,7 @@ textarea:focus {
 	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 }
 .hrefb{
-	background: #516399;
+	background: #3C456C;
 	border: 1px solid #bbb;
 	color: #ffffff;
 	font: normal 13px Verdana, Geneva, sans-serif;
@@ -67,14 +73,14 @@ textarea:focus {
 	padding: 2.5px;
 }
 #container {
-    height: 90%;
+    height: 100%;
 	min-height: 47em;
 	position: relative;
 }
 #wrap-left {
 	float: left;
 	height: 47em;
-	padding: 2px;
+	padding-top: 2em;
 	width: 256px;
 	margin-right: 1em;
 	margin-left: 2em;
@@ -82,13 +88,12 @@ textarea:focus {
 }
 #wrap-right {
 	height: 100%;
-	padding: 2px;
 }
 #monitor {
-	border: 1px solid #516399;
-	background-color: rgb(235, 235, 228);
+	background-color: #516399;
 	width: 100%;
-	height: 23.2em;
+	height: 22.2em;
+	margin-bottom: 7em;
 	overflow: hidden;
 	transition: all 0.3s ease;
 }
@@ -103,9 +108,15 @@ textarea:focus {
 	float: left;
 	height: 24em;
 	text-align: center;
+	background-color: #516399;
 	width: 0;
 	overflow: hidden;
 	transition: all 0.3s ease;
+}
+#cpuSpeed{
+	width: 6em;
+    height: 1.3em;
+    margin-top: 0.5em;
 }
 #cpuPreview {
 	float: left;
@@ -121,6 +132,8 @@ textarea:focus {
 	resize: none;
 	width: 22.8em;
 	border: none;
+	background-color: #516399;
+	color: #000;
 }
 #editBlock {
 	color: #516399;
@@ -154,6 +167,7 @@ textarea:focus {
     height: 100%;
 	vertical-align:top;
 	display: block;
+	min-width: 12em;
 	min-height: 20em;
 	font-size: 13px; 
 	font-family: monospace; 
@@ -198,17 +212,39 @@ textarea:focus {
 #hint i {
 	color: #777;
 }
+#embleme{
+	font-size: 26px;
+	border: none;
+	padding: 0.6em;
+	margin-right: 6.75em;
+	background: none;
+	line-height: 0.5em;
+}
 #menu {
 	display: flex;
-	height: 5em;
-	margin: auto;
-	width: 36em;
+	height: 4.1em;
+	width: 100%;
+	background-color: #516399;
+	overflow: hidden;
+	z-index: 1;
+    position: relative;
+	box-shadow: 0 0 1em #000;
 }
 #menu>button{
 	height: 5em;
     width: 5em;
     font-size: 11px;
 	margin-right: 0.3em;
+}
+#gameListLink{
+	animation:colorRotate 3s linear 0s 5;
+	display:inline-block;
+	width:9em;
+	position: fixed;
+    right: 0;
+    height: 3em;
+    line-height: 5em;
+    color: #ffffff;
 }
 #ram {
 	border: 1px solid #516399;
@@ -232,6 +268,8 @@ textarea:focus {
 	resize: none;
 	white-space: pre;
 	width: 13.6em;
+	background-color: #516399;
+	color: #000;
 }
 #screen {
 	float: left;
@@ -248,18 +286,31 @@ textarea:focus {
 	width: 13em;
 }
 #alert, #control {
-	border: 1px solid #516399;
+	background-color: #516399;
 	max-height: 8em;
 	min-height: 2em;
 	overflow: auto;
 	width: 100%;
 	word-wrap: break-word;
 }
+#control{
+	padding: 0.5em 0 0.5em 0;
+	display: flex;
+    justify-content: space-around;
+}
 #alert > b {
 	color: #F11;
 }
 #alert i {
-	color: #333;
+	color: #000;
+}
+#keysPreview{
+	width: 248px;
+    height: 80px;
+    position: absolute;
+    margin: 0.2em;
+    margin-top: 23em;
+	background-image:url('data:image/png;base64,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')
 }
 #consoleInput {
 	border: 1px solid #516399;
@@ -273,11 +324,11 @@ textarea:focus {
 	width: 90%;
 }
 #floatButton{
-	background: #516399;
+	background: #3C456C;
 	position: fixed;
     top: 1px;
     left: 1px;
-	border: 3px solid gray;
+	border: 3px solid #fff;
 	display: none;
 	height: 2em;
     width: 2.3em;
@@ -308,6 +359,7 @@ textarea:focus {
 .bigButton {
 	width: 52px;
 	height: 50px;
+	border-radius: 4em;
 }
 .drop-menu {
 	display: inline-block;
@@ -316,11 +368,9 @@ textarea:focus {
     width: 4em;
 	margin-right: 0.3em;
     font-size: 11px;
+	border: none;
 	text-align: center;
 }
-.drop-menu:hover {
-	border: 1px solid #fff;
-	}
 .drop-menu:hover .sub-menu {
 	opacity: 1;
     visibility: visible;
@@ -348,12 +398,14 @@ textarea:focus {
 	font-size: 19px;
 	height: 22px;
 	padding: 8px 0;
+	z-index: 4;
 	}
 .sub-menu li:hover {
 	border-bottom: 1px dotted #bababa;
 	}
 .div_wind {
 	position: absolute;
+	z-index: 2;
 	box-shadow: 0 0 0.8em rgba(0,0,0,0.8);
 	animation: jello 0.3s;
 }
@@ -499,12 +551,14 @@ textarea:focus {
 	display: none;
 }
 .header {
-	border: 1px solid #516399;
+	border: 1px solid #526399;
 	border-bottom: none;
 	display: inline-block;
 	margin-right: 9em;
 	text-align: center;
 	width: 10em;
+	color: #fff;
+	background-color: #000;
 }
 .column {
 	float: left;
@@ -633,12 +687,14 @@ textarea:focus {
 	body{
 		margin-top: 5em;
 	}
+	#embleme{
+		display: none;
+	}
 	#menu {
 		top: 0;
 		height: 5em;
-		width: 90%;
 		position: fixed;
-		background: rgba(255,255,255,.6);
+		opacity: 0.9;
 		z-index: 99999;
 	}
 	#menu>button{
@@ -669,6 +725,16 @@ textarea:focus {
 	.drop-menu{
 		font-size:9px;
 		padding-left: 0;
+	}
+}
+@media screen and (max-width: 40em) {
+	#keysPreview{display: none;}
+	#monitor{margin-bottom:0;}
+	#gameListLink{
+		left: 0;
+		top: 3.8em;
+		height: 1em;
+		line-height: 1em;
 	}
 }
 @media all and (display-mode: fullscreen) {
