@@ -778,6 +778,14 @@ function viewSettings() {
 	d.scrollIntoView(false);
 }
 
+function viewAbout() {
+	var d = document.getElementById("div_wind6");
+	d.style.display = "block";
+	d.style.left = (window.innerWidth / 2 - 40) + 'px';
+	d.style.top = "5em";
+	d.scrollIntoView(false);
+}
+
 function closewindow(id) {
 	var d = document.getElementById(id);
 	if (id == "div_wind3")
@@ -1129,9 +1137,11 @@ function redraw() {
 	clearTimeout(screenTimeout);
 	screenTimeout = setTimeout(function () {
 		requestAnimationFrame(redraw);
-		cpu.redrawParticle();
-		display.redraw();
-		cpu.setRedraw();
+		if(isRun){
+			cpu.redrawParticle();
+			display.redraw();
+			cpu.setRedraw();
+		}
 		isRedraw = true;
 	}, timeForRedraw);
 }
