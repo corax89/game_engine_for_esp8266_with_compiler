@@ -1302,19 +1302,19 @@ function compile(t) {
 		}
 	}
 	//загружаем значение структуры
-	function structLoad(thisVar, struct, pos, isArray) {
+	function structLoad(thisVar, struct, pos, isArray) {	
 		typeOnStack[registerCount] = thisVar.type;
 		asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
 		if (isArray) {
 			asm.push(' LDC R' + (registerCount + 2) + ',' + struct[1]);
-			asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
-			asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
+			asm.push(' MUL R' + (registerCount) + ',R' + (registerCount + 2));
+			asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount));
 		}
 		if (thisVar.type == 'char')
-			asm.push(' LDC R' + (registerCount - 1) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+			asm.push(' LDC R' + (registerCount) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
 		else
-			asm.push(' LDI R' + (registerCount - 1) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
-
+			asm.push(' LDI R' + (registerCount) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+		registerCount++;
 	}
 	//обрабатываем структуру
 	function structToken() {
