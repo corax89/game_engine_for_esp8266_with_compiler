@@ -1304,6 +1304,8 @@ function compile(t) {
 	//загружаем значение структуры
 	function structLoad(thisVar, struct, pos, isArray) {	
 		typeOnStack[registerCount] = thisVar.type;
+		if(isArray)
+			registerCount--;
 		asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
 		if (isArray) {
 			asm.push(' LDC R' + (registerCount + 2) + ',' + struct[1]);
