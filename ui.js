@@ -6,6 +6,8 @@ var debugArea = document.getElementById("debug");
 var debugVarArea = document.getElementById("debugVariable");
 var debugSprArea = document.getElementById("debugSprite");
 var canvas = document.getElementById("screen");
+var shadowcanvas = document.getElementById("copyscreen");
+var shadowctx = document.getElementById("copyscreen").getContext('2d');
 var memoryPage = 0; //указывает на одну из 255 страниц памяти по 255 байт для отображения
 var cpuSpeed = 8000; //количество операций, выполняемых процессором за 16 миллисекунд
 var cpuLostCycle = 0; //сколько циклов должно быть потеряно из-за операций рисования
@@ -42,6 +44,8 @@ var screenTimeout;
 var lineCountTimer;
 var fontSizeInEditor = 13;
 var timeForRedraw = 48;
+var saveGifFrame = 0;
+var gif;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
@@ -94,6 +98,20 @@ window.addEventListener('load', function () {
 	c.addEventListener('touchend', ontouch, false);
 
 }, false);
+
+function saveAsGif(){
+	gif = new GIF({
+	  workers: 2,
+	  quality: 30,
+	  repeat: 0,
+	  width: 256,
+	  height: 256
+	});
+	gif.on('finished', function(blob) {
+	    saveAs(blob, fileName + '.gif');
+	});
+	saveGifFrame = 80;
+}
 
 function addFontSize(isBig) {
 	var ih = document.getElementById('inputImgHighlite');
@@ -913,7 +931,7 @@ function Display() {
 		var x = Math.floor((e.offsetX == undefined ? e.layerX : e.offsetX) / (rect.width / 128));
 		var y = Math.floor((e.offsetY == undefined ? e.layerY : e.offsetY) / (rect.height / 256)) - 16;
 		ctx.fillStyle = "#516399";
-		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 16);
+		ctx.fillRect(0, 0, pixelSize * 128, pixelSize * 8);
 		ctx.fillStyle = "#111";
 		ctx.fillText('x ' + x + ';y ' + y + ';charX ' + Math.floor(x / 6) + ';charY ' + Math.floor(y / 8), 1, 1);
 	}
@@ -1084,6 +1102,20 @@ function Display() {
 			}
 		isDebug = false;
 		isChangePalette = false;
+		if(saveGifFrame > 1){
+			ctx.fillStyle = "#516399";
+			ctx.fillRect(80 * pixelSize, 8 * pixelSize, pixelSize * 45, pixelSize * 8);
+			ctx.fillStyle = "#ADFF2F";
+			ctx.fillText('save GIF ' + Math.floor((saveGifFrame + 15) / 20), 80 * pixelSize, 8 * pixelSize);
+		    gif.addFrame(ctx.getImageData(0, 32, 256, 256), 1);
+			saveGifFrame--;
+		}
+		else if(saveGifFrame == 1){
+			ctx.fillStyle = "#516399";
+			ctx.fillRect(80 * pixelSize, 8 * pixelSize, pixelSize * 45, pixelSize * 8);
+			saveGifFrame = 0;
+			gif.render();
+		}
 	}
 
 	function rgbToHex(rgb) {
