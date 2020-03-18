@@ -5,15 +5,15 @@ html,body,textarea {
 	height: 100%;
 	width: 100%;
 	margin: 0;
-    padding: 0;
-    border: 0;
+	padding: 0;
+	border: 0;
 }
 body{
 	background-color:#354265;
 	min-height: 55em;
 	display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+	flex-direction: column;
+	justify-content: space-between;
 }
 button,input,select {
 	background: #3C456C;
@@ -42,28 +42,28 @@ textarea:focus {
 }
 .checkbox:checked + label{
 	background-color: #516399;
-    color: #fff;
+	color: #fff;
 }
 .settingslabel{
 	display: inline-block;
 	width: 4.5em;
 	margin-top: 0.5em;
 	padding-left: 1em;
-    line-height: 1.95em;
-    vertical-align: bottom;
-    border: solid 1px;   
+	line-height: 1.95em;
+	vertical-align: bottom;
+	border: solid 1px;   
 }
 #icon{
 	border: 1px solid;
-    margin-top: 0.7em;
-    width: 10em;
+	margin-top: 0.7em;
+	width: 10em;
 	height: 6em;
-	image-rendering: optimizeSpeed;             /* Older versions of FF          */
-	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
-	image-rendering: -webkit-optimize-contrast; /* Safari                        */
-	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
-	image-rendering: pixelated;                 /* Awesome future-browsers       */
-	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+	image-rendering: optimizeSpeed;			 /* Older versions of FF		  */
+	image-rendering: -moz-crisp-edges;		  /* FF 6.0+					   */
+	image-rendering: -webkit-optimize-contrast; /* Safari						*/
+	image-rendering: -o-crisp-edges;			/* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;				 /* Awesome future-browsers	   */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE							*/
 }
 .hrefb{
 	background: #3C456C;
@@ -74,7 +74,7 @@ textarea:focus {
 	padding: 2.5px;
 }
 #container {
-    height: 100%;
+	height: 100%;
 	min-height: 47em;
 	position: relative;
 }
@@ -116,8 +116,8 @@ textarea:focus {
 }
 #cpuSpeed{
 	width: 6em;
-    height: 1.3em;
-    margin-top: 0.5em;
+	height: 1.3em;
+	margin-top: 0.5em;
 }
 #cpuPreview {
 	float: left;
@@ -151,21 +151,21 @@ textarea:focus {
 }
 #viewKeyboard{
 	position: absolute;
-    left: 6em;
-    background-color: rgba(255,255,255,0.7);
-    width: 11em;
-    height: 3em;
-    text-align: center;
-    line-height: 3em;
-    border-radius: 0.5em;
-    display: none;
+	left: 6em;
+	background-color: rgba(255,255,255,0.7);
+	width: 11em;
+	height: 3em;
+	text-align: center;
+	line-height: 3em;
+	border-radius: 0.5em;
+	display: none;
 }
 #input {
 	border: none;
 	resize: none;
 	tab-size: 4;
 	width: 100%;
-    height: 100%;
+	height: 100%;
 	vertical-align:top;
 	display: block;
 	min-width: 12em;
@@ -179,7 +179,7 @@ textarea:focus {
 	white-space: pre; 
 	overflow: auto;
 	position: relative;
-    background-color: rgba(0,0,0,0);
+	background-color: rgba(0,0,0,0);
 	text-shadow: rgb(255, 255, 255) 0 1px 0;
 }
 #input::-webkit-scrollbar-corner{
@@ -203,7 +203,7 @@ textarea:focus {
 }
 .execLine {
 	background-color: #516399;
-    color: white;
+	color: white;
 }
 #hint {
 	color: #516399;
@@ -230,13 +230,13 @@ textarea:focus {
 	width: 100%;
 	background-color: #516399;
 	z-index: 1;
-    position: relative;
+	position: relative;
 	box-shadow: 0 0 1em #000;
 }
 #menu>button{
 	height: 4.8em;
-    width: 5em;
-    font-size: 11px;
+	width: 5em;
+	font-size: 11px;
 	margin-right: 0.3em;
 }
 #gameListLink{
@@ -244,10 +244,10 @@ textarea:focus {
 	display:inline-block;
 	width:9em;
 	position: absolute;
-    right: 0;
-    height: 3em;
-    line-height: 5em;
-    color: #ffffff;
+	right: 0;
+	height: 3em;
+	line-height: 5em;
+	color: #ffffff;
 }
 #ram {
 	border: 1px solid #516399;
@@ -259,9 +259,9 @@ textarea:focus {
 }
 #soundCheckbox{
 	display: inline-block;
-    height: 1em;
-    margin: 0;
-    padding: 0;
+	height: 1em;
+	margin: 0;
+	padding: 0;
 }
 #debug {
 	font-size: 83%;
@@ -276,12 +276,12 @@ textarea:focus {
 }
 #screen {
 	float: left;
-	image-rendering: optimizeSpeed;             /* Older versions of FF          */
-	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
-	image-rendering: -webkit-optimize-contrast; /* Safari                        */
-	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
-	image-rendering: pixelated;                 /* Awesome future-browsers       */
-	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+	image-rendering: optimizeSpeed;			 /* Older versions of FF		  */
+	image-rendering: -moz-crisp-edges;		  /* FF 6.0+					   */
+	image-rendering: -webkit-optimize-contrast; /* Safari						*/
+	image-rendering: -o-crisp-edges;			/* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;				 /* Awesome future-browsers	   */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE							*/
 }
 #codePreviev {
 	float: left;
@@ -299,7 +299,7 @@ textarea:focus {
 #control{
 	padding: 0.5em 0 0.5em 0;
 	display: flex;
-    justify-content: space-around;
+	justify-content: space-around;
 }
 #alert > b {
 	color: #F11;
@@ -309,11 +309,11 @@ textarea:focus {
 }
 #keysPreview{
 	width: 248px;
-    height: 80px;
-    position: absolute;
-    margin: 0.2em;
-    margin-top: 23em;
-	background-image:url('data:image/png;base64,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')
+	height: 80px;
+	position: absolute;
+	margin: 0.2em;
+	margin-top: 23em;
+	background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPgAAABQCAMAAAADQEi6AAAAQlBMVEXeu1lDTmrd5ubCp1uAuLX9/f1UYnI1QWWPq2K+N0a/09JmhJWlxsCSmaxydmGHlGFwoKWXOU7sxMivN0lrPFjNZnE0l44+AAAFMUlEQVR42u2bDXPCIAyGSwo4gbZqu///V5cA/bLQlk27u0rm7dRW5cmbBIi1uERMNmUxs7K+nMmKyPNNsbSSnR88xH0u8jC4LMLWnB28iYCfSPIweBkDlycHL2LgdQbP4Bk8g2fwDJ7BM3gGz+AZPIMfAC6bcmZF1GanNf+zS2WybtBquf/ju/u9be/3js3AWVP81v4BXdZfgzW7tsns3l7bq7O2m4CXxe+tTB232RjrhifZBNuib3u+u87MoyN4XfwFvE6KUW2EjpNLfQOjZQL3DtHv12uIvPib4EltOHnj3AhQPKwS05xzofhNJ3Bvar7g9uRFvITvlJylcCO4EPzGYtx4WHEeFVF+BWw15rp2CX69s1eAy71hTtycKyLTEW46DDzsGLJmoAWA4b5cq2ue9fGAx+Px7R91B4J7bge+DHbPzYHAY5KPglPgDOTNDsEfwtrDPzwMfNAbOAA3C7KBGy0OPmY4EMWO+jZk+IOYkX6Q/CDwIc6xfFEayxg3So7OCZc3Nua1EKi52c7yOfj30eBsjHNb158lHeNc4ClLvyzAkRrZ1SZ496w49OXtGHBplMXmNo75c/XquV2Cq2hZl5NIhy81ifXtmu5z/PtQcMaFcVh0I0Id4sZzBAT8EgC3zGOsR6fyBTh48vYIcAQjIAxPcNP0HAwPG7B+MZTgdHirqNNbKRjrer1HcZfjj+MUJ0Ephi20WYDRYcKlOo0JTqGhIwKyWU2f1PVmcxp34GOSHwDuApkiHOHBhLhJaCugMWvcIzi6EE9VQ6wnVPXDFPcJjGhGCBHU26qtFCmI3DcdXwP7hVtf1qCP9V3zODp2rG5vn848t6EYNjFuN8OBWI3zSZKDn8h6B6xsU+YrN+jXrC17N3ivN8rtJzK5PNyDb+hNHZOvxF1KF9ic2Uh/8+5M9usS49bgT9xuXWMEBYThW3rP1qx796XB3VnLXrAfL7cFpyrEITBRac9NZ9iI0Fv9l4Dk650IFpLc78ebP3GvNiJIUaANmQno7cGp6Bglduhtu6IL8OQOzLV7Sc+NrYMbVBpcvV4uyLzirtqvdV5Wem7bC8d7rOd2YeWbuJFM0GYLInr6mu7KPd+7sZ+I3uzq+E0rXHtnk746q3+HvtlplDZ7VaxujZv0/dyurW6pm90v6e6ts7GxXgzvJoeblHHSyWlsR7fthpstK3cwf/t2UxK3eyVjiR191s1f8eavkNhtdf09bEhvh19A9+7vzpim5mF0XcL0jePf8dwHfGlIqcNWv2SQ/3G9ZP6aOINn8AyewTN4Bs/gJwEvM/iH/Rin/tTfnUUkP5HgMfDnblRJt1P9rDb2o9pL/XRhZ1nWZ/pNbRz87JbBM3gGz+CfAC6F+EzwSgj9ieBMVKDoDl0vwir8X100XaHC0CXsoskr4J9KWr6iQyHqUfuRBlLez14xg4PbbQCEoGPglZAEiOBCanxUMSmFukgATAL7BPpG0kilMAnj1PhCECzqFUYuT9UMUlwlkUWoqOKKiGgE9hx0gxuVvUdjx8+qwB9NE2hjUO6zksyIxJhTM88XzyNwjrT0lehDkA4YQFUEU5UNXFW9UByMIAWJ3FVqMYJ5TBVPmUimg+AYruIitPUzo4t5XgeOcqdGevILmFgBB2PPMFPwIdSZsMKIcbCvCnWkUImRzgCSM2P+GcWsBGl3CpuA98XNxQqVN+eapNjUG1mcFj/kSUgsCTgCBrHi5lkoikbwfjpzWSWtb+gpSJ3O1mKzSgxc6XLSJESIuqxNZx9kP2Qe4sVjrwCaAAAAAElFTkSuQmCC')
 }
 #consoleInput {
 	border: 1px solid #516399;
@@ -329,13 +329,13 @@ textarea:focus {
 #floatButton{
 	background: #3C456C;
 	position: fixed;
-    top: 1px;
-    left: 1px;
+	top: 1px;
+	left: 1px;
 	border: 3px solid #fff;
 	display: none;
 	height: 2em;
-    width: 2.3em;
-    overflow: hidden;
+	width: 2.3em;
+	overflow: hidden;
 	opacity: 0.8;
 	transition: all 0.3s ease;
 }
@@ -348,40 +348,40 @@ textarea:focus {
 	position: absolute;
 	color: #fff;
 	tab-size: 4;
-    width: 100%;
-    height: 37.5em;
-    font-size: 13px;
-    font-family: monospace;
-    line-height: 16px;
-    font-weight: 500;
-    margin: 0px;
-    padding: 0px;
-    white-space: pre;
-    overflow: auto;
+	width: 100%;
+	height: 37.5em;
+	font-size: 13px;
+	font-family: monospace;
+	line-height: 16px;
+	font-weight: 500;
+	margin: 0px;
+	padding: 0px;
+	white-space: pre;
+	overflow: auto;
 }
 .bigButton {
-	width: 52px;
-	height: 50px;
+	width: 48px;
+	height: 48px;
 	border-radius: 4em;
 }
 .drop-menu {
 	display: inline-block;
 	cursor: pointer;
 	height: 4.4em;
-    width: 4em;
+	width: 4em;
 	margin-right: 0.3em;
-    font-size: 11px;
+	font-size: 11px;
 	border: none;
 	text-align: center;
 }
 .drop-menu:hover .sub-menu {
 	opacity: 1;
-    visibility: visible;
+	visibility: visible;
 	}
 .sub-menu {
 	display: block;
 	opacity: 0;
-    visibility: hidden;
+	visibility: hidden;
 	position: fixed;
 	z-index: 999;
 	background: #fff;
@@ -391,8 +391,8 @@ textarea:focus {
 	margin-left: -6em;
 	box-shadow: 0px 13px 25px rgba(0,0,0, 0.2);
 	transition-property: opacity, visibility;
-    transition-duration: 0.3s;
-    transition-delay: 0.3s;
+	transition-duration: 0.3s;
+	transition-delay: 0.3s;
 	}
 .sub-menu li {
 	list-style-type: none;
@@ -502,31 +502,31 @@ textarea:focus {
 	transition: all 0.3s ease;
 }
 #pixelearea {
-	image-rendering: optimizeSpeed;             /* Older versions of FF          */
-	image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
-	image-rendering: -webkit-optimize-contrast; /* Safari                        */
-	image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
-	image-rendering: pixelated;                 /* Awesome future-browsers       */
-	-ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+	image-rendering: optimizeSpeed;			 /* Older versions of FF		  */
+	image-rendering: -moz-crisp-edges;		  /* FF 6.0+					   */
+	image-rendering: -webkit-optimize-contrast; /* Safari						*/
+	image-rendering: -o-crisp-edges;			/* OS X & Windows Opera (12.02+) */
+	image-rendering: pixelated;				 /* Awesome future-browsers	   */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE							*/
 	width: 22em;
 	height: 22em;
 	float: left;
 }
 #pixelpanel {
 	font-size: 180%;
-    text-align: center;
+	text-align: center;
 }
 #pixelpanel>label{
 	border: 1px solid #516399;
 	display: block;
-    margin-bottom: 0.1em;
+	margin-bottom: 0.1em;
 }
 #pixelpanel>button{
 	width: 2em;
 	display: block;
-    margin-bottom: 0.1em;
+	margin-bottom: 0.1em;
 	position: relative;
-    bottom: -20px;
+	bottom: -20px;
 }
 #pixelpanel>input[type="radio"] {
 	display: none;
@@ -537,17 +537,17 @@ textarea:focus {
 }
 #checkRle,#check1bit{
 	position: relative;
-    top: 0.5em;
+	top: 0.5em;
 	margin: 0;
 }
 #checkRleLabel,#check1bitLabel{
 	display: inline-block;
-    width: 2em;
-    font-size: 0.9em;
-    position: relative;
-    top: 0.5em;
+	width: 2em;
+	font-size: 0.9em;
+	position: relative;
+	top: 0.5em;
 	left: -0.4em;
-    width: 1.5em;
+	width: 1.5em;
 }
 #spriteArea, #spriteLoadArea {
 	color: #516399;
@@ -583,6 +583,10 @@ textarea:focus {
 .C{
 	color:#ed7824;
 }
+.R{
+	color: #5e6784;
+	font-style: italic;
+}
 .kwrd{
 	font-weight:bold;
 	color: #0070de;
@@ -593,9 +597,9 @@ textarea:focus {
 }
 .pc0{
 	background-color: white;
-    background-image: linear-gradient( 45deg,black 25%, transparent 25%, transparent 74%, black 75%, black), linear-gradient( 45deg,black 25%, transparent 25%, transparent 74%, black 75%, black);
-    background-size: 2px 2px;
-    background-position: 0 0, 2px 2px;
+	background-image: linear-gradient( 45deg,black 25%, transparent 25%, transparent 74%, black 75%, black), linear-gradient( 45deg,black 25%, transparent 25%, transparent 74%, black 75%, black);
+	background-size: 2px 2px;
+	background-position: 0 0, 2px 2px;
 	color:#000000;
 }
 .pc1{
@@ -660,36 +664,36 @@ textarea:focus {
 }
 @keyframes colorRotate {
   from {
-    color: #EDE3C7;
+	color: #EDE3C7;
   }
   10% {
-    color: #BE3746;
+	color: #BE3746;
   }
   50% {
-    color: #6EA76C;
+	color: #6EA76C;
   }
   75% {
-    color: #DEBB59;
+	color: #DEBB59;
   }
   100% {
-    color: #B48D6C;
+	color: #B48D6C;
   }
 }
 @keyframes jello {
   10% {
-    transform: skewX(1.6deg) skewY(1.6deg)
+	transform: skewX(1.6deg) skewY(1.6deg)
   }
   40% {
-    transform: skewX(-0.7deg) skewY(-0.7deg)
+	transform: skewX(-0.7deg) skewY(-0.7deg)
   }
   60% {
-    transform: skewX(0.4deg) skewY(0.4deg)
+	transform: skewX(0.4deg) skewY(0.4deg)
   }
   80% {
-    transform: skewX(-0.2deg) skewY(-0.2deg)
+	transform: skewX(-0.2deg) skewY(-0.2deg)
   }
   100% {
-    transform: none
+	transform: none
   }
 }
 @media screen and (max-width: 60em) {

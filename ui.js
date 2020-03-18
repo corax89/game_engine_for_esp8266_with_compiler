@@ -569,6 +569,8 @@ function highlitec() {
 		// Выделяем скобки
 		.replace(/(\(|\))/gi,
 			'<span class="gly">$1</span>')
+		.replace(/(@[a-z]*)/g, 
+			'<span class="R"> $1</span>()')
 		// Возвращаем на место каменты, строки
 		.replace(/~~~([CSR])(\d+)~~~/g, function (m, t, i) {
 			return '<span class="' + t + '">' + all[t][i] + '</span>';

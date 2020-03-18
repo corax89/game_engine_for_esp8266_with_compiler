@@ -294,22 +294,22 @@
 			<pre id = "help_hl" style='color:#000020;background:#f6f8ff;margin:0;border: 1px solid #516399;height: 31em;overflow: auto;'>
 			// screen
 			void setimagesize(fixed size);
-			void setclip(int x, int y, int width, int height);
+			void setclip(int x, int y, int width, int height);@clp
 			void gotoxy(int x, int y);
-			void scroll(int dir);
-			void delayredraw();
-			void clearscreen();
+			void scroll(int dir);@srl
+			void delayredraw();@ddw
+			void clearscreen();@cls
 			void setframerate(int fps);
 
 			// image
-			void putimage(int address, int x, int y, int w, int h);
-			void putimage1bit(int address, int x, int y, int w, int h);
-			void putimagerle(int address, int x, int y, int w, int h);
+			void putimage(int address, int x, int y, int w, int h);@pim
+			void putimage1bit(int address, int x, int y, int w, int h);@pib
+			void putimagerle(int address, int x, int y, int w, int h);@pir
 
 			// color & palette
-			void setpalette(int n, int r5g6b5);
-			void setcolor(int color);
-			void setbgcolor(int color);
+			void setpalette(int n, int r5g6b5);@pal
+			void setcolor(int color);@col
+			void setbgcolor(int color);@bcl
 
 			// sprite
 			int spritegetvalue(int n, int type);
@@ -325,15 +325,15 @@
 			 S_ON_EXIT_SCREEN, S_IS_SCROLLED, S_FLIP_HORIZONTAL*/
 
 			// geometry
-			void putpixel(int x, int y);
-			int getpixel(int x, int y);
+			void putpixel(int x, int y);@pix
+			int getpixel(int x, int y);@gpx
 			void line(int x, int y, int x1, int y1);
 			void rect(int x, int y, int x1, int y1);
-			void fillrect(int x, int y, int x1, int y1);
-			void triangle(int x, int y, int x1, int y1, int x2, int y2);
-			void filltriangle(int x, int y, int x1, int y1, int x2, int y2);
-			void circle(int x, int y, int radius);
-			void fillcircle(int x, int y, int radius);
+			void fillrect(int x, int y, int x1, int y1);@frc
+			void triangle(int x, int y, int x1, int y1, int x2, int y2);@trn
+			void filltriangle(int x, int y, int x1, int y1, int x2, int y2);@ftr
+			void circle(int x, int y, int radius);@cir
+			void fillcircle(int x, int y, int radius);@fcr
 
 			// text
 			char putchar(char c);
@@ -341,10 +341,10 @@
 			int putn(int number);
 			int printf(char[] formatString, arg-list...);
 			int getchar();
-			void drawchar(char c, int x, int y);
-			void drawstring(char[] message, int x, int y);
-			void loadfont(char[] font, int startchar, int endchar);
-			void setfontsize(int imagewidth, int imageheight, int charwidth, int charheight);
+			void drawchar(char c, int x, int y);@chr
+			void drawstring(char[] message, int x, int y);@str
+			void loadfont(char[] font, int startchar, int endchar);@fnt
+			void setfontsize(int imagewidth, int imageheight, int charwidth, int charheight);@fsz
 
 			// tile map
 			void loadtile(int adress, int imgwidth, int imgheight, int width, int height);
@@ -353,19 +353,19 @@
 			int gettileinxy(int x, int y); 
 
 			// particles
-			void setparticle(int gravity, int count, int time);
-			void setemitter(int time, int dir, int dir1, int speed);
-			void emittersize(int width, int height, int size);
-			void drawparticle(int x, int y, int color);
+			void setparticle(int gravity, int count, int time);@prt
+			void setemitter(int time, int dir, int dir1, int speed);@emt
+			void emittersize(int width, int height, int size);@ems
+			void drawparticle(int x, int y, int color);@dpr
 
 			// input
-			int getkey();
+			int getkey();@key
 			/*key is KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, 
 			KEY_A, KEY_B, KEY_SELECT, KEY_START */
 
 			// time
-			void settimer(int n, int time);
-			int gettimer(int n);
+			void settimer(int n, int time);@stm
+			int gettimer(int n);@gtm
 			/* n: 0 - 7 */
 
 			// data
