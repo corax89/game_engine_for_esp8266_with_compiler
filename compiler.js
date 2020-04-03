@@ -2197,6 +2197,38 @@ function compile(t) {
 			addVar(type);
 		}
 	}
+	
+	function sizeofToken(){
+		var bCount = 0;
+		getToken();
+		while(thisToken == '('){
+			getToken();
+			bCount++;
+		}
+		if(isType(thisToken)){
+			if(thisToken == 'char'){
+				asm.push(' LDC R' + registerCount + ',1');
+			}
+			else{
+				asm.push(' LDC R' + registerCount + ',2');
+			}
+		}
+		else if(isVar(thisToken)){
+			var v = getVar(thisToken);
+			var s = v.length;
+			if(v.type != 'char')
+				s *= 2;
+			asm.push(' LDI R' + registerCount + ',' + s);
+		}
+		registerCount++;
+		while(bCount > 0){
+			getToken();
+			bCount--;
+		}
+		getToken();
+		if(getRangOperation(thisToken))
+			execut();
+	}
 	//обработка указателей, стандарту не соответствует
 	function pointerToken() {
 		if (thisToken == '&') {
@@ -2377,6 +2409,8 @@ function compile(t) {
 			continueToken();
 		} else if (thisToken == 'break') {
 			breakToken();
+		} else if (thisToken == 'sizeof') {
+			sizeofToken();
 		} else if (thisToken == 'goto') {
 			getToken();
 			asm.push('JMP label_' + thisToken + ':');
@@ -2583,6 +2617,6 @@ function compile(t) {
 	//объеденяем код с данными
 	asm = asm.concat(dataAsm);
 	console.timeEnd("compile");
-
+	
 	return asm;
 }

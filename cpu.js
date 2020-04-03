@@ -119,7 +119,7 @@ function Cpu() {
 			charwidth: 6,
 			charheight: 8,
 			columns: 0
-		}
+		};
 		for (i = 0; i < 420; i++)
 			charArray[i] = '';
 		for (i = 0; i < 8; i++)
@@ -2425,8 +2425,27 @@ function Cpu() {
 			s += 'R' + i + ':' + toHex4(reg[i]) + ' (' + reg[i] + ')\n';
 		for (var i = 0; i < debugVar.length; i++) {
 			d += debugVar[i].variable + '\t';
-			d += toHex4(debugVar[i].adress) + '   ';
-			d += readInt(debugVar[i].adress) + '\n';
+			if(debugVar[i].length == 1){
+				d += toHex4(debugVar[i].adress) + '   ';
+				if(debugVar[i].size == 1){
+					d += readMem(debugVar[i].adress) + '\n';
+				}
+				else{
+					d += readInt(debugVar[i].adress) + '\n';
+				}
+			}
+			else{
+				d += toHex4(debugVar[i].adress) + '\n';
+				for(var j = 0; j < debugVar[i].length; j++){
+					if(debugVar[i].size == 1){
+						d += toHex2(readMem(debugVar[i].adress + j)) + ',';
+					}
+					else{
+						d += toHex4(readInt(debugVar[i].adress + j)) + ',';
+					}
+				}
+				d += '\n';
+			}
 		}
 		d = clearStringFast(d);
 		debugVarArea.value = d;
