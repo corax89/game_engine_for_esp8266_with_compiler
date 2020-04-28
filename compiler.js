@@ -229,6 +229,7 @@ function compile(t) {
 	var switchStack = []; //указывает на последний switch, необходимо для обработки break
 	var typeOnStack = []; //тип значения в регистре
 	var MULTIPLY_FP_RESOLUTION_BITS = 8; //point position in fixed point number
+	var bracketCount = 0; //счетчик скобок
 	var longArg = false;
 	var lastNewLine = -1;
 	var findLoopCompile = 0;
@@ -650,14 +651,16 @@ function compile(t) {
 				typeCastToFirst(registerCount - 1, func.operands[i * 2]);
 				i++;
 				if (i > func.operands.length / 2 && !longArg) {
-					putError(lineCount, 3, t); //info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
+					putError(lineCount, 3, func.name); //info("" + lineCount + " ожидалась закрывающая скобка в функции " + t);
 					return false;
 				}
 			}
 		}
+		if(thisToken == ')')
+				bracketCount--;
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
-			putError(lineCount, 6, t); //info("" + lineCount + " ожидался аргумент в функции " + t);
+			putError(lineCount, 6, func.name); //info("" + lineCount + " ожидался аргумент в функции " + t);
 			return false;
 		}
 		asm.push(func.asm.replace(/[Rr]\%(\d)/g, function (str, reg, offset, s) {
@@ -671,8 +674,8 @@ function compile(t) {
 		getToken();
 		if (getRangOperation(thisToken) > 0)
 			execut();
-		else if (thisToken == ';')
-			previousToken();
+		//else if (thisToken == ';')
+		//	previousToken();
 	}
 	//обработка вызова функции
 	function callFunction(t) {
@@ -691,7 +694,9 @@ function compile(t) {
 		if (func.operands.length > 0 && func.operands[func.operands.length - 1] == '...')
 			longArg = true;
 		getToken();
-		if (thisToken != '(') {
+		if(thisToken == '(')
+			bracketCount++;
+		else if (thisToken != '(') {
 			if (thisToken == ')' || thisToken == ',') {
 				asm.push(' LDI R' + registerCount + ',_' + func.name);
 				func.use++;
@@ -747,6 +752,8 @@ function compile(t) {
 				}
 			}
 		}
+		if(thisToken == ')')
+			bracketCount--;
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
 			putError(lineCount, 6, t); //info("" + lineCount + " ожидался аргумент в функции " + t);
@@ -787,8 +794,8 @@ function compile(t) {
 		getToken();
 		if (getRangOperation(thisToken) > 0)
 			execut();
-		else if (thisToken == ';')
-			previousToken();
+		//else if (thisToken == ';')
+		//	previousToken();
 	}
 	//добавляем новую переменную в таблицу
 	function addVar(type) {
@@ -1787,7 +1794,7 @@ function compile(t) {
 		//если следующая операция выше рангом, то выполняем сразу ее
 		if (getRangOperation(thisToken) > 2)
 			execut();
-		if (operation.length > 1)
+		if (operation.length > 1 && thisToken != ')')
 			execut();
 		registerCount--;
 		typeCast(registerCount - 1, typeOnStack[registerCount - 1], registerCount, typeOnStack[registerCount]);
@@ -1861,6 +1868,8 @@ function compile(t) {
 		getToken();
 		if (thisToken != '(')
 			putError(lineCount, 13, 'if'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции if");
+		else
+			bracketCount++;
 		skipBracket();
 		removeNewLine();
 		registerCount--;
@@ -1878,8 +1887,10 @@ function compile(t) {
 				getToken();
 				execut();
 			}
-			if (thisToken == ')')
+			if (thisToken == ')'){
 				getToken();
+				bracketCount--;
+			}
 		}
 		registerCount = 1;
 		getToken();
@@ -1903,6 +1914,8 @@ function compile(t) {
 		getToken();
 		if (thisToken != '(')
 			putError(lineCount, 13, 'while'); //info("" + lineCount + " ожидалась открывающая скобка в конструкции while");
+		else
+			bracketCount++;
 		asm.push('start_while_' + labe + ':');
 		blockStack.push('while_' + labe);
 		skipBracket();
@@ -1918,8 +1931,10 @@ function compile(t) {
 				getToken();
 				execut();
 			}
-			if (thisToken == ')')
+			if (thisToken == ')'){
 				getToken();
+				bracketCount--;
+			}
 		}
 		registerCount = 1;
 		getToken();
@@ -1968,7 +1983,6 @@ function compile(t) {
 		var labe = labelNumber;
 		var startToken,
 		memToken;
-		var bracketCount = 0;
 		labelNumber++;
 		getToken();
 		removeNewLine();
@@ -2023,6 +2037,7 @@ function compile(t) {
 		thisTokenNumber = startToken;
 		registerCount = 1;
 		getToken();
+		bracketCount++;
 		skipBracket();
 		//и восстанавливаем позицию транслирования
 		thisTokenNumber = memToken;
@@ -2183,10 +2198,10 @@ function compile(t) {
 				var newVar = thisToken;
 				addVar(type);
 				getToken();
-
 				if (thisToken == '=') {
 					assigment();
-					getToken();
+					if (thisToken != ';')
+						getToken();
 				}
 				removeNewLine();
 				if (!(thisToken == ',' || thisToken == ';'))
@@ -2267,6 +2282,11 @@ function compile(t) {
 	function removeNewLine() {
 		var s;
 		if (thisToken === '\n') {
+			if(bracketCount != 0){
+				putError(lineCount - 1, 18);
+				console.log(lineCount, bracketCount);
+			}
+			bracketCount = 0;
 			if (lastToken == ';')
 				registerCount = 1;
 			if (thisTokenNumber - lastEndString > 1) {
@@ -2292,8 +2312,10 @@ function compile(t) {
 				getToken();
 			if (!thisToken || thisToken == ':')
 				return;
-			execut();
+			if(thisToken != ')')
+				execut();
 		}
+		bracketCount--;
 		removeNewLine();
 
 	}
@@ -2366,6 +2388,7 @@ function compile(t) {
 				compare();
 			return;
 		} else if (thisToken == '(') {
+			bracketCount++;
 			skipBracket();
 			if (thisToken == ';')
 				putError(lineCount, 18, ''); //info("" + lineCount + " ожидалась скобка");
@@ -2379,7 +2402,10 @@ function compile(t) {
 		} else if (thisToken == '{') {
 			skipBrace();
 			getToken();
-		} else if (thisToken == '}' || thisToken == ']' || thisToken == ')' || thisToken == ',') {
+		} else if (thisToken == ')') {
+			bracketCount--;
+			return;	
+		} else if (thisToken == '}' || thisToken == ']' || thisToken == ',') {
 			return;
 		} else if (thisToken == 'true') {
 			asm.push(' LDC R' + registerCount + ',1');

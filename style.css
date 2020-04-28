@@ -29,7 +29,7 @@ input[type=file] {
 	width: 18em;
 }
 input[type=range] {
-	width: 3.7em;
+	width: 9em;
 }
 input::placeholder { 
 	color: #ffd595; 
@@ -244,10 +244,11 @@ textarea:focus {
 	display:inline-block;
 	width:9em;
 	position: absolute;
-	right: 0;
+	right: 11em;
 	height: 3em;
 	line-height: 5em;
 	color: #ffffff;
+	text-shadow: 1px 1px 2px black;
 }
 #ram {
 	border: 1px solid #516399;
@@ -489,44 +490,60 @@ textarea:focus {
 #spriteEditior {
 	background-color: #eee;
 	border: 1px solid #516399;
-	height: 33em;
+	height: 32em;
 	overflow: hidden;
 	padding: 0.5em;
 	resize: none;
 	top: 10em;
-	width: 24em;
+	width: 31em;
+}
+#colorpicker{
+	width: 120px;
+	height: 128px;
+	padding: 8px;
+	float: right;
 }
 #spriteLoad{
 	height: 0px;
 	overflow: hidden;
 	transition: all 0.3s ease;
 }
-#pixelearea {
+#pixelarea {
 	image-rendering: optimizeSpeed;			 /* Older versions of FF		  */
 	image-rendering: -moz-crisp-edges;		  /* FF 6.0+					   */
 	image-rendering: -webkit-optimize-contrast; /* Safari						*/
 	image-rendering: -o-crisp-edges;			/* OS X & Windows Opera (12.02+) */
 	image-rendering: pixelated;				 /* Awesome future-browsers	   */
 	-ms-interpolation-mode: nearest-neighbor;   /* IE							*/
-	width: 22em;
-	height: 22em;
+	border: 1px solid #000;
 	float: left;
+}
+#pixelimg{
+	border: 1px solid #000;
+	float: right;
 }
 #pixelpanel {
 	font-size: 180%;
 	text-align: center;
+	width: 100%;
+	margin-bottom: -10px;
+}
+#selectColor{
+	width: 1.6em;
+    height: 1.8em;
+    float: left;
+    border: 1px solid;
+    margin-right: 1px;
 }
 #pixelpanel>label{
 	border: 1px solid #516399;
-	display: block;
+	border-top: none;
 	margin-bottom: 0.1em;
 }
 #pixelpanel>button{
 	width: 2em;
-	display: block;
-	margin-bottom: 0.1em;
-	position: relative;
-	bottom: -20px;
+    margin: 0.2em;
+    float: right;
 }
 #pixelpanel>input[type="radio"] {
 	display: none;
@@ -554,7 +571,10 @@ textarea:focus {
 	height: 4.2em;
 	margin-top: 0.2em;
 	resize: none;
-	width: 24em;
+	width: 100%;
+}
+#updateSprite:disabled {
+  background: #dddddd;
 }
 .only_mobile{
 	display: none;
@@ -751,6 +771,9 @@ textarea:focus {
 		top: 3.8em;
 		height: 1em;
 		line-height: 1em;
+	}
+	#gameListLink>img{
+		display: none;
 	}
 }
 @media all and (display-mode: fullscreen) {

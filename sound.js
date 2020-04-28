@@ -89,7 +89,6 @@ function Sound() {
 			c = cpu.readMem(rtttl.address + i);
 			i++;
 		}
-		rtttl.str += String.fromCharCode(0);
 		while (c != ':' && rtttl.startposition < rtttl.str.length) {
 			// ignore name
 			c = rtttl.str[rtttl.startposition];
@@ -141,7 +140,9 @@ function Sound() {
 			if (!rtttl.loop)
 				rtttl.play = 0;
 			rtttl.position = 0;
+			return true;
 		}
+		return false;
 	}
 
 	function playRtttl() {
@@ -162,7 +163,8 @@ function Sound() {
 			return 100;
 		//first, get note duration, if available
 		n = 0;
-		testEndRtttl();
+		if(testEndRtttl())
+			return 100;
 		c = rtttl.str[rtttl.startposition + rtttl.position];
 		n = '';
 		while (isdigit(rtttl.str[rtttl.startposition + rtttl.position])) {
@@ -210,24 +212,30 @@ function Sound() {
 		default:
 			note = 0;
 		}
-		if (rtttl.position < rtttl.str.length)
+		if (!testEndRtttl())
 			rtttl.position++;
-		else
+		else{
 			return 100;
+		}
 		c = rtttl.str[rtttl.startposition + rtttl.position];
 		// now, get optional '#' sharp
 		if (c == '#') {
 			note++;
-			if (rtttl.position < rtttl.str.length)
+			if (!testEndRtttl())
 				rtttl.position++;
 			else
 				return 100;
 			c = rtttl.str[rtttl.startposition + rtttl.position];
 		}
-		// now, get optional '.' dotted note
-		if (c == '.') {
-			duration += duration / 2;
-			if (rtttl.position < rtttl.str.length)
+		// now, get optional '.' & ';' & '&' dotted note
+		if (c == '.' || c == ';' || c == '&') {
+			if(c == '.')
+				duration += duration / 2;
+			else if(c == ';')
+				duration += duration;
+			else 
+				duration += (duration / 2) * 3;
+			if (!testEndRtttl())
 				rtttl.position++;
 			else
 				return 100;
@@ -236,7 +244,7 @@ function Sound() {
 		// now, get scale
 		if (isdigit(c)) {
 			scale = c - '0';
-			if (rtttl.position < rtttl.str.length)
+			if (!testEndRtttl())
 				rtttl.position++;
 			else
 				return 100;

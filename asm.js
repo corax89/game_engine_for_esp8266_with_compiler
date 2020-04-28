@@ -222,19 +222,19 @@ function asm(s) {
 				break;
 			case 'WORD':
 				if (a[i + 2] && a[i + 2].toUpperCase() == 'DUP') {
-					variable.push(a[i - 1], variableAdress);
+					variable.push(a[i - 1], variableAdress, strToNum(a[i + 1]) * 2, 2);
 					variableAdress += strToNum(a[i + 1]) * 2;
 				} else {
-					variable.push(a[i - 1], variableAdress);
+					variable.push(a[i - 1], variableAdress, 1, 2);
 					variableAdress += 2;
 				}
 				return
 			case 'BYTE':
 				if (a[i + 2] && a[i + 2].toUpperCase() == 'DUP') {
-					variable.push(a[i - 1], variableAdress);
+					variable.push(a[i - 1], variableAdress, strToNum(a[i + 1]), 1);
 					variableAdress += strToNum(a[i + 1]);
 				} else {
-					variable.push(a[i - 1], variableAdress);
+					variable.push(a[i - 1], variableAdress, 1, 1);
 					variableAdress += 1;
 				}
 				return
@@ -835,7 +835,7 @@ function asm(s) {
 		addDebugInformation(i);
 		parse(arr[i]);
 	}
-	variable.push('#END', variableAdress); //переменная указывает на конец используемой глобальными переменными памяти
+	variable.push('#END', variableAdress, 1, 2); //переменная указывает на конец используемой глобальными переменными памяти
 	debugVarStart = out.length;
 	for (var i = 0; i < out.length; i++) {
 		if (typeof out[i] === 'string') {
@@ -864,7 +864,9 @@ function asm(s) {
 	for (var i = 0; i < variable.length; i++) {
 		debugVar.push({
 			variable: variable[i++],
-			adress: (variable[i] + debugVarStart)
+			adress: (variable[i++] + debugVarStart),
+			length: variable[i++],
+			size: variable[i]
 		});
 	}
 	return out;

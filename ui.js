@@ -14,6 +14,7 @@ var cpuLostCycle = 0; //сколько циклов должно быть пот
 var timerId; //таймер для вызова выполнения процессора
 var asmSource; //код, полученный при компиляции
 var debugVar = []; //таблица данных о именах и расположении в памяти переменных
+var debugVarArr = [];
 var numberDebugString = []; //таблица, указывающая соответствие строк кода исполняемым инструкциям
 var numberLine = 0; //количество линий исходного кода
 var thisDebugString = 0; //строка, которая в данный момент выполняется процессором
@@ -36,6 +37,8 @@ var fileName = '';
 var fileAuthor = '';
 var fileIco = '';
 var selectedArray = '';
+var selectedLeft;
+var selectedRight;
 var colorHighliteTimer;
 var isHighliteColor = true;
 var timerstart = new Date().getTime(),
@@ -445,6 +448,8 @@ function testForImageArray(e) {
 	b.style.left = (sourceArea.getBoundingClientRect().left - 50) + 'px';
 	b.style.top = (e.clientY - 10) + 'px';
 	b.style.display = 'none';
+	selectedLeft = 0;
+	selectedRight = 0;
 	for (var i = position; i >= 0; i--) {
 		if ('{};'.indexOf(str[i]) > -1) {
 			left = i + 1;
@@ -463,7 +468,9 @@ function testForImageArray(e) {
 	}
 	if (left < right) {
 		word = str.substring(left, right);
-		if (!word.match(/[^,0-9a-fA-FxX\s]/)) {
+		selectedLeft = left;
+		selectedRight = right;
+		if (word.match(/0x/)) {
 			selectedArray = word;
 			b.style.display = 'block';
 		}
@@ -492,12 +499,9 @@ function loadArrayAsImage() {
 	if (sc.length > 1) {
 		var w = sc[1].split(',').length * 2 - 2;
 		document.getElementById("spriteLoadWidth").value = w;
-		spriteEditor.edit();
-		spriteEditor.load();
-	} else {
-		spriteEditor.edit();
-		document.getElementById('spriteLoad').style.height = '10em';
 	}
+	spriteEditor.edit(selectedLeft - 1, selectedRight);
+	spriteEditor.load();
 }
 
 function highliteasm(code) {
@@ -887,7 +891,7 @@ function run() {
 		isRedraw = false;
 		//выводим отладочную информацию
 		debugCallCount++;
-		if (debugCallCount >= 10 && viewDebugV) {
+		if (debugCallCount >= 10 && (viewDebugV || isDebug)) {
 			document.getElementById('debug').value = cpu.debug();
 			debugCallCount = 0;
 		}
