@@ -656,8 +656,8 @@ function compile(t) {
 				}
 			}
 		}
-		if(thisToken == ')')
-				bracketCount--;
+		if (thisToken == ')')
+			bracketCount--;
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
 			putError(lineCount, 6, func.name); //info("" + lineCount + " ожидался аргумент в функции " + t);
@@ -674,8 +674,6 @@ function compile(t) {
 		getToken();
 		if (getRangOperation(thisToken) > 0)
 			execut();
-		//else if (thisToken == ';')
-		//	previousToken();
 	}
 	//обработка вызова функции
 	function callFunction(t) {
@@ -694,7 +692,7 @@ function compile(t) {
 		if (func.operands.length > 0 && func.operands[func.operands.length - 1] == '...')
 			longArg = true;
 		getToken();
-		if(thisToken == '(')
+		if (thisToken == '(')
 			bracketCount++;
 		else if (thisToken != '(') {
 			if (thisToken == ')' || thisToken == ',') {
@@ -752,7 +750,7 @@ function compile(t) {
 				}
 			}
 		}
-		if(thisToken == ')')
+		if (thisToken == ')')
 			bracketCount--;
 		//проверяем соответствие количества аргументов заявленному
 		if (i < func.operands.length / 2 && !longArg) {
@@ -1243,7 +1241,7 @@ function compile(t) {
 		return !isNaN(parseFloat(t)) && isFinite(t);
 	}
 	//сохраняем значение структуры
-	function structAssigment(thisVar, struct, pos, isArray) {
+	function structAssigment(thisVar, struct, pos, nVar, isArray) {
 		getToken();
 		if (thisToken == '{') {
 			if (isArray) {
@@ -1273,7 +1271,7 @@ function compile(t) {
 				} else if (isVar(thisToken))
 					buf += '_' + thisToken;
 				asm.push(' LDI R' + registerCount + ',' + buf);
-				if (struct[spos][0] == 'char') {
+				if (struct[3][nVar][0] == 'char') {
 					asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount - 1) + '),R' + registerCount);
 					asm.push(' INC R' + (registerCount - 1) + ',1');
 				} else {
@@ -1295,23 +1293,23 @@ function compile(t) {
 			if (getRangOperation(thisToken) > 0)
 				execut();
 			registerCount--;
-			typeCastToFirst(registerCount, thisVar.type);
+			typeCastToFirst(registerCount, struct[3][nVar][0]);
 			asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
 			if (isArray) {
 				asm.push(' LDC R' + (registerCount + 2) + ',' + struct[1]);
 				asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 				asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
 			}
-			if (thisVar.type == 'char')
+			if (struct[3][nVar][0] == 'char')
 				asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
 			else
 				asm.push(' STI (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
 		}
 	}
 	//загружаем значение структуры
-	function structLoad(thisVar, struct, pos, isArray) {	
-		typeOnStack[registerCount] = thisVar.type;
-		if(isArray)
+	function structLoad(thisVar, struct, pos, nVar, isArray) {
+		typeOnStack[registerCount] = struct[3][nVar][0];
+		if (isArray)
 			registerCount--;
 		asm.push(' LDC R' + (registerCount + 1) + ',' + pos);
 		if (isArray) {
@@ -1319,7 +1317,7 @@ function compile(t) {
 			asm.push(' MUL R' + (registerCount) + ',R' + (registerCount + 2));
 			asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount));
 		}
-		if (thisVar.type == 'char')
+		if (struct[3][nVar][0] == 'char')
 			asm.push(' LDC R' + (registerCount) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
 		else
 			asm.push(' LDI R' + (registerCount) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
@@ -1330,6 +1328,7 @@ function compile(t) {
 		var v = getVar(thisToken);
 		var s = [];
 		var m = [];
+		var n;
 		s = structArr[newType.indexOf(v.type)];
 		var members = s[3];
 		getToken();
@@ -1338,17 +1337,22 @@ function compile(t) {
 			for (var i = 0; i < members.length; i++) {
 				if (members[i][1] == thisToken) {
 					m = members[i];
+					n = i;
 					break;
 				}
+			}
+			if (typeof n === 'undefined') {
+				putError(lineCount, 20, thisToken);
+				return;
 			}
 			getToken();
 			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
 				previousToken();
-				structLoad(v, s, m[3], false);
+				structLoad(v, s, m[3], n, false);
 			}
 			//присваивание значения переменной
 			else
-				structAssigment(v, s, m[3], false);
+				structAssigment(v, s, m[3], n, false);
 		} else if (thisToken == '[') {
 			//вычисление номера ячейки массива
 			getToken();
@@ -1396,20 +1400,25 @@ function compile(t) {
 				for (var i = 0; i < members.length; i++) {
 					if (members[i][1] == thisToken) {
 						m = members[i];
+						n = i;
 						break;
 					}
+				}
+				if (typeof n === 'undefined') {
+					putError(lineCount, 20, thisToken);
+					return;
 				}
 				getToken();
 				//загрузка ячейки массива
 				if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
 					previousToken();
-					structLoad(v, s, m[3], true);
+					structLoad(v, s, m[3], n, true);
 				}
 				//сохранение ячейки массива
 				else
-					structAssigment(v, s, m[3], true);
+					structAssigment(v, s, m[3], n, true);
 			} else if (thisToken == '=') {
-				structAssigment(v, members, s, true);
+				structAssigment(v, members, s, n, true);
 			} else {
 				var len = 1;
 				for (var i = 0; i < structArr.length; i++) {
@@ -1887,7 +1896,7 @@ function compile(t) {
 				getToken();
 				execut();
 			}
-			if (thisToken == ')'){
+			if (thisToken == ')') {
 				getToken();
 				bracketCount--;
 			}
@@ -1931,7 +1940,7 @@ function compile(t) {
 				getToken();
 				execut();
 			}
-			if (thisToken == ')'){
+			if (thisToken == ')') {
 				getToken();
 				bracketCount--;
 			}
@@ -2212,36 +2221,34 @@ function compile(t) {
 			addVar(type);
 		}
 	}
-	
-	function sizeofToken(){
+
+	function sizeofToken() {
 		var bCount = 0;
 		getToken();
-		while(thisToken == '('){
+		while (thisToken == '(') {
 			getToken();
 			bCount++;
 		}
-		if(isType(thisToken)){
-			if(thisToken == 'char'){
+		if (isType(thisToken)) {
+			if (thisToken == 'char') {
 				asm.push(' LDC R' + registerCount + ',1');
-			}
-			else{
+			} else {
 				asm.push(' LDC R' + registerCount + ',2');
 			}
-		}
-		else if(isVar(thisToken)){
+		} else if (isVar(thisToken)) {
 			var v = getVar(thisToken);
 			var s = v.length;
-			if(v.type != 'char')
+			if (v.type != 'char')
 				s *= 2;
 			asm.push(' LDI R' + registerCount + ',' + s);
 		}
 		registerCount++;
-		while(bCount > 0){
+		while (bCount > 0) {
 			getToken();
 			bCount--;
 		}
 		getToken();
-		if(getRangOperation(thisToken))
+		if (getRangOperation(thisToken))
 			execut();
 	}
 	//обработка указателей, стандарту не соответствует
@@ -2282,7 +2289,7 @@ function compile(t) {
 	function removeNewLine() {
 		var s;
 		if (thisToken === '\n') {
-			if(bracketCount != 0){
+			if (bracketCount != 0) {
 				putError(lineCount - 1, 18);
 				console.log(lineCount, bracketCount);
 			}
@@ -2312,7 +2319,7 @@ function compile(t) {
 				getToken();
 			if (!thisToken || thisToken == ':')
 				return;
-			if(thisToken != ')')
+			if (thisToken != ')')
 				execut();
 		}
 		bracketCount--;
@@ -2404,7 +2411,7 @@ function compile(t) {
 			getToken();
 		} else if (thisToken == ')') {
 			bracketCount--;
-			return;	
+			return;
 		} else if (thisToken == '}' || thisToken == ']' || thisToken == ',') {
 			return;
 		} else if (thisToken == 'true') {
@@ -2643,6 +2650,6 @@ function compile(t) {
 	//объеденяем код с данными
 	asm = asm.concat(dataAsm);
 	console.timeEnd("compile");
-	
+
 	return asm;
 }
