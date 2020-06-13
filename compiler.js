@@ -112,7 +112,8 @@ function tokenize(s) {
 			}
 			break;
 		case '=':
-			if (s[i - 1] == '=' || s[i - 1] == '!' || s[i - 1] == '+' || s[i - 1] == '-' || s[i - 1] == '*' || s[i - 1] == '/') {
+			if (s[i - 1] == '=' || s[i - 1] == '!' || s[i - 1] == '+' || s[i - 1] == '-'
+				 || s[i - 1] == '*' || s[i - 1] == '/' || s[i - 1] == '|' || s[i - 1] == '&' || s[i - 1] == '^') {
 				tokens[thisToken - 1] += '=';
 				break;
 			}
@@ -961,7 +962,7 @@ function compile(t) {
 				execut();
 			registerCount--;
 			//---------
-			if (op == '+=' || op == '-=' || op == '*=' || op == '/=') {
+			if (op == '+=' || op == '-=' || op == '*=' || op == '/=' || op == '&=' || op == '|=' || op == '^=') {
 				typeCastToFirst(registerCount, type);
 				if (numberVarInRegister > -1) {
 					asm.push(' MOV R' + (registerCount + 1) + ',R' + numberVarInRegister + ' ;' + token);
@@ -978,6 +979,12 @@ function compile(t) {
 				} else if (op == '/=') {
 					asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 					asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '&=') {
+					asm.push(' AND R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '|=') {
+					asm.push(' OR R' + registerCount + ',R' + (registerCount + 1));
+				} else if (op == '^=') {
+					asm.push(' XOR R' + registerCount + ',R' + (registerCount + 1));
 				}
 
 			} else
@@ -1242,6 +1249,7 @@ function compile(t) {
 	}
 	//сохраняем значение структуры
 	function structAssigment(thisVar, struct, pos, nVar, isArray) {
+		var op = thisToken;
 		getToken();
 		if (thisToken == '{') {
 			if (isArray) {
@@ -1300,10 +1308,34 @@ function compile(t) {
 				asm.push(' MUL R' + (registerCount - 1) + ',R' + (registerCount + 2));
 				asm.push(' ADD R' + (registerCount + 1) + ',R' + (registerCount - 1));
 			}
+			if (op == '+=' || op == '-=' || op == '*=' || op == '/=' || op == '&=' || op == '|=' || op == '^=') {
+				if (struct[3][nVar][0] == 'char')
+					asm.push(' LDC R' + (registerCount + 2) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+				else
+					asm.push(' LDI R' + (registerCount + 2) + ',(_' + thisVar.name + ' + R' + (registerCount + 1) + ')');
+				if (op == '+=') {
+					asm.push(' ADD R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '-=') {
+					asm.push(' SUB R' + (registerCount + 2) + ',R' + (registerCount));
+					asm.push(' MOV R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '*=') {
+					asm.push(' MUL R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '/=') {
+					asm.push(' DIV R' + (registerCount + 2) + ',R' + (registerCount));
+					asm.push(' MOV R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '&=') {
+					asm.push(' AND R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '|=') {
+					asm.push(' OR R' + (registerCount) + ',R' + (registerCount + 2));
+				} else if (op == '^=') {
+					asm.push(' XOR R' + (registerCount) + ',R' + (registerCount + 2));
+				}
+			}
 			if (struct[3][nVar][0] == 'char')
 				asm.push(' STC (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
-			else
+			else {
 				asm.push(' STI (_' + thisVar.name + ' + R' + (registerCount + 1) + '),R' + registerCount);
+			}
 		}
 	}
 	//загружаем значение структуры
@@ -1346,7 +1378,8 @@ function compile(t) {
 				return;
 			}
 			getToken();
-			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
+			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=' 
+				&& thisToken != '&=' && thisToken != '|=' && thisToken != '^=') {
 				previousToken();
 				structLoad(v, s, m[3], n, false);
 			}
@@ -1410,9 +1443,10 @@ function compile(t) {
 				}
 				getToken();
 				//загрузка ячейки массива
-				if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
-					previousToken();
-					structLoad(v, s, m[3], n, true);
+				if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=' 
+					&& thisToken != '&=' && thisToken != '|=' && thisToken != '^=') {
+						previousToken();
+						structLoad(v, s, m[3], n, true);
 				}
 				//сохранение ячейки массива
 				else
@@ -1494,7 +1528,8 @@ function compile(t) {
 				getToken();
 			}
 			//загрузка ячейки массива
-			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
+			if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/='
+				 && thisToken != '&=' && thisToken != '|=' && thisToken != '^=') {
 				previousToken();
 				if (v.type == 'char' || v.type == '*char') {
 					if (v.type == '*char' && !point) {
@@ -1543,6 +1578,15 @@ function compile(t) {
 							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '&=') {
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' AND R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '|=') {
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' OR R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '^=') {
+							asm.push(' LDC R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' XOR R' + registerCount + ',R' + (registerCount + 1));
 						}
 						asm.push(' STC (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
 					}
@@ -1552,19 +1596,28 @@ function compile(t) {
 						asm.push(' STI (R' + (registerCount + 1) + '+R' + (registerCount - 1) + '),R' + registerCount);
 					} else {
 						if (op == '+=') {
-							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' ADD R' + registerCount + ',R' + (registerCount + 1));
 						} else if (op == '-=') {
-							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' SUB R' + (registerCount + 1) + ',R' + registerCount);
 							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
 						} else if (op == '*=') {
-							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' MUL R' + registerCount + ',R' + (registerCount + 1));
 						} else if (op == '/=') {
-							asm.push(' LDI R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
 							asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 							asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '&=') {
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' AND R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '|=') {
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' OR R' + registerCount + ',R' + (registerCount + 1));
+						} else if (op == '^=') {
+							asm.push(' LDIAL R' + (registerCount + 1) + ',(_' + v.name + '+R' + (registerCount - 1) + ')');
+							asm.push(' XOR R' + registerCount + ',R' + (registerCount + 1));
 						}
 						asm.push(' STIAL (_' + v.name + '+R' + (registerCount - 1) + '),R' + registerCount);
 					}
@@ -1573,7 +1626,8 @@ function compile(t) {
 			}
 		}
 		//загрузка значения переменной
-		else if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/=') {
+		else if (thisToken != '=' && thisToken != '+=' && thisToken != '-=' && thisToken != '*=' && thisToken != '/='
+			 && thisToken != '&=' && thisToken != '|=' && thisToken != '^=') {
 			previousToken();
 			if (v.length > 1) {
 				asm.push(' LDI R' + registerCount + ',_' + thisToken);
@@ -1640,6 +1694,15 @@ function compile(t) {
 				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
 				asm.push(' DIV R' + (registerCount + 1) + ',R' + registerCount);
 				asm.push(' MOV R' + registerCount + ',R' + (registerCount + 1));
+			} else if (op == '&=') {
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' AND R' + registerCount + ',R' + (registerCount + 1));
+			} else if (op == '|=') {
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' OR R' + registerCount + ',R' + (registerCount + 1));
+			} else if (op == '^=') {
+				asm.push(' LDI R' + (registerCount + 1) + ',(_' + variable + ')');
+				asm.push(' XOR R' + registerCount + ',R' + (registerCount + 1));
 			}
 			typeCastToFirst(registerCount, v.type);
 			asm.push(' STI (_' + variable + '),R' + registerCount);
