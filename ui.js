@@ -49,6 +49,7 @@ var fontSizeInEditor = 13;
 var timeForRedraw = 48;
 var saveGifFrame = 0;
 var gif;
+var memoryType = 0;
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
@@ -602,13 +603,16 @@ function main() {
 	document.getElementById("alert").innerHTML = '';
 	var src = document.getElementById('input').value;
 	var t = tokenize(src);
-	console.log(t);
+	//console.log(t);
 	var c = compile(t);
 	asmSource = '\n' + c.join('\n') + '\n';
 	file = asm(asmSource);
 	compress(file);
 	document.getElementById('disasm').innerHTML = highliteasm(asmSource);
-	document.getElementById('ram').value = toHexA(file);
+	if(memoryType == 1)
+		document.getElementById('ram').value = toHexC(file);
+	else
+		document.getElementById('ram').value = toHexA(file);
 	timeForRedraw = 48;
 }
 //вывод информации о ходе сборки
@@ -903,6 +907,12 @@ function run() {
 			run()
 		}, 16 - diff);
 }
+
+function stopCpu(){
+	isRun=false;
+	clearTimeout(timerId);
+	document.getElementById('debug').value=cpu.debug();
+}
 //функция вывода на экран
 function Display() {
 	var displayArray = [];
@@ -1184,11 +1194,37 @@ function redraw() {
 	}, timeForRedraw);
 }
 
+function saveAsH(file, im, name) {
+	var s = '#define ROM_NAME " ';
+	if(name)
+		s += name + '"';
+	else
+		s += 'rom"';
+	s += '\n\nconst uint8_t romImage[] PROGMEM = {\n';
+	if(im)
+		s += toHexC(im);
+	else
+		s += '0x0, 0x0, 0x0';
+	s += '\n};\n\nconst uint8_t rom[] PROGMEM = {\n';
+	s += toHexC(file);
+	s += '\n};\n';
+	return s;
+}
+
 function savebin(type) {
 	var newByteArr = [];
 	loadSettings();
 	main();
-	if (type == 2) { //lge
+	if (type == 3) { //.h
+		if (file.length > 1) {
+			var newFile = saveAsH(file, fileIco, fileName);
+			var blob = new Blob([newFile], {
+					type: "text/plain;charset=utf-8"
+				});
+			if (fileName.length > 0)
+				saveAs(blob, 'rom.h');
+		}
+	} else if (type == 2) { //lge
 		if (file.length > 1) {
 			var cfile = compress(file);
 			if (cfile == false) {

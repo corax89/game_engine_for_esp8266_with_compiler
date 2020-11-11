@@ -25,6 +25,19 @@ function toHexA(a) {
 	return s;
 }
 
+function toHexC(a) {
+	var s = '0x';
+	var i = 0;
+	for (i; i < a.length - 1; i++){
+		s += toHex2(a[i]) + ',';
+		if(i % 20 == 19)
+			s += '\n';
+		s += '0x';
+	}
+	s += toHex2(a[i]);
+	return s;
+}
+
 function asm(s) {
 	var out = [];
 	var arr = [];
@@ -241,6 +254,10 @@ function asm(s) {
 			case 'NOP':
 				out.push(0x00);
 				out.push(0x00);
+				return;
+			case 'PAUSE':
+				out.push(0x50);
+				out.push(0x01);
 				return;
 			case 'LDI':
 				if (a[i + 3] != '(') { //LDI R,int		01 0R XXXX

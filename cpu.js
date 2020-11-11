@@ -1516,7 +1516,11 @@ function Cpu() {
 			switch (o1) {
 			case 0x50:
 				//HLT				5000
-				pc -= 2;
+				if(o2 == 1){
+					stopCpu();
+				}
+				else
+					pc -= 2;
 				break;
 			case 0x51:
 				// STIMER R,R		51RR
