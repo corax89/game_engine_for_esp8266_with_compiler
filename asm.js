@@ -28,9 +28,9 @@ function toHexA(a) {
 function toHexC(a) {
 	var s = '0x';
 	var i = 0;
-	for (i; i < a.length - 1; i++){
+	for (i; i < a.length - 1; i++) {
 		s += toHex2(a[i]) + ',';
-		if(i % 20 == 19)
+		if (i % 20 == 19)
 			s += '\n';
 		s += '0x';
 	}

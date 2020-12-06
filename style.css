@@ -428,27 +428,11 @@ textarea:focus {
 	padding: 5px;
 	background: #C0C0C0;
 }
-#div_wind1 {
+#div_wind1,#div_wind2,#div_wind3,#div_wind4,#div_wind5,#div_wind6,#div_wind7 {
 	top: 3em;
 	display: none;
 }
-#div_wind2 {
-	top: 3em;
-	display: none;
-}
-#div_wind3 {
-	top: 3em;
-	display: none;
-}
-#div_wind5 {
-	top: 3em;
-	display: none;
-}
-#div_wind6 {
-	top: 3em;
-	display: none;
-}
-#disasm, #debugVariable, #debugSprite, #settings {
+#disasm, #debugVariable, #debugSprite, #settings, #snapshots {
 	background-color: #eee;
 	border: 1px solid #516399;
 	color: #516399;

@@ -165,7 +165,14 @@
 				</td>
 				<td>
 					<button class="bigButton" style="font-size:28px;margin:0.2em;background-color:#516399;" onclick="addFontSize(true);">+</button>
-					<button class="bigButton" style="font-size:28px;margin:0.2em;background-color:#516399;" onclick="addFontSize(false);">-</button>			
+					<button class="bigButton" style="font-size:28px;margin:0.2em;background-color:#516399;" onclick="addFontSize(false);">-</button>
+					<button class="bigButton" style="font-size:28px;margin:0.2em;background-color:#516399;" onclick="viewSnapshots();">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="33" height="45">
+						<path fill="white" d="M166 332h180c8.284 0 15-6.716 15-15s-6.716-15-15-15H166c-8.284 0-15 6.716-15 15S157.716 332 166 332z"/>
+						<path fill="white" d="M166 392h180c8.284 0 15-6.716 15-15s-6.716-15-15-15H166c-8.284 0-15 6.716-15 15S157.716 392 166 392z"/>
+						<path fill="white" d="M507.606 84.394l-80-80C424.793 1.58 420.978 0 417 0H15C6.716 0 0 6.716 0 15v482c0 8.284 6.716 15 15 15 6.912 0 477.495 0 482 0 8.284 0 15-6.716 15-15V95C512 91.021 510.419 87.206 507.606 84.394zM121 30h210v100H121V30zM391 482H121V272h270V482zM482 482h-61V257c0-8.284-6.716-15-15-15H106c-8.284 0-15 6.716-15 15v225H30V30h61v115c0 8.284 6.716 15 15 15h240c8.284 0 15-6.716 15-15V30h49.787L482 101.213V482z"/>
+						<path fill="white" d="M166 452h180c8.284 0 15-6.716 15-15s-6.716-15-15-15H166c-8.284 0-15 6.716-15 15S157.716 452 166 452z"/></svg>
+					</button>					
 				</td>
 				</tr></table></div>
 			</div>
@@ -494,6 +501,16 @@
 			<a href="https://hackaday.io/alrado">AL Rado</a><br>
 			<a href="https://hackaday.io/Loopingstar">Loopingstar</a><br>
 			Torabora
+        </div>
+    </div>
+	<div id="div_wind7" class="div_wind">
+        <div id="drag_wind7" class="div_drag_wind" onmouseover="setup_mouse('div_wind7', 'drag_wind7');">
+            <div>
+               snapshots<div class="close" onclick="closewindow('div_wind7')">X</div>
+            </div>
+        </div>
+        <div class="content_wind" id="snapshots">
+			
         </div>
     </div>
 	<div id="floatButton">

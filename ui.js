@@ -50,6 +50,7 @@ var timeForRedraw = 48;
 var saveGifFrame = 0;
 var gif;
 var memoryType = 0;
+var snapshots = [];
 
 sourceArea.addEventListener("click", testForImageArray, true);
 sourceArea.onscroll = function (ev) {
@@ -210,6 +211,44 @@ window.addEventListener("unload", function () {
 	localStorage.setItem('save_font_size', fontSizeInEditor);
 });
 
+function snapshotTable(){
+	var sdiv = document.getElementById("snapshots");
+	var s;
+	try {
+		s = JSON.parse(localStorage.getItem('save_snapshots'));
+		if(s && s.length > 0)
+			snapshots = s;
+	}
+	catch(e){
+		localStorage.setItem('save_snapshots', '');
+		snapshots = [];
+	}
+	sdiv.innerHTML = '<button onclick="addSnapshotManually()">save snapsot</button><br>';
+	if (s && s.length > 0) {
+		for(var i = 0; i < s.length; i++){
+			sdiv.innerHTML += s[i].date + '<br>' + s[i].name + 
+				' <button onclick="loadSnapshot(' + i + ')">load</button> <button onclick="deliteSnapshot(' + i + ')">delite</button><br>';
+		}
+	}
+}
+
+function addSnapshotManually(){
+	snapshots.push({date: new Date().toUTCString(), name: 'Manually', source: sourceArea.value});
+	localStorage.setItem('save_snapshots', JSON.stringify(snapshots));
+	snapshotTable();
+}
+
+function loadSnapshot(n){
+	sourceArea.value = snapshots[n].source;
+	pixelColorHighlight();
+}
+
+function deliteSnapshot(n){
+	snapshots.splice(n, 1);
+	localStorage.setItem('save_snapshots', JSON.stringify(snapshots));
+	snapshotTable();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
 	var s = localStorage.getItem('save_source_code');
 	var f = parseInt(localStorage.getItem('save_font_size'), 10);
@@ -219,6 +258,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		sourceArea.value = s;
 		pixelColorHighlight();
 	}
+	snapshotTable();
 });
 
 function saveIco(a) {
@@ -814,6 +854,14 @@ function viewAbout() {
 	d.scrollIntoView(false);
 }
 
+function viewSnapshots() {
+	var d = document.getElementById("div_wind7");
+	d.style.display = "block";
+	d.style.left = (window.innerWidth / 2 - 60) + 'px';
+	d.style.top = "5em";
+	d.scrollIntoView(false);
+}
+
 function closewindow(id) {
 	var d = document.getElementById(id);
 	if (id == "div_wind3")
@@ -1326,7 +1374,7 @@ function compress(file) {
 			}
 		}
 	}
-	console.log("compress rate " + Math.round(100 - out.length / file.length * 100) + "%");
+	info("<i>compress rate " + Math.round(100 - out.length / file.length * 100) + "%</i>");
 	if (!compressTest(file, decompress(out))) {
 		console.log("error compress");
 		console.log(out);

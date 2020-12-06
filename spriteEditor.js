@@ -106,8 +106,10 @@ function SpriteEditor() {
 	function load(){
 		var a = document.getElementById("spriteLoadArea").value;
 		var w = document.getElementById("spriteLoadWidth").value;
-		var i, j, x, y;
+		var i, j, x, y, h;
 		var type = 0;
+		is1bit = 0;
+		isRLE = 0;
 		w = parseInt(w, 10);
 		if(isNaN(w) || w < 1 || w > 128)
 			w = 8;
@@ -120,6 +122,7 @@ function SpriteEditor() {
 					type = 2;
 				if(type > 0){
 					w = parseInt(info[1]);
+					h = parseInt(info[2]);
 				}
 				return '';
 			});
@@ -148,6 +151,7 @@ function SpriteEditor() {
 					bit = bit << 1;
 					i++;
 				}
+			is1bit = 1;
 			document.getElementById('check1bit').checked = true;
 			document.getElementById('checkRle').disabled = true;
 		}
@@ -192,6 +196,7 @@ function SpriteEditor() {
 					color2 = a[j] & 0xf;
 				}
 			}
+			isRLE = 1;
 			document.getElementById('checkRle').checked = true;
 			document.getElementById('checkRle').disabled = false;
 			document.getElementById('check1bit').checked = false;
@@ -213,7 +218,10 @@ function SpriteEditor() {
 			document.getElementById('check1bit').checked = false;
 		}
 		width = w;
-		height = y;
+		if(h && h > 0)
+			height = h;
+		else
+			height = y;
 		document.getElementById("spriteWidthChoice").value = width;
 		document.getElementById("spriteHeightChoice").value = height;
 		setSize();

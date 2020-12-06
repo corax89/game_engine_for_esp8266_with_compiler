@@ -265,11 +265,13 @@ img, canvas{
 			  }
 			}
 			if(is1bit){
+				out += '/*bit:' + width + ':' + height + '*/';
 				arr = to1bit(arr);
 				for (i = 0; i < arr.length; i++)
 					out += '0x' + arr[i].toString(16) + ',';
 			}
 			else if(isRle){
+				out += '/*rle:' + width + ':' + height + '*/';
 				arr = RLE(arr);
 				for (i = 0; i < arr.length; i++)
 					out += '0x' + arr[i].toString(16) + ',';
